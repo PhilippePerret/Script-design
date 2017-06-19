@@ -13,7 +13,7 @@
   "scripts": {
     "start": "electron .",
     "test-unit": "NODE_ENV=test mocha tests/unit/**/*_spec.js",
-    "test-integration": "NODE_ENV=test mocha tests/integration/**/*_spec.js"
+    "test-integration": "NODE_ENV=test mocha tests/integration/projets/**/*_spec.js"
   },
   "author": "Philippe perret <philippe.perret@yahoo.fr>",
   "license": "ISC",
