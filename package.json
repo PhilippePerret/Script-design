@@ -1,0 +1,15 @@
+{
+  "name": "script-design",
+  "version": "0.1.0",
+  "description": "Application pour le développement d'histoires, de l'idée jusqu'au manuscrit ou script final.",
+  "main": "script-design.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test-unit": "NODE_ENV=test mocha tests/**/*_spec.js"
+  },
+  "author": "Philippe perret <philippe.perret@yahoo.fr>",
+  "license": "ISC"
+}
