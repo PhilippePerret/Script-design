@@ -5,14 +5,37 @@
     <title>Screen-splash de Script-Design</title>
     <style media="screen">
       body {
+        position:relative;
+        font-family: Avenir;
         text-align:center;
-        margin:4em;
+        margin:1em;
         font-size:17pt;
+        background: linear-gradient(to bottom, #F50, orange);
+        height:420px;
+        overflow:hidden;
+      }
+      body p{color:white;margin:0 4em;text-align:justify;}
+      h1#titre{
+        margin:0.1em;
+        font-variant:small-caps;
+        color:#00FC6B;
+      }
+      img#logo-app{
+        margin-top:1em;
+        width:140px;
+      }
+      p#sous-titre{
+        position:fixed;
+        bottom:2em;
+        font-size:0.72em;
+        margin:0 5.5em;
+        font-style:italic;
       }
     </style>
   </head>
   <body>
-    <h1>Bienvenue dans Script-Design !</h1>
-    <p><em>Script-Design</em> est une application qui vous permet de développer votre histoire de la simple idée jusqu'au manuscrit ou scénario final.</p>
+    <img id="logo-app" src="screensplash/img/logo.png" alt="Logo application">
+    <h1 id="titre">Script-Design</h1>
+    <p id="sous-titre">Développez votre histoire, depuis la simple idée jusqu'au manuscrit ou scénario final.</p>
   </body>
 </html>
