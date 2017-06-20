@@ -7,9 +7,11 @@
 define([
     path.join(APP_PATH,'lib','required.js')     // => Rq
   , path.join(APP_PATH,'lib','utils','dom.js')  // => DOM
+  , path.join(APP_PATH,'lib','utils','phil-select-menu.js') // => Select
 ], function(
     Rq
   , DOM
+  , Select
 ){
 
 
@@ -30,6 +32,44 @@ define([
       *   CLASSE
       *
     *** --------------------------------------------------------------------- */
+
+    /**
+    * Préparation de la fenêtre à l'ouverture de l'application
+    **/
+    static UISetUp ()
+    {
+      Rq.log('-> Projet::UISetUp')
+      // Le menu des projets
+      let data_liste_projets = {
+          id:         'projects-list'
+        , in:         'container-project-list'
+        , opened:     true
+        , maxHeight:  300
+        , width:      '100%'
+        , options:[
+              {inner: 'Projets personnels', class: 'titre'}
+            , {inner: 'Un projet exemple',  value: 'exemple'}
+            , {inner: 'Projets partagés',   class: 'titre'}
+          ]
+      }
+      new Select(data_liste_projets)
+
+      // Le menu des types de projets
+      let data_types_projets = {
+          id:     'projet_type'
+        , in:     'container-type-projet'
+        , width:  140
+        , options:[
+              {inner: 'Film',   value:'movie'}
+            , {inner: 'Roman',  value:'novel'}
+            , {inner: 'BD',     value:'comics'}
+            , {inner: 'Jeu',    value:'game'}
+            , {inner: 'Autre',  value:'autre'}
+          ]
+      }
+      new Select(data_types_projets)
+      Rq.log('<- Projet::UISetUp')
+    }
 
     /**
     * La méthode par défaut, donc appelée par la touche Enter
@@ -136,6 +176,5 @@ define([
     }
 
   }
-
   return Projet
 })

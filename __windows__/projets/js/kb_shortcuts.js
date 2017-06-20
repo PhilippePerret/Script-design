@@ -13,7 +13,7 @@ define(
   [
     path.join(APP_PATH,'lib','required.js'),
     path.join(APP_PATH,'lib','utils','dom.js'),
-    path.join('.','projets','js','api')
+    path.join(__dirname,'projets','js','api.js')
   ]
 , function(
       Rq

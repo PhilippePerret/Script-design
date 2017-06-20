@@ -1,6 +1,6 @@
-<fieldset id="fs-new-projet-form" class="form">
+<fieldset id="fs-new-projet-form" class="form ">
   <legend><span class="shortcutletter">N</span>ouveau film</legend>
-  <section class="form">
+  <section class="form w80">
     <!-- Titre du projet -->
     <div class="row">
       <label for="projet_titre">Titre</label>
@@ -12,10 +12,7 @@
     <!-- Type du projet (roman, film, etc.) -->
     <div class="row">
       <label for="projet_type">Type</label>
-      <span class="value">
-        [menu pour choisir le type]
-        <input type="hidden" name="projet_type" id="projet_type" value="">
-      </span>
+      <span id="container-type-projet" class="value"></span>
     </div>
 
     <!-- Résumé du projet -->

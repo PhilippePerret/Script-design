@@ -11,13 +11,16 @@ requirejs(
   [
       path.join(APP_PATH,'lib','required.js')
     , path.join(APP_PATH,'lib','renderers','ui.js')
+    , path.join(__dirname,'projets','js','api.js')
     , path.join(__dirname,'projets','js','kb_shortcuts.js')
   ]
   // [path.join(APP_PATH,'lib','required.js')]
   , function(
       Rq
     , UI
-    , KBShortcuts)
+    , Projet // API
+    , KBShortcuts
+  )
   {
     let timer = setInterval(
       function()
@@ -34,6 +37,7 @@ requirejs(
           // avec la console : 'prefs:focus:liste' quand on se trouve dans
           // cette fenêtre.
           UI.setup({default_field: 'projet_titre'})
+          Projet.UISetUp()
         }
       },
       100
