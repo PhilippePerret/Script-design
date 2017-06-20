@@ -30,13 +30,13 @@ requirejs(
           clearInterval(timer)
           Rq.log(`Le module Rq s'appelle ${Rq.module_name}`)
           Rq.log("La page des projets est prête.")
-          Rq.defineKBShortcuts(KBShortcuts)
+
           // On prépare l'interface
           // On focusse dans le champ pour créer un nouveau projet
           // TODO Plus tard, ça pourra se régler dans les préférences
           // avec la console : 'prefs:focus:liste' quand on se trouve dans
           // cette fenêtre.
-          UI.setup({default_field: 'projet_titre'})
+          UI.setup({default_field: 'projet_titre', api: Projet, defaultEntreeMethod: 'defaultEnter', KeyboardObject: KBShortcuts})
           Projet.UISetUp()
         }
       },

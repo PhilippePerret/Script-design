@@ -28,6 +28,10 @@ define(
     {
       switch ( evt.key )
       {
+        // La touche escape doit toujours sortir du champ courant (pour
+        // activer les touches hors édition)
+        case 'Escape':
+          break
         case 'Enter':
           return Projet.defaultEnter()
         case '@':
@@ -42,16 +46,10 @@ define(
         case 'n':
           // Rq.log('-> Nouveau projet demandé')
           return Projet.activeSectionForm()
-        case 'Enter':
-          Rq.log('Touche entrée pressée')
-          Projet.create()
-          break
         default:
-          Rq.log(`Touche pressée : '${evt.key}'`)
+          Rq.log(`Touche pressée (non captée) : '${evt.key}'`)
       }
-
     }
-
   }
 
   return KBShortcuts

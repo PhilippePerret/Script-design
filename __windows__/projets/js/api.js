@@ -41,7 +41,7 @@ define([
       Rq.log('-> Projet::UISetUp')
       // Le menu des projets
       let data_liste_projets = {
-          id:         'projects-list'
+          id:         'projet_id'
         , in:         'container-project-list'
         , opened:     true
         , maxHeight:  300
@@ -68,6 +68,11 @@ define([
           ]
       }
       new Select(data_types_projets)
+
+      // Le bouton pour choisir un film
+      DOM.listen('btn-choose-project','click', this.choose.bind(this))
+      DOM.listen('btn-create-project','click', this.create.bind(this))
+
       Rq.log('<- Projet::UISetUp')
     }
 
@@ -126,6 +131,7 @@ define([
     **/
     static create ()
     {
+      Rq.log('Demande de création du film')
       if ( false === this.isValidData() ) { return }
       // Sinon, on crée le projet
     }
@@ -136,7 +142,9 @@ define([
     **/
     static choose ()
     {
-      Rq.log('Vous voulez choisir un film.')
+      Rq.log('Choix d’un projet à ouvrir.')
+      let projet_id = DOM.value('projet_id')
+      Rq.log(`Le projet d'identifiant ${projet_id}`)
     }
 
     /**
