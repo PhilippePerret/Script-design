@@ -1,0 +1,22 @@
+section#flash
+  position  : fixed
+  bottom    : 0.1em
+  right     : 0.1em
+  padding   : 1em
+  min-width : 280px
+  max-width : 600px
+
+  div#flash-messages
+    background-color      : #EEF
+    color                 : blue
+  div#flash-erreurs
+    background-color      : #FEE
+    color                 : red
+
+
+  div
+    &#flash-messages, &#flash-erreurs
+      border          : 1px solid
+      border-radius   : 4px
+      div.message, div.erreur
+        padding         : 4px 0.5em

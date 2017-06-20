@@ -3,11 +3,20 @@
   <head>
     <meta charset="utf-8">
     <title>Projets Script-Design</title>
+    <link rel="stylesheet" href="_common_/css/all.css">
+    <link rel="stylesheet" href="projets/css/projets.css">
   </head>
   <body>
-    <ul id="ul-projets">
-      <!-- Ici apparaitra la liste des projets de l'auteur courant -->
-    </ul>
-    <h1>Ici on mettra tout ce qui concerne le projet dans sa généralité. Ce sera un formulaire géant pour définir tous les paramètres.</h1>
+    <section id="section-projets-list" class="left-column">
+      <% include projets/html/listing_projets %>
+    </section>
+    <section id="section-projet-form" class="right-column active">
+      <!-- Formulaire de création d'un nouveau projet -->
+      <% include projets/html/new_projet_form %>
+    </section>
+    <section class="footer">
+      <% include projets/html/footer %>
+    </section>
+    <script type="text/javascript" src="projets/js/main.js"></script>
   </body>
 </html>

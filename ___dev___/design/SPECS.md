@@ -16,7 +16,11 @@ Il s'agit de concevoir une application qui permette de développer un script ou 
 # Requierements
 
 * L'application doit pouvoir être entièrement contrôlée par le clavier, sans aucun usage de la souris, même pour les opérations les plus communes (par exemple pour aggrandir la taille de la fenêtre).
-
+* À l'aide de simples commandes (comme en ligne de commande) on doit pouvoir définir l'application. Par exemple, pour dire que le listing des scènes/évènements dans un tiroir lattéral doit utiliser le début du `content` de l'évènement (au lieu du résumé), on doit pouvoir faire :
+  * ESC (ou autre) pour activer la ligne de commande
+  * listing-events: content
+  * ENTER
+* Partout, on peut jouer la touche '@' pour obtenir de l'aide. L'aide est implicitement liée à chaque fenêtre, c'est une propriété de chaque fenêtre, qui contient notamment la liste des raccourcis qu'on peut employer dans la fenêtre.
 
 # Entités de l'application
 

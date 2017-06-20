@@ -1,0 +1,29 @@
+section
+  &.left-column, &.right-column
+    position    : fixed
+    top         : 1em
+    width       : 45%
+    // border      : 1px solid #CFC
+    height      : 480px
+
+    // Pour étire les fieldsets dans les colonnes
+    fieldset.form
+      height      : calc(95%)
+      section.form
+        height      : calc(90%)
+
+  &.left-column
+    left        : 1em
+  &.right-column
+    right       : 1em
+    background-color  : #CCC
+
+  &.footer
+    position          : fixed
+    display           : block
+    width             : 100%
+    padding           : 1em
+    bottom            : 0
+    left              : 1em
+    font-size         : 0.85em
+    background-color  : #CCC

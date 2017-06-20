@@ -1,0 +1,33 @@
+// Propre à l'application
+
+// Pour marquer qu'une lettre est la lettre raccourci clavier pour
+// activer l'objet
+.shortcutletter
+  color           : #AE56B8 !important
+  font-family     : inherit
+  font-weight     : inherit
+  font-size       : inherit
+
+// Quand c'est dans un div, il faut le faire flottant à droite, c'est
+// une lettre dans un cadre qui indique simplement qu'on peut activer
+// ce cadre, son premier champ, en cliquant sur la lettre.
+div.shortcutletter
+  float         : right
+  opacity       : 0.5
+
+fieldset legend
+  opacity       : 0.65
+  font-size     : 0.75em
+
+
+// La section active, lorsque plusieurs sections sont présentes
+// Rappel : la section active va déterminer le rôle des touches, et notamment
+// de la touche Enter.
+.active
+  background-color    : #EEFFEE
+  // Le bouton de class 'default' dans la section active. Note : il doit n'y
+  // en avoir qu'un seul
+  button
+    &.default
+      background  : linear-gradient(to bottom, #D1D6FE, #0059C0)
+      color       : white !important

@@ -1,0 +1,141 @@
+/* Contient tous les styles pour tous les formulaires de l'application */
+/* Attention, quand on parle de "formulaire" ici, c'est en fait une section */
+/* De classe .form */
+
+$labelWidth: 200px
+$labelPadding: 20px
+
+// === GÉNÉRALITÉS ===
+button, input, textarea, select, select option
+  font-family     : inherit
+  font-size       : inherit
+
+button, input[type="submit"]
+  background        : none
+  background-color  : white
+  border            : 1px solid
+  border-color      : #CCC #999 #999 #CCC
+  border-radius     : 3px
+
+  // Largeur minimale d'un bouton
+  &:not(.picto):not(.small):not(.tiny):not(.btncolor):not(.normal)
+    min-width       : 100px
+    padding         : auto !important
+    padding-right   : 1em !important
+    padding-left    : 1em !important
+
+// Boutons de class 'picto', qui utilise des emojis ou des symboles
+// Il faut que le 'button' soit invisible.
+// Note : utiliser .normal pour un bouton étroit qui ne doit pas
+// avoir 100px de large.
+button.picto
+  background    : none
+  border        : none
+  margin        : 0
+  font-size     : 11pt
+
+ul
+  li
+    clear : both
+
+
+
+fieldset.form
+  background-color    : #E3E3E3
+  padding             : 0.5em
+  border-width        : 1px
+  border-color        : #CCC #FFF #FFF #CCC
+  border-radius       : 6px
+  font-family         : 'San Francisco', 'Lucida Grande'
+  // font-size           : 0.81em
+
+section.form
+  &.w80
+    --label-width: 80px
+  &.w100
+    --label-width: 100px
+  &.w120
+    --label-width: 120px
+  &.w140
+    --label-width: 140px
+  &.w180
+    --label-width: 180px
+section.form
+  position    : relative
+  > div.row
+    > label
+      width: calc(var(--label-width))
+    span.value, div.description
+      margin-left   : calc(10px + var(--label-width))
+      width         : calc(100% - 40px - var(--label-width))
+      // background    : #CFC
+
+
+input[type="text"], textarea
+  // Pour un input-text pour une couleur
+  &.color
+    width   : 50px
+  &.short, &.court
+    width   : 40px
+  &.medium, &.moyen
+    width   : 48%
+  width   : 98%
+
+section.form
+  font-size   : 0.80em
+  font-family : 'Lucida Grande', 'San Francisco'
+  padding     : 1em
+  div.row
+    padding         : 4px 0
+    input, textarea, select, option
+      font-size   : inherit
+      font-family : inherit
+      border      : 1px solid #B8B8B8
+      // Lorsqu'un champ est marqué mauvais
+      &.wrong
+        background-color    : #FAA
+    label
+      font-size       : inherit
+      font-family     : inherit
+      vertical-align  : top
+    > label
+      float           : left
+      // width           : $labelWidth
+      text-align      : right
+      // padding-right   : $labelPadding
+      &:after
+        padding-right   : 1em
+        padding-left    : 0.3em
+    > .value
+      display           : block
+      div.description, span.description
+        font-size         : 0.71em
+        font-style        : italic
+        opacity           : 0.5
+        &:hover
+          opacity         : 1
+      // Un bouton dans un span.value. Il doit être plus petit
+      button
+        font-size   : 0.75em
+        font-family : inherit
+  div.buttons
+    position          : absolute
+    bottom            : 0
+    left              : 0
+    right             : 0
+    text-align        : right
+    padding           : 1em
+    button
+      font-size   : inherit
+      font-family : inherit
+
+// Ensemble UL (avec boutons dessous)
+fieldset.form
+  section.boutons-sous-ul
+    border-top        : 1px solid #CCC
+    background-color  : white
+    button
+      background      : none
+      border-style    : solid
+      border-width    : 0 1px 0 0
+      border-color    : #CCC

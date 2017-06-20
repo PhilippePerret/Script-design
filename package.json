@@ -11,7 +11,7 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "electron .",
+    "start": "./runner.sh",
     "test-unit": "NODE_ENV=test mocha tests/unit/**/*_spec.js",
     "test-integration": "NODE_ENV=test mocha tests/integration/projets/**/*_spec.js"
   },

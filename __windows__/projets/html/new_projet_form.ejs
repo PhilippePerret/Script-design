@@ -1,0 +1,41 @@
+<fieldset id="fs-new-projet-form" class="form">
+  <legend><span class="shortcutletter">N</span>ouveau film</legend>
+  <section class="form">
+    <!-- Titre du projet -->
+    <div class="row">
+      <label for="projet_titre">Titre</label>
+      <span class="value">
+        <input type="text" name="projet_titre" id="projet_titre" value="">
+      </span>
+    </div>
+
+    <!-- Type du projet (roman, film, etc.) -->
+    <div class="row">
+      <label for="projet_type">Type</label>
+      <span class="value">
+        [menu pour choisir le type]
+        <input type="hidden" name="projet_type" id="projet_type" value="">
+      </span>
+    </div>
+
+    <!-- Résumé du projet -->
+    <div class="row">
+      <label for="projet_resume">Résumé</label>
+      <span class="value">
+        <textarea name="projet_resume" id="projet_resume" rows="3"></textarea>
+      </span>
+    </div>
+
+    <!-- Co-auteurs -->
+    <div class="row">
+      <label for="projet_coauteurs">Coauteurs</label>
+      <span class="value">
+        <input type="text" name="projet_coauteurs" id="projet_coauteurs" value="">
+      </span>
+    </div>
+
+    <div class="buttons"> <!-- Ne pas mettre 'buttons' pour ne pas le retrouver en bas -->
+      <button id="btn-create-projet" type="submit" class="default">Créer le projet</button>
+    </div>
+  </section>
+</fieldset>
