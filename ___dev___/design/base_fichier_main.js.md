@@ -1,3 +1,8 @@
+# Base d'un fichier main.js de fenêtre
+
+
+~~~javascript
+
 console.log('-> projets/js/main.js')
 const
     {remote}        = require('electron')
@@ -7,6 +12,7 @@ const
   , CONSTANTS_PATH  = path.join(app.getAppPath(),'lib','constants.js')
   , C               = require(CONSTANTS_PATH)
 
+// Mettre ici les constantes propres à la fenêtre
 const
     PROJET_FOLDER     = path.join(C.VIEWS_FOLDER,'projets')
   , PROJET_JS_FOLDER  = path.join(PROJET_FOLDER,'js')
@@ -40,10 +46,15 @@ const
           // ======= LA PAGE EST PRÊTE ========
 
           UI.setup({
+              // Mettre ici le champ par défaut à focusser
               default_field:        'projet_titre'
+              // Mettre ici l'API gérant la fenêtre
             , api:                  Projet
+              // Mettre ici l'objet gérant les méthodes de KeyUp
             , KeyboardObject:       KBShortcuts
           })
+
+          // Initialiser l'API si nécessaire
           Projet.UISetUp()
 
           log('=== Fenêtre PROJETS prête ===')
@@ -59,3 +70,6 @@ const
 )
 
 console.log('<- projets/js/main.js')
+
+
+~~~

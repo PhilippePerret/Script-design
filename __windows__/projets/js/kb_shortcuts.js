@@ -7,16 +7,14 @@
   démarrage, ou lorsqu'on joue la touche 'p' dans un contexte général.
 
 */
-
-
 define(
   [
-    path.join(APP_PATH,'lib','required.js'),
-    path.join(APP_PATH,'lib','utils','dom.js'),
-    path.join(__dirname,'projets','js','api.js')
+      C.LOG_MODULE_PATH // => log
+    , C.DOM_MODULE_PATH // => DOM
+    , PROJET_API_PATH   // => Projet
   ]
 , function(
-      Rq
+      log
     , DOM
     , Projet
   ){
@@ -24,30 +22,34 @@ define(
 
   const KBShortcuts = class {
 
+    static onEnter (evt)
+    {
+      log ('-> Projet::onEnter')
+    }
+
+    /**
+    *   Gestionnaire de l'évènement KeyUP
+    *
+    *   Noter qu'il n'y a ici que les raccourcis propres à la vue projet
+    *   Les raccourcis généraux, comme `@` ou `Enter` sont traités par le
+    *   module ./__windows__/_common_/js/ui.js commun à toutes les vues
+    *
+    **/
     static onkeyup (evt)
     {
       switch ( evt.key )
       {
-        // La touche escape doit toujours sortir du champ courant (pour
-        // activer les touches hors édition)
-        case 'Escape':
-          break
-        case 'Enter':
-          return Projet.defaultEnter()
-        case '@':
-          Rq.log('Aide demandée sur la page courante')
-          break
         case 'p':
-          Rq.log('Préférences demandée')
+          log('Préférences demandée')
           break
         case 'l':
-          // Rq.log('Liste des projets demandée')
+          // log('Liste des projets demandée')
           return Projet.activeSectionList()
         case 'n':
-          // Rq.log('-> Nouveau projet demandé')
+          // log('-> Nouveau projet demandé')
           return Projet.activeSectionForm()
         default:
-          Rq.log(`Touche pressée (non captée) : '${evt.key}'`)
+          log(`Touche pressée (non captée) : '${evt.key}'`)
       }
     }
   }

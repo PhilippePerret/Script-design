@@ -4,12 +4,13 @@
   ----------
 
 */
+
 define([
-    path.join(APP_PATH,'lib','required.js')     // => Rq
-  , path.join(APP_PATH,'lib','utils','dom.js')  // => DOM
-  , path.join(APP_PATH,'lib','utils','phil-select-menu.js') // => Select
+    C.LOG_MODULE_PATH
+  , C.DOM_MODULE_PATH    // => DOM
+  , C.SELECT_MODULE_PATH // => Select
 ], function(
-    Rq
+    log
   , DOM
   , Select
 ){
@@ -38,7 +39,7 @@ define([
     **/
     static UISetUp ()
     {
-      Rq.log('-> Projet::UISetUp')
+      log('-> Projet::UISetUp')
       // Le menu des projets
       let data_liste_projets = {
           id:         'projet_id'
@@ -73,7 +74,7 @@ define([
       DOM.listen('btn-choose-project','click', this.choose.bind(this))
       DOM.listen('btn-create-project','click', this.create.bind(this))
 
-      Rq.log('<- Projet::UISetUp')
+      log('<- Projet::UISetUp')
     }
 
     /**

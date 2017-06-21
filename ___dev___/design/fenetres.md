@@ -1,9 +1,26 @@
+
+[Définition des données de la fenêtre]: #definition_donnees
+[Fichier HTML/EJS complet]: #fichier_html_ejs_complet
+[Fichier javascript principal]: #fichier_main_js
+
 # Les fenêtres {#les_fenetres}
 
 
 ## Conception d'une nouvelle fenêtre {#new_window}
 
-Une fenêtre se crée très simplement dans le module `./lib/main/window.js`.
+### Aperçu rapide {#newwindow_quickoverview}
+
+* [Définition des données de la fenêtre]() dans `DATA_WINDOWS` de `./lib/main/window.js`.
+* [Fichier HTML/EJS complet] à la racine `./__windows__` (p.e. `./__windows__/board.ejs`).
+* Dossier portant comme nom l'affixe du fichier, dans `./__windows__` (p.e. `./__windows__/board/`). Ce dossier est appelé le **dossier de la vue**.
+* Dans ce dossier, on peut faire les dossier `js`, `css`, `img` (pour les images propres à la page), `html` (pour les partiels), `modules` et autres dossiers utiles.
+* Un premier fichier javascript doit permettre de définir les raccourcis clavier généraux.
+
+### Exemple pour une fenêtre aide
+
+### Explication détaillée
+
+Une fenêtre se définit très simplement dans le module `./lib/main/window.js`, dans la donnée `DATA_WINDOWS`.
 
 * Renseigner d'abord la donnée DATA_WINDOWS pour savoir où la fenêtre doit être placée et la dimension qu'elle doit faire, etc. tout ce qui concerne `BrowserWindow`.
 * Faire le fichier HTML pour la fenêtre dans le dossier `./__windows__`. C'est un code complet de page HTML, même pour un petit menu.
@@ -16,16 +33,66 @@ Ensuite, pour simplifier encore le code, on peut définir une propriété dans `
 
 Par exemple, dans `lib/main/on_ready.js`, on peut trouver :
 
-```
+```javascript
+
 app.on('show-screensplash', () => {
   Window.screensplash.show()
 })
+
 ```
 
 Et donc, de n'importe quelle fenêtre, on peut faire `ipc.send('show-screensplash')` pour ouvrir la fenêtre de démarrage.
 
 Ce *raccourci* se définit dans `lib/main/window.js`. S'inspirer que `static get screensplash`.
 
+
+## Détail des éléments {#detail_elements}
+
+### Définition des données {#definition_donnees}
+
+Ce sont les données qui seront fournies à `BrowserWindow` pour la création d'une nouvelle instance.
+
+### Fichier HTML/EJS complet {#fichier_html_ejs_complet}
+
+C'est un fichier HTML conforme et complet, avec `head` et `body`.
+
+Les `CSS`, les `JS` et les images sont insérés avec des paths partant du dossier de la vue. S'il s'agit de la vue `./__windows__/board.ejs`, elle doit contenir un dossier `./__windows__/board`. Les adresses seront :
+
+```html
+
+  src="board/js/mon_javascript.js"
+  src="board/img/monimage.png"
+  href="board/css/monfichier_styles.css"
+
+```
+
+Les inclusions EJS sont dans le même fichier :
+
+```ejs
+
+  <!-- Dans le fichier ./__windows__/board.ejs -->
+  ...
+  <% include board/html/mon_partiel.ejs %>
+
+```
+
+### Fichier javascript principal (main.js) {#fichier_main_js}
+
+Ce fichier se trouve dans le dossier de la vue, par exemple, si la vue est `board`, à l'adresse
+
+        ./__windows__/board/js/main.js
+
+Il est chargé à la fin du [Fichier HTML/EJS complet] par :
+
+        <script type="text/javascript" src="board/js/main.js"></script>
+
+Il est au format `RequireJS` et peut contenir :
+
+~~~javascript
+
+
+
+~~~
 
 ## Fenêtre des projets {#fenetre_projets}
 
