@@ -1,4 +1,3 @@
-console.log('-> aide/js/main.js')
 const
     {remote}        = require('electron')
   , {app}           = remote.require('electron')
@@ -6,6 +5,8 @@ const
   , requirejs       = require('requirejs')
   , CONSTANTS_PATH  = path.join(app.getAppPath(),'lib','constants.js')
   , C               = require(CONSTANTS_PATH)
+
+const ipc   = require('electron').ipcRenderer
 
 const
     AIDE_FOLDER     = path.join(C.VIEWS_FOLDER,'aide')
@@ -25,7 +26,7 @@ requirejs(
   , DOM
   , UI
   // --- Cette fenêtre ---
-  , Aide
+  , AideAPI
 ){
 
   let timer = setInterval(
@@ -36,8 +37,11 @@ requirejs(
         clearInterval(timer)
         // ======= LA PAGE EST PRÊTE ========
 
-        UI.setup({api: Aide})
+        UI.setup({window: 'aide', api: AideAPI})
         log('=== Fenêtre aide prête ===')
+
+        ipc.send('aide-ready')
+
         return true // module principal => rien à retourner
 
         // ======= FIN DE LA PAGE EST PRÊTE ========
@@ -45,5 +49,18 @@ requirejs(
     }// callback setInterval
   )// /setInterval
 
-}
+
+  /** ---------------------------------------------------------------------
+    *
+    *   CAPTEURS D'ÉVÈNEMENTS DE LA FENÊTRE D'AIDE
+    *
+  *** --------------------------------------------------------------------- */
+
+
+  ipc.once('affiche-aide-for', (evt, data) => {
+    log('Données envoyées à affiche-aide-for', data)
+    AideAPI.afficheAideFor(data.current_window)
+  })
+
+}// fin fonction requirejs
 )

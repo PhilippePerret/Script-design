@@ -16,7 +16,7 @@ define([
 ){
 
 
-  class Projet {
+  class ProjectAPI {
 
     /** ---------------------------------------------------------------------
       *
@@ -185,5 +185,5 @@ define([
     }
 
   }
-  return Projet
+  return ProjectAPI
 })

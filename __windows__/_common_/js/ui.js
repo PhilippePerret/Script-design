@@ -4,6 +4,7 @@
   et elles doivent appeler la méthode UI.setup() quand elles sont prêtes
 
 */
+let ipc = require('electron').ipcRenderer
 
 define(
   [
@@ -36,7 +37,7 @@ define(
         // mettre de gestionnaire sur l'élément est qu'il ne faut pas le faire
         // dès qu'on crée un évènement
         // if ( this.isEdition ) { return true }
-        
+
         let method = `traiteKeyUp_${this.isEdition ? 'In' : 'Out'}side_TextField`
         this[method](evt)
       }
@@ -47,7 +48,14 @@ define(
       **/
       static traiteKeyUp_Outside_TextField (evt)
       {
-        log(`Touche '${evt.key}' up outside text fields.`)
+        switch (evt.key)
+        {
+          case '@':       // => Aide demandée
+            ipc.send('want-help', {current_window: this.options.window})
+            break
+          default:
+            log(`Touche '${evt.key}' pressée en dehors d'un text fields (mais sans effet).`)
+        }
       }
       /**
       * La méthode de traitement des key-up quand on se trouve dans un
@@ -81,8 +89,6 @@ define(
                }
 
              }
-            break
-          case '@':       // => Aide demandée
             break
           default:
             /**

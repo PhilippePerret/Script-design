@@ -40,7 +40,8 @@ const
           // ======= LA PAGE EST PRÊTE ========
 
           UI.setup({
-              default_field:        'projet_titre'
+              window:               'projets'
+            , default_field:        'projet_titre'
             , api:                  Projet
             , KeyboardObject:       KBShortcuts
           })

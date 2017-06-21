@@ -21,7 +21,8 @@
         Ensuite, on peut utiliser les méthodes  
 
           DOM.get(id)
-          DOM.value(id)
+          DOM.value(id) / DOM.value(id, new-value)
+          DOM.inner(id) / DOM.inner(id, new-content) <=> innerHTML
           DOM.add(id, child)
           DOM.focus(id)
           DOM.listen(id,event,callback)
