@@ -10,12 +10,15 @@ define(
   [
       C.LOG_MODULE_PATH
     , C.DOM_MODULE_PATH
+    , C.EVENTS_MODULE_PATH
   ],
   function(
       log
     , DOM
+    , Events
   )
   {
+
     class UI
     {
 
@@ -38,8 +41,24 @@ define(
         // dès qu'on crée un évènement
         // if ( this.isEdition ) { return true }
 
+        /**
+        *   Raccourcis qui ne dépendent pas du fait qu'on se trouve
+        *   dans un champ de texte ou non
+        **/
+        if ( evt.altKey )
+        {
+          switch (evt.key)
+          {
+            case 'Tab':
+              // ALT + TAB => Passer à la fenêtre suivante
+              ipc.send('focus-next-window')
+              return Events.stop(evt)
+          }
+        }
+
+
         let method = `traiteKeyUp_${this.isEdition ? 'In' : 'Out'}side_TextField`
-        this[method](evt)
+        return this[method](evt)
       }
 
       /**
@@ -48,13 +67,26 @@ define(
       **/
       static traiteKeyUp_Outside_TextField (evt)
       {
-        switch (evt.key)
+        if ( evt.altKey )
         {
-          case '@':       // => Aide demandée
-            ipc.send('want-help', {current_window: this.options.window})
-            break
-          default:
-            log(`Touche '${evt.key}' pressée en dehors d'un text fields (mais sans effet).`)
+          switch (evt.key)
+          {
+            case 'Tab':
+            // ALT + Tab permet de passer d'une fenêtre à l'autre
+              Window.focusNext()
+              return Events.stop(evt)
+          }
+        }
+        else
+        {
+          switch (evt.key)
+          {
+            case '@':       // => Aide demandée
+              ipc.send('want-help', { current_window: this.options.window })
+              break
+            default:
+              log(`Touche '${evt.key}' pressée en dehors d'un text fields (mais sans effet).`)
+          }
         }
       }
       /**
@@ -125,7 +157,7 @@ define(
         // lorsqu'on les focusse, les raccourcis clavier changent, les snippets
         // se mettent en route
         DOM.textFields.map( (tf) => {
-          DOM.listen(tf,'keyup', UI.traiteKeyUp_Inside_TextField.bind(UI, tf))
+          // DOM.listen(tf,'keyup', UI.traiteKeyUp_Inside_TextField.bind(UI, tf))
           DOM.listen(tf,'focus', UI.onFocusTextField.bind(UI, tf))
           DOM.listen(tf,'blur',  UI.onBlurTextField.bind(UI, tf))
         })
