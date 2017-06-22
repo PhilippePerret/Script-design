@@ -24,6 +24,7 @@
           DOM.value(id) / DOM.value(id, new-value)
           DOM.inner(id) / DOM.inner(id, new-content) <=> innerHTML
           DOM.add(id, child)
+          DOM.insertTop(id, child) // Ajoute en haut de +id+
           DOM.focus(id)
           DOM.listen(id,event,callback)
           DOM.addClass(id,class)

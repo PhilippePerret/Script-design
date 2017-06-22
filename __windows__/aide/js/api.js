@@ -27,14 +27,19 @@ define([
           MANUEL_FOLDER = path.join(C.VIEWS_FOLDER,'aide','manuel')
         , file_list     = fs.readdirSync(MANUEL_FOLDER, {encoding:'utf8'})
         , section
+        , tdms          = []
 
       // TODO Ici, il faut plutôt constituer un fichier global et simplement vérifier s'il est
       //      à jour et doit être actualisé.
-      DOM.inner('aide-content','') // on vide le contenu actuel
+      DOM.inner('aide-content','') // on vide tout en posant la table des matières
       file_list.map( (fname) => {
-        section = DOM.create('section', {id: `file-${fname}`, inner: Kramdown.file(path.join(MANUEL_FOLDER,fname))})
+        let [ code, innerTdm ] = Kramdown.file(path.join(MANUEL_FOLDER,fname), {returnInnerTOC: true})
+        tdms.push(innerTdm)
+        section = DOM.create('section', {id: `file-${fname}`, inner: code })
         DOM.add('aide-content',  section )
       })
+      let ultoc = DOM.create('ul', {id:'manuel-toc', class:'kramed-toc', inner: tdms.join('') })
+      DOM.insertTop('aide-content', ultoc)
 
     }
 
