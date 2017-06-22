@@ -18,9 +18,39 @@ define(
     , Events
   )
   {
-
     class UI
     {
+
+      /**
+      *   Méthode principale qui définit l'interface et notamment le
+      *   système de raccourcis clavier
+      **/
+      static setup ( options )
+      {
+        log("* Préparation de l'interface… ")
+        this.KeyboardObject = options.KeyboardObject
+        this.options        = options
+
+        // On prépare tous les champs qui peuvent recevoir du texte pour que
+        // lorsqu'on les focusse, les raccourcis clavier changent, les snippets
+        // se mettent en route
+        DOM.textFields.map( (tf) => {
+          // DOM.listen(tf,'keyup', UI.traiteKeyUp_Inside_TextField.bind(UI, tf))
+          DOM.listen(tf,'focus', UI.onFocusTextField.bind(UI, tf))
+          DOM.listen(tf,'blur',  UI.onBlurTextField.bind(UI, tf))
+        })
+
+        // Il faut activer le onkeyup
+        window.onkeyup = UI.onKeyUp.bind(UI) //options.KeyboardObject.onkeyup
+
+        // Si un champ par défaut est défini, on focus devant
+        if ( options.default_field ) { DOM.focus(options.default_field)}
+        log("  = Interface préparé.")
+      }// /setup
+
+      // Raccourci pour obtenir l'API courante (par exemple Projet si c'est
+      // la fenêtre des projets qui est la fenêtre courante)
+      static get api () { return this.options.api }
 
       /**
       *   @return true quand on se trouve dans un champ de text,
@@ -35,11 +65,16 @@ define(
        */
       static onKeyUp (evt)
       {
-        // TODO il faut certainement ne pas appeler la méthode Inside car
-        // elle est déjà appelée par l'évènement. Mais l'avantage de ne pas
-        // mettre de gestionnaire sur l'élément est qu'il ne faut pas le faire
-        // dès qu'on crée un évènement
-        // if ( this.isEdition ) { return true }
+
+        /**
+        *   On invoque la méthode `onkeyup` que doit définir la fenêtre
+        *   appelante
+        **/
+        if ( this.KeyboardObject && 'function' === typeof this.KeyboardObject.onkeyup)
+        {
+          let res = this.KeyboardObject.onkeyup(evt, this.isEdition)
+          if ( res !== 'poursuivre' ) { return res }
+        }
 
         /**
         *   Raccourcis qui ne dépendent pas du fait qu'on se trouve
@@ -55,8 +90,6 @@ define(
               return Events.stop(evt)
           }
         }
-
-
         let method = `traiteKeyUp_${this.isEdition ? 'In' : 'Out'}side_TextField`
         return this[method](evt)
       }
@@ -64,9 +97,24 @@ define(
       /**
       *   Gestionnaire de l'évènement KeyUp quand la touche a été
       *   pressée hors d'un champ de texte.
+      *
+      *   Les raccourcis définis par la fenêtre principale sont toujours
+      *   prioritaires sur les raccourcis "normaux"
       **/
       static traiteKeyUp_Outside_TextField (evt)
       {
+
+        // /**
+        // *   On invoque la méthode `onkeyup` que doit définir la fenêtre
+        // *   appelante
+        // **/
+        // if ( this.KeyboardObject && 'function' === typeof this.KeyboardObject.onkeyup)
+        // {
+        //   let res = this.KeyboardObject.onkeyup(evt)
+        //   if ( res !== 'poursuivre' ) { return res }
+        // }
+        //
+
         if ( evt.altKey )
         {
           switch (evt.key)
@@ -82,10 +130,9 @@ define(
           switch (evt.key)
           {
             case '@':       // => Aide demandée
-              ipc.send('want-help', { current_window: this.options.window })
-              break
+              return ipc.send('want-help', { current_window: this.options.window })
             default:
-              log(`Touche '${evt.key}' pressée en dehors d'un text fields (mais sans effet).`)
+              log(`[UI Général] Touche '${evt.key}' pressée en dehors d'un text fields.`)
           }
         }
       }
@@ -143,38 +190,7 @@ define(
         this._current_text_field = null
       }
 
-      /**
-      *   Méthode principale qui définit l'interface et notamment le
-      *   système de raccourcis clavier
-      **/
-      static setup ( options )
-      {
-        log("* Préparation de l'interface… ")
-        this.KeyboardObject = options.KeyboardObject
-        this.options        = options
-
-        // On prépare tous les champs qui peuvent recevoir du texte pour que
-        // lorsqu'on les focusse, les raccourcis clavier changent, les snippets
-        // se mettent en route
-        DOM.textFields.map( (tf) => {
-          // DOM.listen(tf,'keyup', UI.traiteKeyUp_Inside_TextField.bind(UI, tf))
-          DOM.listen(tf,'focus', UI.onFocusTextField.bind(UI, tf))
-          DOM.listen(tf,'blur',  UI.onBlurTextField.bind(UI, tf))
-        })
-
-        // Il faut activer le onkeyup
-        window.onkeyup = UI.onKeyUp.bind(UI) //options.KeyboardObject.onkeyup
-
-        // Si un champ par défaut est défini, on focus devant
-        if ( options.default_field ) { DOM.focus(options.default_field)}
-        log("  = Interface préparé.")
-      }// /setup
-
-      // Raccourci pour obtenir l'API courante (par exemple Projet si c'est
-      // la fenêtre des projets qui est la fenêtre courante)
-      static get api () { return this.options.api }
-
-    }
+    }// /fin class UI
 
     return UI
   }

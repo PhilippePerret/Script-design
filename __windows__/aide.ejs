@@ -7,12 +7,15 @@
     <link rel="stylesheet" href="aide/css/aide.css">
     <link rel="stylesheet" href="_common_/css/kramdown.css">
     <style media="screen">
-      ul.kramed-toc li.kramed-toc-item a{ color:white;}
+
     </style>
   </head>
   <body>
     <h1>Manuel de Script Design</h1>
-    <button type="button" id="btn-manuel" onclick="AideAPI.manuel()">Manuel</button>
+    <section id="top-boutons">
+      <button type="button" id="btn-aide-manuel" onclick="AideAPI.manuel.bind(AideAPI)()"><span class="shortcutletter">@</span> Manuel complet</button>
+      <button type="button" id="btn-aide-fenetre" onclick="AideAPI.aideFenetreCourante.bind(AideAPI)()" style="display:none"><span class="shortcutletter">@</span> Aide fenêtre courante</button>
+    </section>
     <section id="aide-content"></section>
     <script type="text/javascript" src="aide/js/main.js"></script>
   </body>

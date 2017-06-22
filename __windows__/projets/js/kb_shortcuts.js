@@ -39,19 +39,15 @@ define(
     {
       switch ( evt.key )
       {
-        case 'p':
-          log('Préférences demandée')
-          break
         case 'l':
           // log('Liste des projets demandée')
           return Projet.activeSectionList()
         case 'n':
           // log('-> Nouveau projet demandé')
           return Projet.activeSectionForm()
-        default:
-          log(`Touche pressée (non captée) : '${evt.key}'`)
       }
-    }
+      return 'poursuivre' // pour dire de poursuivre le test keyUp
+    }// /fin de onkeyup
   }
 
   return KBShortcuts

@@ -31,6 +31,12 @@
           DOM.removeClass(id,class)
           DOM.textFields
 
+          DOM.display(odom)       L'affiche en jouant sur le display
+          DOM.show(odom)          L'affiche en jouant sur le visibility
+          DOM.mask(odom)          Le masque en jouant sur le display
+          alias : DOM.undisplay
+          DOM.hide(odom)          Le masque en jouant sur la visibilité
+
        */
       // ---------------------------------------------------------------------
     }

@@ -9,9 +9,10 @@ const
 const ipc   = require('electron').ipcRenderer
 
 const
-    AIDE_FOLDER     = path.join(C.VIEWS_FOLDER,'aide')
-  , AIDE_JS_FOLDER  = path.join(AIDE_FOLDER,'js')
-  , AIDE_API_PATH   = path.join(AIDE_JS_FOLDER,'api.js')
+    AIDE_FOLDER         = path.join(C.VIEWS_FOLDER,'aide')
+  , AIDE_JS_FOLDER      = path.join(AIDE_FOLDER,'js')
+  , AIDE_API_PATH       = path.join(AIDE_JS_FOLDER,'api.js')
+  , AIDE_SHORTCUTS_PATH = path.join(AIDE_JS_FOLDER,'shortcuts.js')
 
 requirejs(
   [
@@ -20,6 +21,7 @@ requirejs(
     , C.COMMON_UI_MODULE_PATH
     // ---- Cette fenêtre ---
     , AIDE_API_PATH
+    , AIDE_SHORTCUTS_PATH
   ]
 , function(
     log
@@ -27,9 +29,10 @@ requirejs(
   , UI
   // --- Cette fenêtre ---
   , AideAPI
+  , AideShortcuts
 ){
 
-  // On l'expose
+  // Pour exposer l'API
   window.AideAPI = AideAPI
 
   let timer = setInterval(
@@ -40,7 +43,7 @@ requirejs(
         clearInterval(timer)
         // ======= LA PAGE EST PRÊTE ========
 
-        UI.setup({window: 'aide', api: AideAPI})
+        UI.setup({window: 'aide', api: AideAPI, KeyboardObject: AideShortcuts})
         log('=== Fenêtre aide prête ===')
 
         ipc.send('aide-ready')

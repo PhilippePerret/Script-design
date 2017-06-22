@@ -132,7 +132,7 @@ define([
     **/
     static create ()
     {
-      Rq.log('Demande de création du film')
+      log('Demande de création du film')
       if ( false === this.isValidData() ) { return }
       // Sinon, on crée le projet
     }
@@ -143,9 +143,9 @@ define([
     **/
     static choose ()
     {
-      Rq.log('Choix d’un projet à ouvrir.')
+      log('Choix d’un projet à ouvrir.')
       let projet_id = DOM.value('projet_id')
-      Rq.log(`Le projet d'identifiant ${projet_id}`)
+      log(`Le projet d'identifiant ${projet_id}`)
     }
 
     /**
