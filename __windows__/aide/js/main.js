@@ -29,6 +29,9 @@ requirejs(
   , AideAPI
 ){
 
+  // On l'expose
+  window.AideAPI = AideAPI
+
   let timer = setInterval(
     function()
     {

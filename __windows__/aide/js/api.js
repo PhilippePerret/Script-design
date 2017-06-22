@@ -11,6 +11,33 @@ define([
 
   class AideAPI {
 
+    /**
+    *
+    *   Méthode appelée quand on clique sur le bouton "Manuel" dans la fenêtre
+    *   de l'aide, qui permet de rejoindre le manuel général.
+    *
+    *   Cette méthode affiche le manuel complet dans la fenêtre en l'actualisant
+    *   avant si nécessaire.
+    *
+    **/
+    static manuel ()
+    {
+      alert("Le manuel n'est pas encore implémenté. Pour le moment, je n'affiche que les fichiers de aide/manuel dans l'ordre alphabétique.")
+      let
+          MANUEL_FOLDER = path.join(C.VIEWS_FOLDER,'aide','manuel')
+        , file_list     = fs.readdirSync(MANUEL_FOLDER, {encoding:'utf8'})
+        , section
+
+      // TODO Ici, il faut plutôt constituer un fichier global et simplement vérifier s'il est
+      //      à jour et doit être actualisé.
+      DOM.inner('aide-content','') // on vide le contenu actuel
+      file_list.map( (fname) => {
+        section = DOM.create('section', {id: `file-${fname}`, inner: Kramdown.file(path.join(MANUEL_FOLDER,fname))})
+        DOM.add('aide-content',  section )
+      })
+
+    }
+
     static afficheAideFor( wind )
     {
       if ( wind )
