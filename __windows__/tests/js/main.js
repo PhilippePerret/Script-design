@@ -21,11 +21,6 @@ function log(mess, obj){
 
 // On ouvre une fenêtre pour y lancer nos tests
 // --------------------------------------------
-let {BrowserWindow} = remote.require('electron')
-const fenPTests = new BrowserWindow({x: -1000, y: 0, width:1500, heigth:500, show: false, devTools:true})
-// fenPTests.openDevTools()
-fenPTests.loadURL('file:///'+path.join(C.LIB_UTILS_FOLDER,'PTests.html'))
-fenPTests.on('ready-to-show', (evt) => {
-  log('-> ready-to-show')
-  fenPTests.show()
-})
+
+let PTests = remote.require(path.join(C.LIB_UTILS_FOLDER,'PTests'))
+PTests.prepare()

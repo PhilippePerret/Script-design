@@ -16,23 +16,6 @@ const
   ligne suivant et décommenter le on'ready' en dessous.
 */
 app.on('ready', require('./lib/main/on_ready'))
-// app.on('ready', () => {
-//   requirejs(
-//     ['./lib/utils/kramdown'],
-//     function(Kramdown){
-//       console.log(Kramdown.parse(`
-// # ceci est un titre {#mon_titre}
-//
-// Du texte
-//
-// ## Un autre titre {#pour_voir_lautre}
-//
-// Encore du texte.
-//         `))
-//     }
-//   )
-// })
-
 .on('all-windows-close', () => {
   console.log('Je quitte l’application suite à la fermeture de toutes les fenêtres.')
   app.quit()
