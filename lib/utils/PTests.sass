@@ -1,0 +1,31 @@
+body
+  font-family           : 'PT Mono', 'Monospace', 'Courier New'
+  font-size             : 15.2pt //16.2pt
+  margin                : 2em !important
+  background-color      : black
+  color                 : white
+
+$success-color: #00DB00
+$failure-color: #FF4460
+$notice-color:  #678DFF
+
+section#tests-results
+  > div.case
+    margin-bottom     : 1em
+    margin-left : 1em
+    &.pass
+      color   : $success-color
+    &.fail
+      color   : $failure-color
+    > div
+      &.lib
+        color       : inherit
+      &.pass, &.fail
+        margin-left : 3em
+      &.pass
+        color       : $success-color
+      &.fail
+        color       : $failure-color
+  div.notice
+    margin-left : 1em
+    color       : $notice-color
