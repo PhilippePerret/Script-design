@@ -19,11 +19,13 @@ function log(mess, obj){
 }
 // const PTest = require(path.join(C.LIB_UTILS_FOLDER,'PTests'))
 
+// On ouvre une fenêtre pour y lancer nos tests
+// --------------------------------------------
 let {BrowserWindow} = remote.require('electron')
-const b = new BrowserWindow({x: -1000, y: 0, width:1500, heigth:500, show: false, devTools:true})
-b.loadURL('file:///'+path.join(C.LIB_UTILS_FOLDER,'PTests.html'))
-b.openDevTools()
-b.on('ready-to-show', (evt) => {
+const fenPTests = new BrowserWindow({x: -1000, y: 0, width:1500, heigth:500, show: false, devTools:true})
+// fenPTests.openDevTools()
+fenPTests.loadURL('file:///'+path.join(C.LIB_UTILS_FOLDER,'PTests.html'))
+fenPTests.on('ready-to-show', (evt) => {
   log('-> ready-to-show')
-  b.show()
+  fenPTests.show()
 })
