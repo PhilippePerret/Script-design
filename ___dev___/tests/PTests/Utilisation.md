@@ -45,7 +45,7 @@ describe('Une description')
 
 (1) On pourrait bien entendu garder des "it" à la place des 'and'. Les deux termes produisent exactement le même effet.
 
-## Les case `it` {#cases_it}
+## Les cases `it` {#cases_it}
 
 Les tests à l'intérieur des `it` sont composés de chaines :
 
@@ -148,9 +148,49 @@ describe("La comparaison de deux valeurs")
       expect(1).is.not.strictly.equal_to('1')
     })
     .and("'bonjour' n'est pas strictement égal à 'BONJOUR'", () => {
-      expect('bonjour').strictly.equals("BONJOUR")
+      let
+          bonjour = 'bonjour'
+        , BOUJOUR = 'BONJOUR'
+      expect(bonjour).equals(BONJOUR) //=> success
+      expect(bonjour).not.strictly.equals(BONJOUR) //=> success
     })
 ```
+
+
+## Toutes les méthodes de test {#all_test_methodes}
+
+### equal/equals/equal_to {#equal}
+
+Vérifie l'égalité entre deux expressions. Cf. aussi la note sur le mode strict.
+
+### greater_than {#greater_than}
+
+Vérifie la supériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
+
+### less_than {#less_than}
+
+Vérifie l'infériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
+
+### between {#between}
+
+Vérifie qu'un nombre se trouve bien entre deux autres nombres ou qu'un mot se trouve bien entre deux autres mots.
+
+```js
+
+  it('2 est entre 1 et 3', () => {
+    expect(2).between([1,3])
+  })
+
+```
+
+```js
+
+  it('Marion est située en âge entre Kevin et Séverin', () => {
+    expect(24, 'Marion').between([20,28], 'Kevin et Séverin')
+  })
+
+```
+
 
 ## Envoyer des messages de débuggage à la console principale {#methode_log}
 

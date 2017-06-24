@@ -41,6 +41,25 @@ section#tests-results
     > div
       &.lib
         color       : inherit
+
+  // Le résumé final affichant le nombre d'échecs et de réussites
+  div.resume_final
+    border        : 1px solid
+    padding       : 1em
+    margin-top    : 2em
+    margin-bottom : 4em
+    margin-left   : 3em
+    > span
+      margin-left   : 1em
+      &.total_count
+        font-weight   : bold
+  // Les erreurs après le résumé, s'il y en a
+  div.error-after-resume
+    margin-left   : 4em
+    margin-bottom : 1em
+    span.err-numero
+      margin-right  : 2em
+      font-family   : Georgia
   div.notice
     margin-left : 2em
     color       : $notice-color
