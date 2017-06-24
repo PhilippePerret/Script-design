@@ -12,15 +12,35 @@ describe('Un premier test')
   .it("test de l'égalité avec equal_to", () => {
     expect(1).not.equal_to(2)
   })
-  .it('test de l’égalité parfaite', () => {
+  .it('test de l’égalité strict (entre 1 number et 1 string)', () => {
     expect(1).not.to.be.strictly.equal_to('1')
   })
   .it('test de l’infériorité', () => {
     expect(1).to.be.less_than(2)
   })
-  .it('test de la supériorité', function(){
+  .it('test de la supériorité non strict', () => {
     expect(2).to.be.greater_than(1)
-  });
+  })
+  .it('test de la supériorité strict', () => {
+    expect(2).to.be.strictly.greater_than(1)
+    expect(1).to.not.be.strictly.greater_than(1)
+  })
+
+describe("Égalité entre deux strings")
+  .context('en mode strict')
+    .it('"bonjour" n’est pas égal à "Bonjour"', () => {
+      expect('bonjour').not.to.strictly.equal('Bonjour')
+    })
+    .it('"bonjour" n’est pas égal à "BONJOUR"', () => {
+      expect('bonjour').
+    })
+  .context('en mode non strict')
+    .it("'bonjour', est égal à 'Bonjour'", () => {
+      expect('bonjour').equals('Bonjour')
+    })
+
+// Tester avec 'actual_str' et 'expect_str'
+
 
 describe("Un second test")
   .context('en mode non strict')

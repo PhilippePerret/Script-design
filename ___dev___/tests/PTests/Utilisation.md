@@ -131,9 +131,12 @@ Les messages de résultat tiendront compte de ce pseudo pour afficher des messag
 
 ## Mode strict {#lemodestrict}
 
-En mode non strict, le chiffre 1 est égal au chiffre string `"1"`. Ils sont comparés avec `==`.
+Le mode strict se comporte différement en fonction des cas :
 
-En mode strict en revanche, ils sont comparés avec `===` et ne sont pas égaux.
+* Avec deux nombres et le test de supériorité ou d'infériorité, il utilise `>` et `<` au lieu de `>=` et `<=` en mode non strict.
+* Avec deux strings, la comparaison est insensible à la casse, c'est-à-dire que "bonjour" sera égal à "BonjouR".
+* Avec deux autres types, c'est une comparaison par '===' qui est faite (noter qu'elle est fait aussi, de fait, avant les deux autres cas.
+
 
 Pour passer en mode strict un cas, il suffit d'ajouter dans la chaine le terme `strictly` (strictement). Par exemple :
 
@@ -142,10 +145,10 @@ Pour passer en mode strict un cas, il suffit d'ajouter dans la chaine le terme `
 describe("La comparaison de deux valeurs")
   .context("En mode strict")
     .it("rend 1 différent de '1'", () => {
-      expect(1).not.to.strictly.equal('1')
+      expect(1).is.not.strictly.equal_to('1')
     })
-    .and("rend 1 toujours égal à 1", () => {
-      expect(1).to.strictly.equals(1)
+    .and("'bonjour' n'est pas strictement égal à 'BONJOUR'", () => {
+      expect('bonjour').strictly.equals("BONJOUR")
     })
 ```
 
