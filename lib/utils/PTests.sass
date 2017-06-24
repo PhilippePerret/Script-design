@@ -13,22 +13,27 @@ $notice-color:  #678DFF
 section#tests-results
   background-color  : black
   padding           : 2em
-  > div.case
-    margin-bottom     : 1em
-    margin-left : 1em
+
+  // Tous les DIV
+  div
     &.pass
       color   : $success-color
     &.fail
       color   : $failure-color
+
+  div.describe
+    margin-left   : 0em
+  div.context
+    margin-left   : 2em
+    font-style    : italic
+  div.case
+    margin-bottom   : 1em
+    margin-left     : 4em
     > div
       &.lib
         color       : inherit
       &.pass, &.fail
-        margin-left : 3em
-      &.pass
-        color       : $success-color
-      &.fail
-        color       : $failure-color
+        margin-left : 1em
   div.notice
     margin-left : 1em
     color       : $notice-color
