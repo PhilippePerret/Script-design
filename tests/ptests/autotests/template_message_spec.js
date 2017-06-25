@@ -6,10 +6,9 @@
 log('-> template_message_spec.js')
 
 describe("Essai de récupération du message écrit")
-  .it('retourne le message écrit', () => {
+  .it('retourne seulement l’objet expect', () => {
     let fn = function(){return expect(4).equals(4)}
     expect(fn.call()).to.be.instanceof('PTestExpectObject')
-    log('Estimation immédiate de la méthode')
   })
 describe('Valeur humaine pour actual')
   .it('est utilisé dans le message de succès', () => {
