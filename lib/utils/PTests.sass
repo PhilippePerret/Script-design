@@ -57,9 +57,18 @@ section#tests-results
   div.error-after-resume
     margin-left   : 4em
     margin-bottom : 1em
+    a
+      text-decoration   : none
+      font-family       : inherit
+      font-size         : inherit
+      color             : inherit
+      font-style        : inherit
     span.err-numero
-      margin-right  : 2em
+      margin-right  : 1em
       font-family   : Georgia
+      &:after
+        content : ' -- '
+        font-family   : Georgia
   div.notice
     margin-left : 2em
     color       : $notice-color

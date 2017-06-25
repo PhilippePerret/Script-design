@@ -159,6 +159,31 @@ describe("La comparaison de deux valeurs")
 
 ## Toutes les méthodes de test {#all_test_methodes}
 
+### contain {#contain}
+
+Vérifier que `expected` appartienne bien à `actual`. Pour un string, la chaine doit contenir l'autre chaine (qui peut être une expression régulière), pour un array, il doit contenir la valeur fournie.
+
+Cette méthode est sensible au paramètre `strict`.
+
+```js
+
+  expect("Mon texte est là").to.contain("Texte")
+  // => succès car test non strict
+
+  expect("Mon texte est là").to.strictly.contain("Texte")
+  // => échec car test strict
+
+```
+
+Avec un expression régulière :
+
+```js
+
+  expect("Mon texte").to.contain(/ex.e/)
+  // => succès
+
+```
+
 ### equal/equals/equal_to {#equal}
 
 Vérifie l'égalité entre deux expressions. Cf. aussi la note sur le mode strict.
@@ -191,6 +216,42 @@ Vérifie qu'un nombre se trouve bien entre deux autres nombres ou qu'un mot se t
 
 ```
 
+## Utiliser un template de message de retour {#template_message_retour}
+
+On peut fournir un template de retour dans les options (second argument) de la dernière méthode de l'expression (appelée « méthode de comparaison »). Ce message doit utliser `__ACTUAL__` et `__EXPECTED__` pour définir les placeholders qui seront remplacés par les valeurs originales et attendues.
+
+Pour couvrir tous les cas, plusieurs messages doivent être fournis, contenus dans la propriété `template` :
+
+```js
+
+  template: {
+    success: "<message en cas de succès>",
+    failure: "<message en cas d'échec>"
+  }
+```
+
+Si un des deux messages est omis, c'est le message par défaut qui est utilisé.
+
+Exemple d'utilisation.
+
+```js
+
+  describe('Un template')
+    .it('peut être fourni', () => {
+      expect(4).equals(5, {template: {failure: "il est impératif que __ACTUAL__ soit égal à __EXPECTED__ !"}})
+    })
+
+```
+
+Le test ci-dessus produira « OK, 4 est égal à 5 » en cas de succès et le message « Erreur line 23, il est impératif que 4 soit égal à 5 ! ».
+
+Bien sûr, tout code HTML peut être utilisé dans le message et l'on peut avoir dans le message un lien conduit à une aide plus précise :
+
+```js
+
+  template:{failure:"__ACTUAL__ devrait ressembler à __EXPECTED__ (cf. <a href="http://mon.aide.com">L'aide</a> pour le détail)"}
+
+```
 
 ## Envoyer des messages de débuggage à la console principale {#methode_log}
 
