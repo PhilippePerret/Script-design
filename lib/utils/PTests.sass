@@ -25,10 +25,25 @@ section#tests-results
     &.fail
       color   : $failure-color
 
-  div.describe
-    margin-left   : 0em
+  div.describe, div.context, div.case
+    &.tab1
+      margin-left   : 1.5em
+    &.tab2
+      margin-left   : 3em
+    &.tab3
+      margin-left   : 4.5em
+    &.tab4
+      margin-left   : 6em
+    &.tab5
+      margin-left   : 7.5em
+    &.tab6
+      margin-left   : 9em
+    &.tab7
+      margin-left   : 10.5em
+    &.tab8
+      margin-left   : 12em
+
   div.context
-    margin-left   : 2em
     font-style    : italic
   div.file
     text-align    : right
@@ -37,7 +52,6 @@ section#tests-results
     font-style    : italic
   div.case
     margin-bottom   : 1em
-    margin-left     : 4em
     > div
       &.lib
         color       : inherit
