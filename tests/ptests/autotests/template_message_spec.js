@@ -9,33 +9,59 @@ let res
 
 describe('Contrôle général des messages de rapport du test',[
   , describe("Messages en cas de succès",[
-    , context('sans message template ni valeur-pseudo',[
-      , it('écrit le message normal', () => {
-        res = expect(4).equals(4, {not_a_test:true}).returnedMessage
-        expect(res, 'le retour de "equal"').contains('4 est égal à 4', {no_values: true})
-      })
-  //     , it('écrit le message avec la pseudo valeur si elle est fournie', () => {
-  //       res = expect(4,'le nombre d’œufs').equals(4, {not_a_test:true, no_values:true}).returnedMessage
-  //       expect(res,'le retour de "equals"').contains('le nombre d’œufs est égal à 4')
-  //     })
+    // , context('sans message template ni valeur-pseudo',[
+    //   , it('écrit le message normal', () => {
+    //     res = expect(4).equals(4, {not_a_test:true}).returnedMessage
+    //     expect(res, 'le retour de "equal"').contains('4 est égal à 4', {no_values: true})
+    //   })
+    // ])
+    , context('avec des valeurs pseudo', [
+      // , context('en indiquant la valeur réelle (défaut)', [
+      //   , it('écrit le message avec la valeur-pseudo de l’actual si elle est fournie', () => {
+      //     res = expect(4,'le nombre d’œufs').equals(4, {not_a_test:true}).returnedMessage
+      //     expect(res,'le retour de "equals"').contains('le nombre d’œufs (4) est égal à 4')
+      //   })
+      //   , it('écrit le message avec la valeur-pseudo de l’expected si elle est fournie', () => {
+      //     res = expect(4).equals(4, 'le nombre d’œufs', {not_a_test:true}).returnedMessage
+      //     expect(res,'le retour de "equals"').contains('4 est égal à le nombre d’œufs (4)')
+      //   })
+      //   , it('écrit le message avec les deux valeurs-pseudo si elles sont fournies', () => {
+      //     res = expect(4,'le nombre de pots').equals(4, 'le nombre d’œufs', {not_a_test:true}).returnedMessage
+      //     expect(res,'le retour de "equals"').contains('le nombre de pots (4) est égal à le nombre d’œufs (4)')
+      //   })
+      // ])
+      , context('sans indiquer la valeur réelle (no_values: true)', [
+        // , it('écrit le message avec la valeur-pseudo de l’actual si elle est fournie', () => {
+        //   res = expect(4,'le nombre d’œufs').equals(4, {not_a_test:true, no_values:true}).returnedMessage
+        //   expect(res,'le retour de "equals"').contains('le nombre d’œufs est égal à 4')
+        // })
+        , it('écrit le message avec la valeur-pseudo de l’expected si elle est fournie', () => {
+          res = expect(4).equals(4, 'le nombre d’œufs', {not_a_test:true, no_values:true}).returnedMessage
+          expect(res,'le retour de "equals"')
+            .contains('4 est égal à le nombre d’œufs')
+            .and.not.contains('le nombre d’œufs (4)')
+            .and.contains('babar et Marion font du vélo')
+        })
+        // , it('écrit le message avec les deux valeurs-pseudo si elles sont fournies', () => {
+        //   res = expect(4,'le nombre de pots').equals(4, 'le nombre d’œufs', {not_a_test:true, no_values:true}).returnedMessage
+        //   expect(res,'le retour de "equals"').contains('le nombre de pots est égal à le nombre d’œufs')
+        // })
+      ])
     ])
-    , context('avec des valeur pseudo', [
-
-    ])
-    , context('avec des messages templates',[
-
-    ])
+    // , context('avec des messages templates',[
+    //
+    // ])
   ])
-  , describe("Messages en cas d'échec",[
-    , context('sans message template et sans valeur-pseudo')
-    , context('avec des valeurs-pseudo')
-    , context('avec des messages templates')
-  ])
+  // , describe("Messages en cas d'échec",[
+  //   , context('sans message template et sans valeur-pseudo')
+  //   , context('avec des valeurs-pseudo')
+  //   , context('avec des messages templates')
+  // ])
 ])
 
-describe('Autre contrôle',[
-
-])
+// describe('Autre contrôle',[
+//
+// ])
 
 // describe('Contrôle général des messages de rapport du test')
 //   .describe("Messages en cas de succès")
