@@ -7,19 +7,43 @@ log('-> template_message_spec.js')
 
 let res
 
-describe('Contrôle général des messages de rapport du test')
-  .describe("Messages en cas de succès")
-    .context('sans message template')
-      .it('écrit le message normal', () => {
+describe('Contrôle général des messages de rapport du test',[
+  describe("Messages en cas de succès",[
+    context('sans message template',[
+      it('écrit le message normal', () => {
         res = expect(4).equals(4, {not_a_test:true}).returnedMessage
         expect(res, 'le retour de "equal"').contains('4 est égal à 4', {no_values: true})
       })
-    .context('avec des « valeurs pseudo » pour actual et expect')
-      .context('et la vraie valeur ajoutée')
-        .it('utilise la valeur pseudo pour actual', () => {
-          res = expect(24, 'l’âge de Marion').equals(24, {not_a_test:true})
-          expect(res.returnedMessage).strictly.contains("l’âge de Marion (24) est égal à 24")
-        })
+      it('écrit le message avec la pseudo valeur si elle est fournie', () => {
+        res = expect(4,'le nombre d’œufs').equals(4, {not_a_test:true, no_values:true}).returnedMessage
+        expect(res,'le retour de "equals"').contains('le nombre d’œufs est égal à 4')
+      })
+    ])
+  ])
+])
+
+// describe('Contrôle général des messages de rapport du test')
+//   .describe("Messages en cas de succès")
+//     .context('sans message template')
+//       .it('écrit le message normal', () => {
+//         res = expect(4).equals(4, {not_a_test:true}).returnedMessage
+//         expect(res, 'le retour de "equal"').contains('4 est égal à 4', {no_values: true})
+//       })
+//       .it('écrit le message avec la pseudo valeur si elle est fournie', () => {
+//         res = expect(4,'le nombre d’œufs').equals(4, {not_a_test:true, no_values:true}).returnedMessage
+//         expect(res,'le retour de "equals"').contains('le nombre d’œufs est égal à 4')
+//       })
+//     .context('avec des « valeurs pseudo » pour actual et expect')
+//       .context('et la vraie valeur ajoutée')
+//         .it('utilise la valeur pseudo pour actual', () => {
+//           res = expect(24, 'l’âge de Marion').equals(24, {not_a_test:true})
+//           expect(res.returnedMessage).strictly.contains("l’âge de Marion (24) est égal à 24")
+//         })
+
+
+
+
+
 //     .it('utilise la valeur pseudo pour expected', () => {
 //       res = expect(24).equals(24, 'l’âge de Marion', {not_a_test:true})
 //       expect(res.returnedMessage).strictly.contains("24 est égal à l’âge de Marion (24)")
