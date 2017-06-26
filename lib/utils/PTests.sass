@@ -50,12 +50,24 @@ section#tests-results
     font-size     : 11.9pt
     color         : $beaugris
     font-style    : italic
+  // Les cas, sauf ceux qui possèdent des frères `and` doivent laisser
+  // de l'air en dessous.
+  div.case + div.case:not(.sib)
+    margin-top   : 1em
   div.case
-    margin-bottom   : 1em
     > div
       &.lib
         color       : inherit
+      span.ok, span.et, span.er, span.mais
+        padding   : 0 8px
+      span.ok, span.et // le 'OK' avant le message
+        background-color    : #005A00 // $success-color
+        color               : #00CB00
+      span.er, span.mais // le "Erreur" et le "MAIS"
+        background-color    : $failure-color
+        color               : #FFD5D4
 
+        span
   // Le résumé final affichant le nombre d'échecs et de réussites
   div.resume_final
     border        : 1px solid
