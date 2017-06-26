@@ -1,9 +1,8 @@
-* Traiter le `and` de `it` et de `expect`, qui doit être utilisé en chainage
-  * => documenter
-  * => tester
-* Pouvoir mettre un describe dans un describe (imbrications)
+* Faire une pause pour afficher les tests les uns après les autres, progressivement, dans la page (note : c'est peut-être ce qui se passe mais je voudrais le voir en action)
+* => documenter les "and" des it
+* => tester les "and" des it
 * Poursuivre les autres méthodes
-* Développer le concept de "test prototypal"
+* Développer le concept de "test prototypal" (noter que le "P" et P-Tests fait aussi référence à Python, pour l'imbrication)
 * Tester la méthode contain (avec expression régulière aussi, dans les deux modes strict/non strict)
 * Pouvoir ne mettre que deux arguments à la méthode de comparaison (donc sans expect_str). Faire un test sur le typeof du deuxième argument. Si String => c'est expect_str, sinon, c'est options.
   * => tester
