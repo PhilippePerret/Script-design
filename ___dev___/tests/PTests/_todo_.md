@@ -1,3 +1,6 @@
+* Traiter le `and` de `it` et de `expect`, qui doit être utilisé en chainage
+  * => documenter
+  * => tester
 * Pouvoir mettre un describe dans un describe (imbrications)
 * Poursuivre les autres méthodes
 * Développer le concept de "test prototypal"
