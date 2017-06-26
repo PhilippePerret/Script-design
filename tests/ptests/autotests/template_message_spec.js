@@ -3,8 +3,7 @@
   Pour tester les messages de template qui peuvent être explicitement fourni
 
 */
-log('-> template_message_spec.js')
-
+// Pour simplifier
 let res, mes, opts
 
 describe('Contrôle général des messages de rapport du test',[

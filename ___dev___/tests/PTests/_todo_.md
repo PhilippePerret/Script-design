@@ -1,3 +1,5 @@
+* Avec peut-être une option, pouvoir régler le fait que le texte du "it" reprennent les descriptions des owners en remontant jusqu'au premier (peut-être mettre un système d'option pour le moment sous forme de constantes en haut de PTests.js)
+* Documenter `NaT` pour dire `not_a_test` dans les options
 * Faire une pause pour afficher les tests les uns après les autres, progressivement, dans la page (note : c'est peut-être ce qui se passe mais je voudrais le voir en action)
 * => documenter les "and" des it
 * => tester les "and" des it
