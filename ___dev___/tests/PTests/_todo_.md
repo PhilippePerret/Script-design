@@ -1,14 +1,16 @@
-* Définir le previous_sibling d'un cas `and` et s'en servir pour savoir s'il faut mettre "MAIS" ou garder erreur (noter qu'on doit pouvoir avoir un mais "positif" lorsque le cas précédent est négatif)
-  * => tester les deux utilisations des "MAIS"
+* Avec peut-être une option, pouvoir régler le fait que le texte du "it" reprennent les descriptions des owners en remontant jusqu'au premier (peut-être mettre un système d'option pour le moment sous forme de constantes en haut de PTests.js)
+
+* Poursuivre le test et l'implémentation de la class Any
+* Indiquer dans le read-me de l'application qu'elle sert aussi à mettre PTests au point
+* Documenter (et tester) PTests.require_module (qui peut être utilisé par `require_module(...)`) dans les tests.
+* => tester les deux utilisations des "MAIS" (OK… MAIS et ERREUR… MAIS)
 * Corriger le bug #10
 * Implémenter la méthode 'respond_to'
   * => tester
   * => documenter
-* Poursuivre le test de l'égalité
-* Pouvoir spécifier les options dans l'expect (`expect(4, null, {...options...})`)
-  * => documenter
-  * => Tester
-* Avec peut-être une option, pouvoir régler le fait que le texte du "it" reprennent les descriptions des owners en remontant jusqu'au premier (peut-être mettre un système d'option pour le moment sous forme de constantes en haut de PTests.js)
+* Poursuivre le test de l'égalité (avec Any)
+* => documenter les options dans l'expect (`expect(4, null, {...options...})`)
+* => Tester les options dans l'expect (`expect(4, null, {...options...})`)
 * Documenter `NaT` pour dire `not_a_test` dans les options
 * Faire une pause pour afficher les tests les uns après les autres, progressivement, dans la page (note : c'est peut-être ce qui se passe mais je voudrais le voir en action)
 * => documenter les "and" des it

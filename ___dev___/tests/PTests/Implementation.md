@@ -15,3 +15,12 @@
   ...
 
 ```
+
+## Message de retour {#lemessage_de_resultat}
+
+### Propriétés pouvant être définies {#proprietes_definissable}
+
+
+#### Type de l'élément (`this.actualType`, `this.expectType`) {#type_de_element_in_message}
+
+Par défaut, quand le type de l'élément est indiqué (lors des comparaisons strictes par exemple), on indique le type de l'élément. Par défaut, ce type est pris avec `typeof`, mais il peut être spécifié dans une méthode à l'aide de `actualType` et/ou `expectType`.
