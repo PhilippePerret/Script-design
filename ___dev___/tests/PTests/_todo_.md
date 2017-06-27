@@ -1,5 +1,12 @@
-* Avec peut-être une option, pouvoir régler le fait que le texte du "it" reprennent les descriptions des owners en remontant jusqu'au premier (peut-être mettre un système d'option pour le moment sous forme de constantes en haut de PTests.js)
+* Documenter 'ONE_LINE_IT' (containeur de it sur une seul ligne)
+  Penser à indiquer que les descriptions sont collées les unes au bout des autres sans espace, pour pouvoir faire
+    ```
+    'class Any'
+      '::areEqual'
+        ' pour les listes'
 
+    => "class Any::areEqual pour les listes"
+    ```
 * Poursuivre le test et l'implémentation de la class Any
 * Indiquer dans le read-me de l'application qu'elle sert aussi à mettre PTests au point
 * Documenter (et tester) PTests.require_module (qui peut être utilisé par `require_module(...)`) dans les tests.
