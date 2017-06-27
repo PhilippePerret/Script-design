@@ -1,15 +1,8 @@
-* Implémenter PTests.options
+* Utiliser Any pour le test par equal
+* Utiliser Any pour gérér le `contain`
+  * utiliser Any dans `PTests` pour le contain
 * Pouvoir faire un spec_helper.js (comme dans RSpec) qui permette de définir des choses générales
 
-* Documenter 'ONE_LINE_IT' (containeur de it sur une seul ligne)
-  Penser à indiquer que les descriptions sont collées les unes au bout des autres sans espace, pour pouvoir faire
-    ```
-    'class Any'
-      '::areEqual'
-        ' pour les listes'
-
-    => "class Any::areEqual pour les listes"
-    ```
 * Poursuivre le test et l'implémentation de la class Any
 * Indiquer dans le read-me de l'application qu'elle sert aussi à mettre PTests au point
 * Documenter (et tester) PTests.require_module (qui peut être utilisé par `require_module(...)`) dans les tests.

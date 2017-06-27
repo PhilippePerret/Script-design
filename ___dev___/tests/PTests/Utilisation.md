@@ -6,22 +6,31 @@
 
 ```js
 
-describe('<description')
-  .it('un cas', () => {
+describe('<description', [
+  ... liste de contextes ou de cases
+  , it('un cas', () => { // (1)
     <tests>
   })
 
+])
+
 ```
+
+(1) La virgule avant le `it` est normale. Elle permet de ne pas se soucier des listes. Si, par exemple, on doit ajouter un case `it` avec ce `it`, on pourra le faire sans avoir à (penser) ajouter une virgule. Le premier élément des listes est automatiquement supprimé s'il est vide.
 
 Avec contexte :
 
 ```js
 
-describe('<description>')
-  .context('<contexte>')
-    .it('un cas', () => {
+describe('<description>', [
+  , context('<premier contexte>', [
+    , it('un cas', () => {
       <tests>
     })
+  ])
+  , context('<deuxième contexte>')
+])
+  .
 
 ```
 
@@ -29,21 +38,21 @@ En enchaînant plusieurs cas :
 
 ```js
 
-describe('Une description')
-  .context('un contexte')
-    .it('un cas', () => {
+describe('Une description', [
+  , context('un contexte', [
+    , it('un cas', () => {
       // tests
     })
-    .and(/* (1) */'un autre cas', () => {
+    , it(/* (1) */'un autre cas', () => {
       // tests
     })
-    .and('un troisième cas', () => {
+    , it ('un troisième cas', () => {
       // tests
     })
+  ])
+])
 
 ```
-
-(1) On pourrait bien entendu garder des "it" à la place des 'and'. Les deux termes produisent exactement le même effet.
 
 ## Les cases `it` {#cases_it}
 
@@ -61,23 +70,27 @@ Ces chaines peuvent s'enchaîner :
   })
 ```
 
-### Schéma complet
+### Schéma complet {#schema_complet}
 
 ```js
 
-describe("<description du tests>")
-  .context("<description du contexte>")
-    .it("Un premier cas", ()=>{
+describe("<description du tests>", [
+
+])
+  , context("<description du contexte>", [
+    , it("Un premier cas", ()=>{
       <le test>
     })
-    .and("Un second cas", ()=>{
+    , it("Un second cas", ()=>{
 
     })
-    .and("Un troisième case", ()=>{
+    , it("Un troisième case", ()=>{
 
     })
-  .context("<un autre contexte>")
-    .it("")
+  ])
+  , context("<un autre contexte>", [
+    , it("")    
+  ])
 
 ```
 Par exemple :
@@ -102,8 +115,36 @@ describe("La comparaison entre deux éléments")
 
 ```
 
+## helper de test (spec_helper.js) {#helper_de_tests}
 
-## Définir la valeur “actuelle”
+À l'instar de `RSpec`, on peut créer un fichier `spec_helper.js` à la racine du dossier de tests où sera exécuté du code avant le lancement des tests.
+
+C'est par exemple dans ce fichier qu'on peut définir le dossier de tests à jouer ou le seul fichier de test :
+
+```js
+
+  // dans ./tests/ptests/spec_helper.js
+
+  PTests.options.test_file = 'path/relative/to/test_spec.js'
+  // Note : prioritaire sur test_folder ci-dessous
+
+  PTests.options.test_folder = 'mon/dossier'
+  // Note : ne sera pas considéré si l'option test_file est
+  // définie ci-dessus.
+
+```
+
+## Requérir le module à tester {#requerir_module_a_tester}
+
+On requiert un module, dans la feuille de test, à l'aide de :
+
+```js
+
+  let <nom> = require_module('./path/to/the/module_sans_js')
+
+```
+
+## Définir la valeur “actuelle” {#define_actual_value}
 
 C'est la valeur qui va être comparée à la valeur attendue. Elle est définie par :
 
@@ -142,79 +183,23 @@ Pour passer en mode strict un cas, il suffit d'ajouter dans la chaine le terme `
 
 ```js
 
-describe("La comparaison de deux valeurs")
-  .context("En mode strict")
-    .it("rend 1 différent de '1'", () => {
+describe("La comparaison de deux valeurs", [
+  , context("En mode strict", [
+    , it("rend 1 différent de '1'", () => {
       expect(1).is.not.strictly.equal_to('1')
     })
-    .and("'bonjour' n'est pas strictement égal à 'BONJOUR'", () => {
+    , it("'bonjour' n'est pas strictement égal à 'BONJOUR'", () => {
       let
           bonjour = 'bonjour'
-        , BOUJOUR = 'BONJOUR'
+        , BONJOUR = 'BONJOUR'
       expect(bonjour).equals(BONJOUR) //=> success
       expect(bonjour).not.strictly.equals(BONJOUR) //=> success
     })
-```
-
-
-## Toutes les méthodes de test {#all_test_methodes}
-
-### contain {#contain}
-
-Vérifier que `expected` appartienne bien à `actual`. Pour un string, la chaine doit contenir l'autre chaine (qui peut être une expression régulière), pour un array, il doit contenir la valeur fournie.
-
-Cette méthode est sensible au paramètre `strict`.
-
-```js
-
-  expect("Mon texte est là").to.contain("Texte")
-  // => succès car test non strict
-
-  expect("Mon texte est là").to.strictly.contain("Texte")
-  // => échec car test strict
+  ])  
+])
 
 ```
 
-Avec un expression régulière :
-
-```js
-
-  expect("Mon texte").to.contain(/ex.e/)
-  // => succès
-
-```
-
-### equal/equals/equal_to {#equal}
-
-Vérifie l'égalité entre deux expressions. Cf. aussi la note sur le mode strict.
-
-### greater_than {#greater_than}
-
-Vérifie la supériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
-
-### less_than {#less_than}
-
-Vérifie l'infériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
-
-### between {#between}
-
-Vérifie qu'un nombre se trouve bien entre deux autres nombres ou qu'un mot se trouve bien entre deux autres mots.
-
-```js
-
-  it('2 est entre 1 et 3', () => {
-    expect(2).between([1,3])
-  })
-
-```
-
-```js
-
-  it('Marion est située en âge entre Kevin et Séverin', () => {
-    expect(24, 'Marion').between([20,28], 'Kevin et Séverin')
-  })
-
-```
 
 ## Utiliser un template de message de retour {#template_message_retour}
 
