@@ -1,3 +1,6 @@
+* Implémenter PTests.options
+* Pouvoir faire un spec_helper.js (comme dans RSpec) qui permette de définir des choses générales
+
 * Documenter 'ONE_LINE_IT' (containeur de it sur une seul ligne)
   Penser à indiquer que les descriptions sont collées les unes au bout des autres sans espace, pour pouvoir faire
     ```
@@ -11,7 +14,6 @@
 * Indiquer dans le read-me de l'application qu'elle sert aussi à mettre PTests au point
 * Documenter (et tester) PTests.require_module (qui peut être utilisé par `require_module(...)`) dans les tests.
 * => tester les deux utilisations des "MAIS" (OK… MAIS et ERREUR… MAIS)
-* Corriger le bug #10
 * Implémenter la méthode 'respond_to'
   * => tester
   * => documenter
@@ -25,6 +27,7 @@
 * Poursuivre les autres méthodes
 * Développer le concept de "test prototypal" (noter que le "P" et P-Tests fait aussi référence à Python, pour l'imbrication)
 * Tester la méthode contain (avec expression régulière aussi, dans les deux modes strict/non strict)
+  => L'implémenter dans la class Any
 * Pouvoir ne mettre que deux arguments à la méthode de comparaison (donc sans expect_str). Faire un test sur le typeof du deuxième argument. Si String => c'est expect_str, sinon, c'est options.
   * => tester
   * => documenter
