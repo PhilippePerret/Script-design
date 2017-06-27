@@ -1,6 +1,6 @@
 let res
 
-describe("Égalité versus inégalité",[
+describe('Égalité versus inégalité',[
   , describe("Test de l'égalité", [
     // === MODE NON STRICT ===
     , context('en mode non strict', [
@@ -39,7 +39,13 @@ describe("Égalité versus inégalité",[
             .and.equals(false, {no_values: true})
         })
       ])
-      , context('avec object')
+      , context('avec object', [
+        , it ('produit un succès avec des objets identiques', () => {
+          res = expect({un:"un",deux:"deux"}).equals({deux:"deux",un:"un"}, {NaT:true}).isOK
+          expect(res).to.be.true
+            .and.equal(true,{no_values:true})
+        })
+      ])
     ])
     // === ÉGALITÉ EN MODE SCRIPT ===
     , context('en mode strict', [
