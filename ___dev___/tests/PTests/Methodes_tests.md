@@ -76,6 +76,8 @@ object        Un vrai dictionnaire
 
 Renvoie true si `expected` appartient à `actual`.
 
+#### Contain dans un string {#contain_in_string}
+
 Pour un string, la chaine doit contenir l'autre chaine (qui peut être une expression régulière), pour un array, il doit contenir la valeur fournie. Pour un tableau, le tableau envoyé doit lui appartenir (contenir les clés et les valeurs de clés). La méthode sera étendue plus tard pour couvrir d'autres cas.
 
 Pour obtenir la raison de l'erreur, on peut récupérer `Any.containityError` juste après l'expectation.
@@ -101,7 +103,8 @@ Avec une expression régulière :
 
 ```
 
-Une liste array :
+#### Contain avec Array {#contain_in_array}
+
 
 ```js
 
@@ -110,7 +113,11 @@ Une liste array :
 
 ```
 
-Avec un tableau :
+Noter que pour le moment, on ne checke pas un tableau dans une liste array. Pour le faire, faire une boucle sur les éléments de la liste et les vérifier contre le tableau.
+
+#### Contain avec un tableau (un `Object`) {#contain_in_object}
+
+C'est un tableau qu'on doit envoyer au tableau, ce tableau (`expected`) contenant les clés et les valeurs à tester. Un tableau est dans un autre tableau lorsque toutes ses clés existent et que les valeurs de ces clés sont identiques (strictement ou non).
 
 ```js
 
@@ -118,4 +125,46 @@ Avec un tableau :
   expect({un:'une',le:'la',il:'elle'}).to.contain({h:'f'})    // => échec
   expect({un:'une',le:'la',il:'elle'}).to.contain({le:'les'}) // => échec
 
+  expect({un:'une',le:'la',il:'elle'}).to.strictly.contain({le:'la'})  // => succès
+  expect({un:'une',le:'LA',il:'elle'}).to.strictly.contain({le:'la'})  // => false
+
 ```
+
+
+### Méthode `throwError` {#tests_throw_error}
+
+Méthode qui permet de tester un message d'erreur fonctionnelle levé par les tests.
+
+Noter qu'il ne s'agit pas d'un message d'erreur général (`try`...`catch`) et encore moins l'erreur provoquée par une erreur personnalisée de l'application. Il s'agit ici de la méthode `throwError` qui permet d'écrire un message en rouge dans le rapport, lorsque c'est une erreur d'écriture du test connue.
+
+Par exemple, si un test utilise pour s'interrompre :
+
+```js
+
+  isAWord(){
+    return throwError('Vous devez fournir un string !')
+    ...
+  }
+
+```
+
+… alors on peut tester l'envoi de ce message par un test du genre :
+
+```js
+
+expect( () => { expect(12).to.be.a.word })
+  .to.throwError('Vous devez fournir un string')
+
+```
+
+> Note : la formule `to.be.a.word` n'existe pas, en vrai.
+
+Noter que le contenu de l'expectation (la première) est une fonction :
+
+```js
+
+expect( () => {...} )
+
+```
+
+C'est obligatoire si l'on ne veut pas que le code soit exécuté au moment du chargement de la feuille de tests, ce qui génèrerait vraiment l'erreur.

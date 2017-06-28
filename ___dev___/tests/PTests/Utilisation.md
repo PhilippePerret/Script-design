@@ -205,7 +205,7 @@ describe("La comparaison de deux valeurs", [
 
 On peut fournir un template de retour dans les options (second argument) de la dernière méthode de l'expression (appelée « méthode de comparaison »). Ce message doit utliser `__ACTUAL__` et `__EXPECTED__` pour définir les placeholders qui seront remplacés par les valeurs originales et attendues.
 
-Pour couvrir tous les cas, plusieurs messages doivent être fournis, contenus dans la propriété `template` :
+Pour couvrir tous les cas, plusieurs messages doivent être fournis, contenus dans la propriété `template` (ou `templates`) :
 
 ```js
 

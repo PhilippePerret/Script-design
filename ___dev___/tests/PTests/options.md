@@ -50,4 +50,4 @@ En utilisant `PTests.options.one_line_describe =  true` en début de feuille de 
 
 ```
 
-Noter que toutes les descriptions (`describe` et `context`) sont concaténées sans espace (notamment pour obtenir des formules comme `class Any::areEqual`) et qu'il faut donc les ajouter dans les descriptions (ce qui ne posera aucun problème en cas d'affichage normal).
+Noter qu'il est inutile d'ajouter des espaces pour que les lignes soient bien écrites puisque le programme en ajoute automatiquement dès que la description ne commence pas par `:`, `#` ou `.`.

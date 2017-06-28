@@ -55,11 +55,19 @@ section#tests-results
 
   div.context
     font-style    : italic
+  // Pour le path relatif des fichiers des feuilles de tests, à
+  // droite au-dessus des résultats dans le rapport.
   div.file
     text-align    : right
     font-size     : 11.9pt
     color         : $beaugris
     font-style    : italic
+    a
+      font-style      : inherit
+      color           : inherit
+      font-size       : inherit
+      text-decoration : none
+
   // Les cas, sauf ceux qui possèdent des frères `and` doivent laisser
   // de l'air en dessous.
   div.case + div.case:not(.sib)

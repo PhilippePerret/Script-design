@@ -12,7 +12,8 @@ PTests.options.one_line_describe = true
 // test à faire
 // PTests.options.test_file = path.join('autotests','template_message_spec.js')
 // PTests.options.test_file = path.join('autotests','equality_spec.js')
-PTests.options.test_file = path.join('autotests','any_spec.js')
+// PTests.options.test_file = path.join('autotests','any_spec.js')
+PTests.options.test_file = path.join('autotests','contain_spec.js')
 // PTests.options.test_file = path.join('autotests','class_spec.js')
 
 // Le dossier de tests à faire
