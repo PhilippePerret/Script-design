@@ -1,4 +1,6 @@
-let res
+let
+    res
+  , resO = {not_a_test: true}
 
 describe('Égalité versus inégalité',[
   , describe("Test de l'égalité", [
@@ -10,9 +12,14 @@ describe('Égalité versus inégalité',[
             expect(res, '4 == 4').to.be.true
               .and.equals(true, {no_values:true})
           })
-        , it("retourne un succès en cas d'égalité avec un nombre et un string-nombre", () => {
-            res = expect('4').equals(4, {NaT: true}).isOK
-            expect(res, '4 == "4"').to.be.true
+        , it("retourne un succès en cas d'égalité entre un nombre et un string-nombre", () => {
+            res = expect(4).equals('4',resO).isOK
+            expect(res,'4 == "4"').to.be.true
+              .and.equals(true, {no_values: true})
+        })
+        , it("retourne un succès en cas d'égalité entre un string-nombre et un nombre", () => {
+            res = expect('4').equals(4,resO).isOK
+            expect(res,'"4" == 4').to.be.true
               .and.equals(true, {no_values: true})
         })
         , it('retourne un échec en cas d’inégalité', () => {
@@ -56,7 +63,7 @@ describe('Égalité versus inégalité',[
             .and.to.equals(true, {no_values: true})
         })
         , it('retourne un échec avec un string-nombre et un nombre égaux (en nombre)', () => {
-          res = expect('4').strictly.equals(4, {NaT: true}).isOK
+          res = expect('4').strictly.equals(4, resO).isOK
           expect(res, '"4" == 4').to.be.false
             .and.to.equals(false, {no_values: true})
         })

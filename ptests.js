@@ -3,6 +3,17 @@ const
     , {app}         = require('electron')
     , ipc           = require('electron').ipcMain
 
+
+//     , EventEmitter = require('events')
+//
+// class Emitter extends EventEmitter {}
+// const emitter = new Emitter()
+// emitter.on('error', (err) => {
+//     console.log(`Erreur ${err.name}`)
+//     console.log('Unexpected error on emitter', err);
+// });
+
+
 app.on('ready', (evt) => {
   let PTests = require('./lib/utils/ptests')
   PTests.prepare()
@@ -17,4 +28,6 @@ app.on('ready', (evt) => {
     }
   })
   .on('message',(e,m,o) => {if(o){console.log(m,o)}else{console.log(m)}})
+
+
 })

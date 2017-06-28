@@ -24,6 +24,13 @@ section#tests-results
       color   : $success-color
     &.fail
       color   : $failure-color
+    // Les erreurs de programmation des tests par l'user concepteur
+    // de l'application. Lorsqu'il fait un test impossible, par exemple.
+    &.imperror
+      color         : $failure-color
+      font-weight   : bold
+      margin-top    : 1em
+      margin-left   : 2em
 
   div.describe, div.context, div.case
     &.tab0

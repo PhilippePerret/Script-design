@@ -1,6 +1,12 @@
-* Utiliser Any pour le test par equal
+* Toujours ajouter une espace en début de description de describe ou de contexte si la description ne commence pas par "::", "#" ou "."
+  * => Modifier la documentation en supprimant le truc qui dit qu'il faut ajouter une espace.
 * Utiliser Any pour gérér le `contain`
+  * => tester
   * utiliser Any dans `PTests` pour le contain
+  * => tester
+  * => documenter
+* Remettre en forme le path du fichier test dans le rapport (gris)
+  * Pouvoir cliquer dessus pour ouvrir le fichier
 * Pouvoir faire un spec_helper.js (comme dans RSpec) qui permette de définir des choses générales
 
 * Poursuivre le test et l'implémentation de la class Any

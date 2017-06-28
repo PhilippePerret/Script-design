@@ -1,29 +1,5 @@
 ## Toutes les méthodes de test {#all_test_methodes}
 
-### contain {#contain}
-
-Vérifier que `expected` appartienne bien à `actual`. Pour un string, la chaine doit contenir l'autre chaine (qui peut être une expression régulière), pour un array, il doit contenir la valeur fournie.
-
-Cette méthode est sensible au paramètre `strict`.
-
-```js
-
-  expect("Mon texte est là").to.contain("Texte")
-  // => succès car test non strict
-
-  expect("Mon texte est là").to.strictly.contain("Texte")
-  // => échec car test strict
-
-```
-
-Avec un expression régulière :
-
-```js
-
-  expect("Mon texte").to.contain(/ex.e/)
-  // => succès
-
-```
 
 ### equal/equals/equal_to {#equal}
 
@@ -83,14 +59,63 @@ Les classes sont :
 
 ```js
 
-  number        Nombre (entier ou flottant)
-  string        String
-  symbol        Symbol
-  function      Fonction
-  array         Une vraie liste
-  object        Un vrai dictionnaire
+number        Nombre (entier ou flottant)
+string        String
+symbol        Symbol
+f unction     Fonction
+array         Une vraie liste
+object        Un vrai dictionnaire
 
-  <class minuscule>   Une classe propre à l'application.
-                      Par exemple 'anyobject' pour la classe 'AnyObject'
+  <class minuscule>   Une classe propre à l’application.
+                    Par exemple 'anyobject' pour la classe 'AnyObject'
+
+```
+
+
+### contain {#contain}
+
+Renvoie true si `expected` appartient à `actual`.
+
+Pour un string, la chaine doit contenir l'autre chaine (qui peut être une expression régulière), pour un array, il doit contenir la valeur fournie. Pour un tableau, le tableau envoyé doit lui appartenir (contenir les clés et les valeurs de clés). La méthode sera étendue plus tard pour couvrir d'autres cas.
+
+Pour obtenir la raison de l'erreur, on peut récupérer `Any.containityError` juste après l'expectation.
+
+Cette méthode est sensible au paramètre `strict`.
+
+```js
+
+  expect("Mon texte est là").to.contain("Texte")
+  // => succès car test non strict
+
+  expect("Mon texte est là").to.strictly.contain("Texte")
+  // => échec car test strict
+
+```
+
+Avec une expression régulière :
+
+```js
+
+  expect("Mon texte").to.contain(/ex.e/)
+  // => succès
+
+```
+
+Une liste array :
+
+```js
+
+  expect([1,2,3]).to.contain(2)
+  expect(['un','deux','trois']).to.contain('deux')
+
+```
+
+Avec un tableau :
+
+```js
+
+  expect({un:'une',le:'la',il:'elle'}).to.contain({le:'la'})  // => succès
+  expect({un:'une',le:'la',il:'elle'}).to.contain({h:'f'})    // => échec
+  expect({un:'une',le:'la',il:'elle'}).to.contain({le:'les'}) // => échec
 
 ```
