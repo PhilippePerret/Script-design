@@ -1,19 +1,7 @@
 ## Toutes les méthodes de test {#all_test_methodes}
 
 
-### equal/equals/equal_to {#equal}
-
-Vérifie l'égalité entre deux expressions. Cf. aussi la note sur le mode strict.
-
-### greater_than {#greater_than}
-
-Vérifie la supériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
-
-### less_than {#less_than}
-
-Vérifie l'infériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
-
-### between {#between}
+### `between` {#test_between}
 
 Vérifie qu'un nombre se trouve bien entre deux autres nombres ou qu'un mot se trouve bien entre deux autres mots.
 
@@ -30,6 +18,32 @@ Vérifie qu'un nombre se trouve bien entre deux autres nombres ou qu'un mot se t
   it('Marion est située en âge entre Kevin et Séverin', () => {
     expect(24, 'Marion').between([20,28], 'Kevin et Séverin')
   })
+
+```
+
+### `classMethod` et `instanceMethod` {#tests_instance_methode_class_method}
+
+Les méthodes `instanceMethod` et `classMethod` permettent de savoir si un object quelconque possède une certaine méthode d'instance ou de classe.
+
+
+Syntaxe :
+
+```js
+
+  expect(<Object>).to.have.instanceMethod(<{String} methode d’instance>)
+  expect(<Object>).to.have.classMethod(<{String} methode de classe>)
+
+```
+
+Par exemple :
+
+```js
+
+  expect(Array).to.have.instanceMethod('length')
+  // => SUCCÈS
+
+  expect(Object).to.have.classMethod('length')
+  // => FAILURE, la class Object ne connait pas cette méthode
 
 ```
 
@@ -72,11 +86,11 @@ object        Un vrai dictionnaire
 ```
 
 
-### contain {#contain}
+### `contain` {#test_contain}
 
-Renvoie true si `expected` appartient à `actual`.
+Renvoie true si `expected` appartient à `actual`. Le terme « appartenir » peut avoir plusieurs significations en fonction du type (class) des éléments fournis en argument.
 
-#### Contain dans un string {#contain_in_string}
+#### `contain` dans un string {#contain_in_string}
 
 Pour un string, la chaine doit contenir l'autre chaine (qui peut être une expression régulière), pour un array, il doit contenir la valeur fournie. Pour un tableau, le tableau envoyé doit lui appartenir (contenir les clés et les valeurs de clés). La méthode sera étendue plus tard pour couvrir d'autres cas.
 
@@ -103,7 +117,7 @@ Avec une expression régulière :
 
 ```
 
-#### Contain avec Array {#contain_in_array}
+#### `contain` avec Array {#contain_in_array}
 
 
 ```js
@@ -115,7 +129,7 @@ Avec une expression régulière :
 
 Noter que pour le moment, on ne checke pas un tableau dans une liste array. Pour le faire, faire une boucle sur les éléments de la liste et les vérifier contre le tableau.
 
-#### Contain avec un tableau (un `Object`) {#contain_in_object}
+#### `contain` avec un tableau (un `Object`) {#contain_in_object}
 
 C'est un tableau qu'on doit envoyer au tableau, ce tableau (`expected`) contenant les clés et les valeurs à tester. Un tableau est dans un autre tableau lorsque toutes ses clés existent et que les valeurs de ces clés sont identiques (strictement ou non).
 
@@ -130,6 +144,26 @@ C'est un tableau qu'on doit envoyer au tableau, ce tableau (`expected`) contenan
 
 ```
 
+
+### equal/equals/equal_to {#equal}
+
+Vérifie l'égalité entre deux expressions. Cf. aussi la note sur le mode strict.
+
+
+### greater_than {#greater_than}
+
+Vérifie la supériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
+
+
+
+### Méthode `instanceMethod` {#test_instance_method}
+
+cf. [Méthodes `classMethod` et `instanceMethod`](#tests_instance_methode_class_method).
+
+
+### `less_than` {#less_than}
+
+Vérifie l'infériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
 
 ### Méthode `throwError` {#tests_throw_error}
 

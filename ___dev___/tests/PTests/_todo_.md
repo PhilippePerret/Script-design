@@ -1,9 +1,6 @@
 * Poursuivre le test et l'implémentation de la class Any
 * Documenter (et tester) PTests.require_module (qui peut être utilisé par `require_module(...)`) dans les tests.
 * => tester les deux utilisations des "MAIS" (OK… MAIS et ERREUR… MAIS)
-* Implémenter la méthode 'respond_to'
-  * => tester
-  * => documenter
 * Poursuivre le test de l'égalité (avec Any)
 * => documenter les options dans l'expect (`expect(4, null, {...options...})`)
 * => Tester les options dans l'expect (`expect(4, null, {...options...})`)

@@ -1,5 +1,4 @@
 
-let re = /.erc./
+let int = [1,2,3]
 
-// console.log(re.toString())
-console.log(String(re))
+console.log(int.length)
