@@ -1,5 +1,4 @@
 * Poursuivre le test et l'implémentation de la class Any
-* Indiquer dans le read-me de l'application qu'elle sert aussi à mettre PTests au point
 * Documenter (et tester) PTests.require_module (qui peut être utilisé par `require_module(...)`) dans les tests.
 * => tester les deux utilisations des "MAIS" (OK… MAIS et ERREUR… MAIS)
 * Implémenter la méthode 'respond_to'
