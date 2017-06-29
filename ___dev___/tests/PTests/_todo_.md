@@ -1,4 +1,5 @@
-* Documenter (et tester) PTests.require_module (qui peut être utilisé par `require_module(...)`) dans les tests.
+* Implémenter la méthode 'puts' qui doit permettre d'écrire des choses dans le rapport (pour un retour rapide)
+
 * => tester les deux utilisations des "MAIS" (OK… MAIS et ERREUR… MAIS)
 * Poursuivre le test de l'égalité (avec Any)
 * => documenter l'utilisation des options dans l'expect (`expect(4, null, {...options...})`)

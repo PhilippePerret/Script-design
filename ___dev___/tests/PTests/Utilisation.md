@@ -144,6 +144,8 @@ On requiert un module, dans la feuille de test, à l'aide de :
 
 ```
 
+Cela a pour effet de faire connaitre le module à la feuille de test aussi bien qu'à PTests lui-même.
+
 ## Définir la valeur “actuelle” {#define_actual_value}
 
 C'est la valeur qui va être comparée à la valeur attendue. Elle est définie par :
