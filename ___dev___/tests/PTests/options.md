@@ -1,5 +1,7 @@
 ## Options des PTests {#options_ptests}
 
+Ce fichier décrit les options pour `PTests` qui permettent de définir de façon globale le comportement des tests.
+
 ### Option `test_folder`, dossier des tests {#option_test_folder}
 
 L'option `test_folder` permet de définir le dossier de tests qu'il faut jouer. L'option definit le path relatif depuis le dossier des tests (par défaut, depuis le dossier `./tests/ptests`)

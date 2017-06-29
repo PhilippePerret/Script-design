@@ -145,10 +145,36 @@ C'est un tableau qu'on doit envoyer au tableau, ce tableau (`expected`) contenan
 ```
 
 
-### equal/equals/equal_to {#equal}
+### `equal`/`equals`/`equal_to` {#test_equal}
 
 Vérifie l'égalité entre deux expressions. Cf. aussi la note sur le mode strict.
 
+### Fichiers et dossiers {#methodes_fichiers_et_dossier}
+
+Pour tester les fichiers et les dossiers, on passe un path relatif ou absolu en ajoutant `asFile` ou `asFolder` dans la chaine de l'expectation.
+
+Par exemple :
+
+```js
+
+expect(mon_path).asFile.to.exist
+// => True si le fichier de path `mon_path` existe.
+
+expect(mon_path).asFolder.to.contain(file_name)
+// => succès si le dossier de path `mon_path` contient le fichier
+// de nom `file_name`
+
+```
+
+Les méthodes suivantes sont alors applicables :
+
+* `exist`. Vérifie l'existence ou la non existence du fichier/dossier,
+* `contain`. Pour un dossier, vérifie qu'il contient le nom du fichier, pour un fichier, vérifie qu'il contient le texte dans son fichier.
+* `older_than`. Compare la date de dernière modification. l'argument peut être :
+  * un {String}. C'est alors le path d'un autre fichier qu'il faut prendre en comparaison
+  * une {Date}. Il faut alors confronter la date de dernière modification à cette date.
+* `younger_than`. Idem que `older_than` mais dans l'autre sens.
+* `have.size`. Teste la taille du fichier.
 
 ### greater_than {#greater_than}
 

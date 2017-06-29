@@ -1,0 +1,5 @@
+--- ne pas modifier ---
+
+Il faut absolument trouver un mot dans ce fichier (m.o.t.) pour voir aussi si ça marche.
+
+En revanche, il ne faut pas trouver le mot « N E D O I T P A S A V O I R Ç A » avec toutes les lettres qui seraient assemblées.

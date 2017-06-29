@@ -1,5 +1,9 @@
 # Utilisation des Prototypals-tests {#utilisation_des_prototypial_tests}
 
+[valeur-pseudo]: #valeur_pseudo
+[Mode strict]: #lemodestrict
+
+
 ## Schéma de base {#schemas_base}
 
 ### Schéma simple {#schema_simple}
@@ -79,39 +83,21 @@ describe("<description du tests>", [
 ])
   , context("<description du contexte>", [
     , it("Un premier cas", ()=>{
-      <le test>
+      expect(...)....
+        .and....
+        .and...
+      expect(...)...
     })
     , it("Un second cas", ()=>{
-
+      // <l’expectation >
     })
     , it("Un troisième case", ()=>{
-
+      // <l’expectation >
     })
   ])
   , context("<un autre contexte>", [
     , it("")    
   ])
-
-```
-Par exemple :
-
-```js
-
-describe("La comparaison entre deux éléments")
-  .context("En mode non strict")
-    .it("rend 1 égal à '1'", () => {
-      expect(1).to.be.equal_to('1')
-    })
-    .and("rend 1 égal à 1", () => {
-      expect(1).to.equal(1)
-    })
-  .context("En mode strict")
-    .it('rend 1 différent de "1"', () => {
-      expect(1).not.to.strictly.equal('1')
-    })
-    .and('rend 1 égale à 1', () => {
-      expect(1).to.strictly.equal(1)
-    })
 
 ```
 
@@ -146,33 +132,100 @@ On requiert un module, dans la feuille de test, à l'aide de :
 
 Cela a pour effet de faire connaitre le module à la feuille de test aussi bien qu'à PTests lui-même.
 
-## Définir la valeur “actuelle” {#define_actual_value}
+
+## Définition de l'expectation {#define_expectation}
+
+### Les valeurs-pseudo {#valeur_pseudo}
+
+On appelle « valeurs-pseudo » des valeurs qui vont remplacer la valeur réelle de l'actual ou de l'expected dans les messages du rapport, pour plus de clarté. Par exemple, si on veut connaitre le nombre d'œuf dans une boite, le message :
+
+```js
+
+  "12 est égal à 12"
+
+```
+
+… n'est pas du tout clair tandis que…
+
+```js
+
+  "le nombre d'œufs est égal à 12"
+
+```
+
+… est tout à fait explicite. Ici, « le nombre d'œufs » est la valeur-pseudo de `12.`
+
+Ces `valeurs-pseudo` peuvent se définir aussi bien pour l'actual que pour l'expected. Elles se placent juste après la définition de l'un et de l'autre dans les expectations :
+
+```js
+
+  // Expectation simple
+  expect(nombre_oeufs).to.equal(12)
+
+  // Expectation avec valeur-pseudo
+  expect(nombre_oeufs,'le nombre d’œufs').to.equal(12,'une douzaine')
+  // => produit en cas de succès :"le nombre d’œufs est égal à une douzaine"
+
+```
+
+
+### Définir la valeur “actuelle” dans l'expectation {#define_actual_value}
 
 C'est la valeur qui va être comparée à la valeur attendue. Elle est définie par :
 
 ```js
 
-  expect(<valeur actuelle>)
+  expect(<valeur actuelle>[[<valeur pseudo>][,<options>]])
 
 ```
 
-Pour les messages, on peut décider d'utiliser un « pseudo » pour cette valeur, par exemple :
+Cf. la description de la [valeur pseudo].
+
+### Options de la valeur `actual` {#options_in_actual}
+
+On peut placer en troisième argument de la méthode `expect` (ou en second lorsqu'il n'y a pas de [valeur-pseudo] — les options de l'expectation, lorsqu'elles ne peuvent pas être mise dans la méthode de comparaison. Par exemple :
 
 ```js
 
-  expect(12, 'l’âge du capitaine')
+expect(true, 'C’est vrai', {no_values: true}).to.be.true
+
+expect(true, {no_values: true}).to.be.false
 
 ```
 
-Les messages de résultat tiendront compte de ce pseudo pour afficher des messages du genre :
+Cf. pour le détail : [Options de la méthode de comparaison](#options_methode_comparaison)
+
+### Options de la méthode de comparaison {#options_methode_comparaison}
+
+Les options de la méthode de comparaison (dernier mot de l'expectation) permettent de définir le comportement de l'expectation.
+
+Ils se mettent en troisième argument de la méthode de comparaison ou en second lorsqu'il n'y a pas de [valeur-pseudo] :
 
 ```js
 
-  // => "L’âge du capitaine (12) devrait être strictement supérieur à 12."
+  expect(elle).to.equal(lui, 'lui', {...options ...})
+
+  expect(elle).to.equal(lui, {...options ...})
 
 ```
 
-## Mode strict {#lemodestrict}
+On peut trouver les options suivantes :
+
+* `strict` (défaut : `false`). Si true, l'expectation se fait en mode strict. Le comportement dépend de la méthode de comparaison (cf. le [Mode strict]).
+* `template` (défaut : `undefined`). Permet d'utiliser des messages tout à fait personnalisés, en cas de succès comme en cas d'échec. Pour voir le détail : [Utiliser un template de message de retour](#template_message_retour).
+* `no_values` (défaut : `false`). Lorsqu'une [valeur-pseudo] est fournie, la valeur réelle est précisée ensuite entre parenthèses. Par exemple : `le nombre d’œufs (12) est égal à une douzaine`. On peut ne pas préciser cette valeur en mettant `no_values` à true, ce qui produira le message `le nombre d’œufs est égal à une douzaine`.
+* `not_a_test` (ou `NaT`) (défaut : `false`). Utilisée surtout pour tester PTests lui-même, cette option permet de ne pas produire de succès ou de failure dans la feuille de test, mais de récupérer simplement le résultat. Noter qu'on peut aussi utiliser `NaT`.
+
+
+```js
+
+  let res = expect(1).equals(2, {not_a_test: true})
+  // res est alors un PTestsExpectClass et on peut récupérer ses valeurs,
+  // notamment res.isOK pour son résultat ou res.returnedMessage pour connaitre
+  // le message qui aurait été inscrit dans le rapport.
+```
+
+#### Mode strict {#lemodestrict}
 
 Le mode strict se comporte différement en fonction des cas :
 
@@ -202,8 +255,7 @@ describe("La comparaison de deux valeurs", [
 
 ```
 
-
-## Utiliser un template de message de retour {#template_message_retour}
+#### Utiliser un template de message de retour {#template_message_retour}
 
 On peut fournir un template de retour dans les options (second argument) de la dernière méthode de l'expression (appelée « méthode de comparaison »). Ce message doit utliser `__ACTUAL__` et `__EXPECTED__` pour définir les placeholders qui seront remplacés par les valeurs originales et attendues.
 
@@ -247,5 +299,19 @@ Utiliser la méthode globale `log` pour envoyer des méthodes à la console prin
 ```js
 
 log('Ce message s’affichera dans la console Atom, avec l’objet : ', {mon: "Objet"})
+
+```
+
+## Inscrire des messages dans le rapport de test {#methode_puts}
+
+On peut aussi envoyer des messages qui seront affichés dans le rapport de test en utilisant la méthode `puts` (comme en ruby ;-)). On peut utiliser le seconde argument pour préciser le style d'affichage :
+
+```js
+
+puts('Un message notice en bleu', 'notice')
+
+puts('Un message d’alerte','warning')
+
+puts('Un message normal')
 
 ```

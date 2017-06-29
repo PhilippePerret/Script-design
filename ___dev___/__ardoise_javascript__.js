@@ -1,4 +1,5 @@
+let res
 
-let int = [1,2,3]
+res = "bonjour".search(/^[aeéiou]/)
 
-console.log(int.length)
+console.log(res)
