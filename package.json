@@ -1,5 +1,6 @@
 {
   "name": "script-design",
+  "productName": "Script-design",
   "version": "0.1.0",
   "description": "Application pour le développement d'histoires, de l'idée jusqu'au manuscrit ou script final.",
   "main": "script-design.js",
