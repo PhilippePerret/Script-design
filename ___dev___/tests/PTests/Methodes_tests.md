@@ -108,6 +108,15 @@ Cette méthode est sensible au paramètre `strict`.
 
 ```
 
+Une liste de valeurs recherchées peut être transmise :
+
+```js
+
+  expect("Mon texte est là").to.contain(['Mon','texte','là'])
+  // => Succès
+
+```
+
 Avec une expression régulière :
 
 ```js
@@ -116,6 +125,9 @@ Avec une expression régulière :
   // => succès
 
 ```
+
+> Note : on peut faire des recherches multiples dans un string avec des expressions régulières (et des strings normaux), en transmettant une liste de sous-objets.
+
 
 #### `contain` avec Array {#contain_in_array}
 
@@ -126,6 +138,8 @@ Avec une expression régulière :
   expect(['un','deux','trois']).to.contain('deux')
 
 ```
+
+> Note : on peut faire des recherches multiples dans une liste, en transmettant une liste de sous-objets.
 
 Noter que pour le moment, on ne checke pas un tableau dans une liste array. Pour le faire, faire une boucle sur les éléments de la liste et les vérifier contre le tableau.
 
@@ -144,6 +158,7 @@ C'est un tableau qu'on doit envoyer au tableau, ce tableau (`expected`) contenan
 
 ```
 
+> Note : on peut faire des recherches multiples dans un tableau, en transmettant une liste de sous-objets.
 
 ### `equal`/`equals`/`equal_to` {#test_equal}
 

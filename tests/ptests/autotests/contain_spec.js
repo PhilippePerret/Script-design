@@ -154,6 +154,16 @@ describe("Méthode de test #contain",[
       })
     ])
   ])
+  , describe("avec les FICHIERS",[
+    , it("traitée ailleurs", ()=>{
+      puts("La méthode #contain sur les fichiers est traitée dans le test `file_spec.js`")
+    })
+  ])
+  , describe("avec les DOSSIERS",[
+    , it("traitée ailleurs", ()=>{
+      puts("La méthode #contain sur les dossiers est traitée dans le test `file_spec.js`")
+    })
+  ])
   , describe("avec un NUMBER",[
     , it("produit un échec avec le bon message d'erreur", ()=>{
       testContain(1,1, false)

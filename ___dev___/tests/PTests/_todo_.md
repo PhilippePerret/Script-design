@@ -1,4 +1,3 @@
-* Ajouter à la méthode contains le traitement des listes.
 * Reprendre le tests file_spec.js quand la méthode contains aura été actualisée
 * Développer les méthodes de tests sur fichier
   * Ajouter le test de `contain` au fichier tests qui s'en occupe, avec un fichier et avec un dossier
