@@ -99,8 +99,8 @@ describe("Méthode de test #between",[
         res = expect(1).to.be.between([1,2,3],resO)
         expect(res.isOK).to.be.false
         // TODO REMETTRE QUAND ÇA SERA OK AVEC CONTAINS ET RegExp.escape
-        // expect(res.returnedMessage).to.contains('le premier argument de la méthode de comparaison doit être une liste de 2 arguments ([max,min])')
-        expect(res.returnedMessage).to.contains('le premier argument de la méthode de comparaison doit être une liste de 2 arguments')
+        expect(res.returnedMessage).to.contains('le premier argument de la méthode de comparaison doit être une liste de 2 arguments ([max,min])')
+        // expect(res.returnedMessage).to.contains('le premier argument de la méthode de comparaison doit être une liste de 2 arguments')
       })
       , it("produit une erreur les deux éléments de la liste sont dans le mauvais ordre (avec des nombres)", ()=>{
         res = expect(1).to.be.between([3,1],resO)
