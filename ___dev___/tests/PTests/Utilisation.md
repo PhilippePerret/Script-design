@@ -292,6 +292,41 @@ Bien sûr, tout code HTML peut être utilisé dans le message et l'on peut avoir
 
 ```
 
+## Pendings (tests en attente) {#pendings_tests_en_attente}
+
+Pour noter que des tests sont attendus mais pas encore implémentés, on utilise `pending([<message>])` (avec un message ou non).
+
+```js
+
+describe('Une suite de cases', [
+  , it('Un test à implémenter', () => {
+    pending() // marquera simplement 'à implémenter' en résumé des tests
+  })
+  , it("un autre test décrit, à implémenter", ()=>{
+    pending('Il faut tester ceci et tester cela')
+  })
+])
+
+```
+
+Noter que contrairement à `RSpec` par exemple, ce pending n'interrompt pas le case courant. On peut donc utiliser des choses comme :
+
+```js
+
+describe("Un test inachevé", [
+  , it("Ce case est à poursuivre et compléter", () => {
+    expect(...).to...
+    expect(...).to...
+    pending("Il faudra ajouter ici une expectation.")
+    // Le test se poursuit normalement.
+    expect(...).to...
+    ...
+  })
+])
+
+```
+
+
 ## Envoyer des messages de débuggage à la console principale {#methode_log}
 
 Utiliser la méthode globale `log` pour envoyer des méthodes à la console principale, soit depuis les tests soit depuis les modules de `PTests`

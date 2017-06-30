@@ -101,8 +101,11 @@ section#tests-results
       margin-left   : 1em
       &.total_count
         font-weight   : bold
+      // Quand on a rencontré des pendings
+      &.pends
+        color     : orange !important
   // Les erreurs après le résumé, s'il y en a
-  div.error-after-resume
+  div.error-after-resume, div.pending-after-resume
     margin-left   : 4em
     margin-bottom : 1em
     a
@@ -117,6 +120,8 @@ section#tests-results
       &:after
         content : ' -- '
         font-family   : Georgia
+  div.pending-after-resume // cf. aussi ci-dessus
+    color         : orange
   div.title
     font-size     : 1.2em
     font-variant  : small-caps
