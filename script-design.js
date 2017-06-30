@@ -9,11 +9,9 @@ const
     , ejs           = require('ejs-electron')
 
 
-// let onAppReady = require('./lib/main/on_ready')
-
 /*
   Pour faire des essais rapide, on peut excommenter la
-  ligne suivant et décommenter le on'ready' en dessous.
+  ligne suivante et décommenter le on'ready' en dessous.
 */
 app.on('ready', require('./lib/main/on_ready'))
 .on('all-windows-close', () => {

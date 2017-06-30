@@ -12,6 +12,10 @@ let
 
 let store = new Store('test/fichier_store_test')
 
+
+// ---------------------------------------------------------------------
+//  Méthodes fonctionnelles
+
 function storeExp(){ return expect(store).asInstanceOf(Store) }
 
 // Pour faire une nouvelle instance de store
@@ -41,6 +45,9 @@ function removeFileDataIfExists()
 beforeAll( () => {
   removeFileDataIfExists()
 })
+
+//  / fin méthodes fonctionnelles
+// ---------------------------------------------------------------------
 
 
 describe("Class Store",[
