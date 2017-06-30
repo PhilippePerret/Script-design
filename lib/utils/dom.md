@@ -1,5 +1,11 @@
 # dom.js
 
+## Définir le titre (title) de la page
+
+Utiliser la méthode `DOM.setTitle(<titre>)`.
+
+
+## requirejs
 
 ~~~javascript
 

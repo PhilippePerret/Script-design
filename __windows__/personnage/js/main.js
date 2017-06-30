@@ -1,0 +1,3 @@
+/*
+  Script main pour le personnage
+ */

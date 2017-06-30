@@ -1,0 +1,33 @@
+
+section#projet
+  margin      : 1em 3em
+  font-family : Avenir
+  font-size   : 16.3pt
+
+  > div
+    margin      : 0.5em 0
+
+  // Quand un élément quelconque est édité
+  *[contenteditable="true"]
+    background-color    : #DDFFDD
+
+  // Tous les libelles, en général
+  span.libelle
+    font-size       : 0.94em
+    font-style      : italic
+    opacity         : 0.5
+    margin-right    : 1em
+    vertical-align  : top
+  span.value
+    display       : inline-block
+
+  div#title
+    font-size   : 1.9em
+  div#div_created_at
+    position    : fixed
+    bottom      : 0
+    left        : 1em
+  div#div_updated_at
+    position    : fixed
+    bottom      : 0
+    right       : 1em

@@ -3,6 +3,7 @@
 ## Architecture de base
 
 Exemple avec une fenêtre s'appelant `fenetre`
+
 ```
 
   <app> / __windows__ / fenetre / css \

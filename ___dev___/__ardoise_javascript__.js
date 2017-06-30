@@ -1,10 +1,8 @@
 let res
 
-class MaClasse {
+res = "Marion, Phil"
 
-}
-let monInst = new MaClasse()
+res = res.split(/[ ,]/).map(p => p.trim()).filter(p => p != '')
 
-res = monInst.constructor.name
 
 console.log(res)

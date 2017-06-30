@@ -163,3 +163,26 @@ Pour chacune de ces sections, il faut définir le bouton de class `default` qui 
 </section>
 
 ```
+
+
+## Fenêtre du projet {#fenetre_du_projet}
+
+On appelle « fenêtre du projet » la fenêtre qui s'ouvre après que l'utilisateur a soit créé un nouveau projet soit choisi un projet existant. La fenêtre du projet s'ouvre, affichant le projet en particulier.
+
+* C'est une fenêtre qui occupe toute la page
+* Elle affiche un espace d'édition principal (textarea) qui va permettre d'afficher et d'éditer toutes les données
+* Elle pourrait aussi présenter le texte du projet
+* Elle pourrait afficher des données en fonction de l'état d'avancement du projet (quand le projet en est au scénario, elle affiche le scénario, quand le projet en est au début, elle affiche le résumé, etc. en d'autres termes, l'application doit détecter où en est le projet et proposer le meilleur affichage)
+
+Les affichage principaux sont :
+
+* Les données générales de tout le projet avec des données statistiques (nombre de pages, de personnages, de jours de travail, d'auteurs, de scènes, etc.)
+* Le manuscrit final en lecture (scénario ou manuscrit)
+* Le manuscrit final en édition
+* Le scénier complet en lecture/édition
+* Le synopsis détaillé complet en lecture
+* Le synopsis détaillé complet en édition
+* les fiches personnages doivent être des fenêtres à part (-> fenêtres "personnages" et "personnage")
+
+Question : comment gérer ces différentes pages ? Faut-il en créer de nouvelles, ne modifiant simplement l'URL et tout ce qui va avec ou faut-il créer vraiment de nouvelles pages ?
+Dans un premier temps, je vais me contenter de changer l'URL d'une page

@@ -4,6 +4,7 @@
   ----------
 
 */
+let ipc = require('electron').ipcRenderer
 
 define([
     C.LOG_MODULE_PATH
@@ -143,9 +144,7 @@ define([
     **/
     static choose ()
     {
-      log('Choix d’un projet à ouvrir.')
-      let projet_id = DOM.value('projet_id')
-      log(`Le projet d'identifiant ${projet_id}`)
+      ipc.send('open-projet',{projet_id: DOM.value('projet_id')})
     }
 
     /**

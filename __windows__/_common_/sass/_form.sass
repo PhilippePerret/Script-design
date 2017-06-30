@@ -62,13 +62,24 @@ ul
     clear : both
 
 
-
-fieldset.form
+fieldset
   background-color    : #E3E3E3
   padding             : 0.5em
   border-width        : 1px
   border-color        : #CCC #FFF #FFF #CCC
   border-radius       : 6px
+
+  // Les DIVs de premier niveau
+  > div
+    margin-top        : 0.6em
+    margin-bottom     : 0.7em
+
+fieldset.normal
+  background-color    : white
+  padding             : 2em 5em
+
+
+fieldset.form
   font-family         : 'San Francisco', 'Lucida Grande'
   // font-size           : 0.81em
 
