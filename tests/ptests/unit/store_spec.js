@@ -8,25 +8,38 @@ let
     Store = require_module('lib/utils/store_class.js')
   , fs    = require('fs-extra')
   , path  = require('path')
-
+  , val
 
 let store = new Store('test/fichier_store_test')
 
 function storeExp(){ return expect(store).asInstanceOf(Store) }
 
 // Pour faire une nouvelle instance de store
-function newStore(){ return new Store('test/fichier_store_test') }
+function newStore(){
+  let ns = new Store('test/fichier_store_test')
+  log("ID du nouveau Store", ns.id)
+  log("Data du nouveau store", ns.data)
+  return ns
+}
 // Récupérer le contenu actuel du fichier
-function getDataInDataFile() { return require(store.fpath) }
+function getDataInDataFile() {
+  return JSON.parse(fs.readFileSync(store.fpath,{encoding:'utf8'}))
+  // return require(store.fpath) // NE LIS PAS À CHAQUE FOIS
+}
 // Enregistrer l'intégralité du fichier
 function createDataFileWithData(obj){
+  removeFileDataIfExists()
   let code = JSON.stringify(obj)
-  fs.writeFileSync(store.fpath,code)
+  fs.writeFileSync(store.fpath, code)
 }
 
+function removeFileDataIfExists()
+{
+  if(fs.existsSync(store.fpath)){ fs.removeSync(store.fpath) }
+}
 // À faire avant de jouer tous les cas suivants
 beforeAll( () => {
-  fs.removeSync(store.fpath)
+  removeFileDataIfExists()
 })
 
 
@@ -49,7 +62,11 @@ describe("Class Store",[
         storeExp().to.respond_to('set')
       })
       , it("permet de définir une valeur qui sera enregistrée dans le fichier de données", ()=>{
-        pending()
+        expect(store.get('key-test-set'), {only_on_fail:true}).to.be.undefined
+        val = String(new Date())
+        store.set('key-test-set', val)
+        expect(store.get('key-test-set'),"store.get('key-test-set')").to.return(val)
+        expect(store.data, 'store.data',{no_values:true}).to.contain({'key-test-set': val})
       })
     ])
     , describe("#save",[
@@ -70,10 +87,11 @@ describe("Class Store",[
     ])
     , describe("@data",[
       , it("retourne les données du fichier", ()=>{
-        store = newStore()
+        removeFileDataIfExists()
         let newValue = String(new Date())
         createDataFileWithData({'test-data': newValue})
-        expect(store.data).to.equal({'test-data': newValue})
+        store = newStore()
+        expect(store.data, 'store.data',{no_values:true}).to.contain({'test-data': newValue})
       })
     ])
     , describe("@fpath",[
@@ -87,7 +105,7 @@ describe("Class Store",[
 describe("Méthode fonctionnelle Store",[
   , describe(" #ensureFolder",[
     , it("s'assure que les dossiers existent sur le path et construit la hiérarchie au besoin", ()=>{
-      // TODO Si le dossier existe déjà, on le détruit
+      // Si le dossier existe déjà, on le détruit
       if ( fs.existsSync(store.folder) )
       {
         // Prudence : le path doit être valide
@@ -101,6 +119,17 @@ describe("Méthode fonctionnelle Store",[
       // <=== TEST
       let tpls = {success:'le dossier des Data a bien été (re)construit', failure:'le dossier des data aurait dû être reconstruit.'}
       expect(store.folder,{template:tpls}).asFolder.to.exist
+    })
+  ])
+])
+
+describe("La class Store",[
+  , describe("méthode de classe ::newId",[
+    , it("retourne chaque fois un nouvel identifiant", ()=>{
+      delete Store._lastId
+      expect(Store.newId(),'Store.newID()').to.return(1)
+      expect(Store.newId(),'Store.newID()').to.return(2)
+      expect(Store.newId(),'Store.newID()').to.return(3)
     })
   ])
 ])
