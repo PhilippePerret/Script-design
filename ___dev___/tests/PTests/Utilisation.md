@@ -214,7 +214,8 @@ On peut trouver les options suivantes :
 * `strict` (défaut : `false`). Si true, l'expectation se fait en mode strict. Le comportement dépend de la méthode de comparaison (cf. le [Mode strict]).
 * `template` (défaut : `undefined`). Permet d'utiliser des messages tout à fait personnalisés, en cas de succès comme en cas d'échec. Pour voir le détail : [Utiliser un template de message de retour](#template_message_retour).
 * `no_values` (défaut : `false`). Lorsqu'une [valeur-pseudo] est fournie, la valeur réelle est précisée ensuite entre parenthèses. Par exemple : `le nombre d’œufs (12) est égal à une douzaine`. On peut ne pas préciser cette valeur en mettant `no_values` à true, ce qui produira le message `le nombre d’œufs est égal à une douzaine`.
-* `not_a_test` (ou `NaT`) (défaut : `false`). Utilisée surtout pour tester PTests lui-même, cette option permet de ne pas produire de succès ou de failure dans la feuille de test, mais de récupérer simplement le résultat. Noter qu'on peut aussi utiliser `NaT`.
+* `not_a_test` (ou `NaT`) (défaut : `false`). Utilisée intensivement pour tester PTests lui-même, cette option permet de ne pas produire de succès ou de failure dans la feuille de test, mais de récupérer simplement le résultat. Noter qu'on peut aussi utiliser `NaT`.
+* `only_on_fail` (défaut : `false`). N'écrit le résultat de l'expectation que si elle échoue.
 
 
 ```js
@@ -224,6 +225,58 @@ On peut trouver les options suivantes :
   // notamment res.isOK pour son résultat ou res.returnedMessage pour connaitre
   // le message qui aurait été inscrit dans le rapport.
 ```
+
+#### Mode sans test (option `not_a_test`) {#mode_not_a_test}
+
+Le mode « sans test » `not_a_test` ou `NaT` permet d'exécuter une expectation sans inscription dans le rapport. On récupère par exemple le résultat pour le tester plus tard.
+
+Souvent, il vaut mieux utiliser l'[option `only_on_fail`](#mode_only_on_fail)
+
+
+#### Mode « Only On Fail » (option `only_on_fail`) {#mode_only_on_fail}
+
+Parfois, on ne doit écrire le message d'expectation que lorsqu'elle est négative (lorsqu'elle échoue). On utilise cette option pour le préciser.
+
+Par exemple, dans l'it-case ci-dessous, on veut signaler qu'un fichier ne devrait pas exister, mais on veut quand même poursuivre ce case. On utilise :
+
+```js
+
+describe("Un test avec mode only on fail",[
+  , it("écrit l'expectation que si elle échoue", ()=>{
+    ... ici quelques expectations ...
+    let opts = {template:{failure:'Le fichier ./mon/fichier.txt ne devrait pas exister…'}}
+    let res  = expect('./mon/fichier.txt', {only_on_fail: true}).asFile.not.to.exist
+    if ( false === res.isOK ) { fs.removeSync('./mon/fichier.txt')}
+    doSomethingToCreateMonFichier()
+    expect('./mon/fichier.txt').asFile.to.exist
+  })
+])
+
+```
+
+Si le fichier `./mon/fichier.txt` n'existe pas, le rapport écrira :
+
+```
+
+  ...
+  Un test avec mode only on fail
+    écrit l'expectation que si elle échoue
+    OK, le fichier ./mon/fichier.txt existe
+
+```
+
+Mais si le fichier `./mon/fichier.txt` existe, le rapport écrira :
+
+```
+
+  ...
+  Un test avec mode only on fail
+    écrit l'expectation que si elle échoue
+    <red>Erreur line 12, le fichier ./mon/fichier.txt ne devrait pas exister</red>
+    <green>MAIS, le fichier ./mon/fichier.txt existe</green>
+
+```
+
 
 #### Mode strict {#lemodestrict}
 

@@ -27,3 +27,10 @@ PTests.options.test_file = path.join('unit','store_spec.js')
 // Le dossier de tests à faire
 // Ce doit être le chemin relatif (sans './') depuis le dossier ./tests/ptests/
 PTests.options.test_folder = 'autotests'
+
+// beforeSuite(function(){
+//   // À faire avant tous les tests
+// })
+// afterSuite(function(){
+//   // À faire après tous les tests
+// })
