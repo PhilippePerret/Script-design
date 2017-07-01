@@ -24,6 +24,8 @@ requirejs(
     // ---- Cette fenêtre ---
     , PROJET_API_PATH
     , PROJET_KBS_PATH
+    , path.join(C.COMMON_JS_FOLDER,'events_define.js')
+    , path.join(C.COMMON_JS_FOLDER,'event_define.js')
   ]
 , function(
     log
@@ -32,6 +34,8 @@ requirejs(
   // --- Cette fenêtre ---
   , Projet
   , KBShortcuts
+  , Events
+  , Event
 ){
 
   let timer = setInterval(
