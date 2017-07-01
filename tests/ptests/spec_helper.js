@@ -22,7 +22,7 @@ PTests.options.one_line_describe = true
 // PTests.options.test_file = path.join('autotests','file_spec.js')
 
 // PTests.options.test_file = path.join('unit','store_spec.js')
-PTests.options.test_file = path.join('page_projet','essai_spec.js')
+// PTests.options.test_file = path.join('page_projet','essai_spec.js')
 
 // Le dossier de tests à faire
 // Ce doit être le chemin relatif (sans './') depuis le dossier ./tests/ptests/
@@ -34,3 +34,6 @@ PTests.options.test_folder = 'autotests'
 // afterSuite(function(){
 //   // À faire après tous les tests
 // })
+
+// Exposer les méthodes DOM
+PTests.expose_dom_methods()

@@ -8,7 +8,7 @@ const
   , C               = require(CONSTANTS_PATH)
 
 // Pour lancer les tests d'intégration
-global.PTEST_IT = true
+const PTEST_IT = true
 
 const
     PROJET_FOLDER     = path.join(C.VIEWS_FOLDER,'projets')
@@ -52,32 +52,21 @@ const
 
           log('=== Fenêtre PROJETS prête ===')
 
+
+
+          if ( PTEST_IT )
+          {
+            require(path.join(C.LIB_UTILS_FOLDER,'ptests'))
+            PTests.run_file(path.join('integration','essai_integ_spec'))
+          }
+
+
           return true // module principal => rien à retourner
 
           // ======= FIN DE LA PAGE EST PRÊTE ========
         }
       }// callback setInterval
     )// /setInterval
-
-
-    if ( PTEST_IT )
-    {
-      log('---> Lancement des tests d’intégration')
-      require(path.join(C.LIB_UTILS_FOLDER,'ptests'))
-      PTests.on_start()
-      PTestContainer.init()
-      // Chargement de la feuille de test
-      // TODO L'idéal sera d'avoir juste à faire :
-      //  require('ptests')
-      //  PTests.run_file('path/to/file')
-      require(path.join(C.PTESTS_FOLDER,'integration','essai_integ_spec'))
-      PTestContainer.define_tab_levels()
-      if ('function' === typeof PTests.beforeAll){PTests.beforeAll.call()}
-      PTestContainer.run_lists()
-      if ('function' === typeof PTests.afterAll){PTests.afterAll.call()}
-
-      log('<--- /Lancement des tests d’intégration')
-    }
 
   }
 )
