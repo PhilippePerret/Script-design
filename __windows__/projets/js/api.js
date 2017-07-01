@@ -16,8 +16,16 @@ define([
   , Select
 ){
 
+  if ( PTEST_IT /* Pour savoir s'il faut tester l'application */ )
+  {
+    log("Il faut tester l'application")
+  }
+  else
+  {
+    log("Il ne faut pas tester l'application")
+  }
 
-  class ProjectAPI {
+  class ProjetsAPI {
 
     /** ---------------------------------------------------------------------
       *
@@ -184,5 +192,5 @@ define([
     }
 
   }
-  return ProjectAPI
+  return ProjetsAPI
 })

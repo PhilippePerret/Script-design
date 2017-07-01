@@ -7,6 +7,9 @@ const
   , CONSTANTS_PATH  = path.join(app.getAppPath(),'lib','constants.js')
   , C               = require(CONSTANTS_PATH)
 
+// Pour lancer les tests d'intégration
+const PTEST_IT = false
+
 const
     PROJET_FOLDER     = path.join(C.VIEWS_FOLDER,'projets')
   , PROJET_JS_FOLDER  = path.join(PROJET_FOLDER,'js')
@@ -49,6 +52,15 @@ const
 
           log('=== Fenêtre PROJETS prête ===')
 
+
+          // ---------- TESTS D'INTÉGRATIONS ----------
+          if ( PTEST_IT )
+          {
+            require(path.join(C.LIB_UTILS_FOLDER,'ptests'))
+            PTests.run_file(path.join('integration','Projets','create_projet_spec'))
+          }
+
+
           return true // module principal => rien à retourner
 
           // ======= FIN DE LA PAGE EST PRÊTE ========
@@ -58,5 +70,6 @@ const
 
   }
 )
+
 
 console.log('<- projets/js/main.js')

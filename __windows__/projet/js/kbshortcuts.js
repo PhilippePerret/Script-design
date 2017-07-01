@@ -36,6 +36,16 @@ define(
     {
       switch ( evt.key )
       {
+        case 'D':
+          return Projet.loadPanneau('data')
+        case 'N':
+          return Projet.loadPanneau('notes')
+        case 'P':
+          return Projet.loadPanneau('personnages')
+        case 'S':
+          return Projet.loadPanneau('scenier')
+        case 'Y':
+          return Projet.loadPanneau('synopsis')
       }
       return 'poursuivre' // pour dire de poursuivre le test keyUp
     }// /fin de onkeyup

@@ -31,6 +31,16 @@ Store._app = app
 
 class Projet
 {
+
+  static UIinit ()
+  {
+    let button_list = ['data','scenier','synopsis','personnages','notes']
+    button_list.forEach( (btn_id) => {
+      DOM.get(`btn-${btn_id}`)
+        .addEventListener('click', Projet.loadPanneau.bind(Projet, btn_id))
+    })
+  }
+
   /**
   *   Chargement du projet data.projet_id
   **/
@@ -40,6 +50,25 @@ class Projet
     this.current.load.bind(this.current)()
   }
 
+  // Méthodes répondant aux boutons principaux de l'interface
+  static get current_panneau () {
+    if ( undefined === this._current_panneau){this._current_panneau = 'data'}
+    return this._current_panneau
+  }
+
+  /**
+  * Méthode fonctionnelle chargeant le plateau voulant
+  **/
+  static loadPanneau (panneau)
+  {
+    console.log('Panneau à ouvrir', panneau)
+    DOM.removeClass(`btn-${this.current_panneau}`, 'actif')
+    // DOM.mask(`panneau-${this.current_panneau}`)
+    DOM.removeClass(`panneau-${this.current_panneau}`,'actif')
+    this._current_panneau = panneau
+    DOM.addClass(`btn-${panneau}`,'actif')
+    DOM.addClass(`panneau-${panneau}`,'actif')
+  }
 
   /** ---------------------------------------------------------------------
     *
