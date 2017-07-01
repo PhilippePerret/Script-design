@@ -22,11 +22,11 @@ describe('Contrôle général des messages de rapport du test',[
         })
         , it('écrit le message avec la valeur-pseudo de l’expected si elle est fournie', () => {
           res = expect(4).equals(4, 'le nombre d’œufs', {not_a_test:true}).returnedMessage
-          expect(res,'le retour de "equals"').contains('4 est égal à le nombre d’œufs (4)')
+          expect(res,'le retour de "equals"').contains('4 est égal à le nombre d’œufs')
         })
         , it('écrit le message avec les deux valeurs-pseudo si elles sont fournies', () => {
           res = expect(4,'le nombre de pots').equals(4, 'le nombre d’œufs', {not_a_test:true}).returnedMessage
-          expect(res,'le retour de "equals"').contains('le nombre de pots (4) est égal à le nombre d’œufs (4)')
+          expect(res,'le retour de "equals"').contains('le nombre de pots (4) est égal à le nombre d’œufs')
         })
       ])
       , context('sans indiquer la valeur réelle (no_values: true)', [
@@ -64,12 +64,14 @@ describe('Contrôle général des messages de rapport du test',[
           , it('remplace correctement le __EXPECTED__', () => {
             mes = "__ACTUAL__ = __EXPECTED__"
             res = expect(12).equals(12,'les haricots',{not_a_test:true, template:{success:mes}})
-            expect(res.returnedMessage).to.contain('12 = les haricots (12)')
+            expect(res.returnedMessage).to.contain('12 = les haricots')
+            expect(res.returnedMessage).to.not.contain('les haricots (12)')
           })
           , it('remplace correctement les deux valeurs', () => {
             mes = "__ACTUAL__ sont au nombre des __EXPECTED__"
             res = expect(12, 'fourmis').equals(12,'haricots',{not_a_test:true, template:{success:mes}})
-            expect(res.returnedMessage).to.contain('fourmis (12) sont au nombre des haricots (12)')
+            expect(res.returnedMessage).to.contain('fourmis (12) sont au nombre des haricots')
+            expect(res.returnedMessage).to.not.contain('des haricots (12)')
           })
         ])
         , context('sans indiquer la valeur réelle (option no_values: true)', [

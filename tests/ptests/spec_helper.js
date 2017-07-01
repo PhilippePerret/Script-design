@@ -34,6 +34,3 @@ PTests.options.test_folder = 'autotests'
 // afterSuite(function(){
 //   // À faire après tous les tests
 // })
-
-// Exposer les méthodes DOM
-PTests.expose_dom_methods()
