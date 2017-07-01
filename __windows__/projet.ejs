@@ -17,7 +17,16 @@
     </style>
   </head>
   <body>
-    <section id="projet">
+    <section id="top-buttons">
+      <span class="shortcutletter tiny-size">[MAJ]</span>
+      <button id="btn-data"         type="button" class="actif"><span class="shortcutletter">D</span>onnées générales</button>
+      <button id="btn-scenier"      type="button"><span class="shortcutletter">S</span>cénier</button>
+      <button id="btn-synopsis"     type="button">S<span class="shortcutletter">y</span>nopsis</button>
+      <button id="btn-personnages"  type="button"><span class="shortcutletter">P</span>ersonnages</button>
+      <button id="btn-notes"        type="button"><span class="shortcutletter">N</span>otes</button>
+    </section>
+
+    <section id="panneau-data" class="projet actif">
       <fieldset class="normal">
         <div id="title" class="editable"></div>
         <div id="div_authors" class="normal-size">
@@ -34,6 +43,23 @@
         <span class="libelle">Modifié le</span><span id="updated_at" class="value"></span>
       </div>
     </section>
+    <section id="panneau-scenier" class="projet">
+      <div id="panneau-scenier-title" class="panneau-title">Scénier</div>
+      <div id="panneau-scenier-content" class="panneau-content"></div>
+    </section>
+    <section id="panneau-synopsis" class="projet">
+      <div id="panneau-synopsis-title" class="panneau-title">Synopsis</div>
+      <div id="panneau-synopsis-content" class="panneau-content"></div>
+    </section>
+    <section id="panneau-personnages" class="projet">
+      <div id="panneau-personnages-title" class="panneau-title">Personnages</div>
+      <div id="panneau-personnages-content" class="panneau-content"></div>
+    </section>
+    <section id="panneau-notes" class="projet">
+      <div id="panneau-notes-title" class="panneau-title">Notes</div>
+      <div id="panneau-notes-content" class="panneau-content"></div>
+    </section>
+
     <script type="text/javascript" src="projet/js/main.js"></script>
   </body>
 </html>

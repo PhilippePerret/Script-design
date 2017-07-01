@@ -8,7 +8,7 @@ const
   , C               = require(CONSTANTS_PATH)
 
 // Pour lancer les tests d'intégration
-const PTEST_IT = true
+const PTEST_IT = false
 
 const
     PROJET_FOLDER     = path.join(C.VIEWS_FOLDER,'projets')
@@ -53,11 +53,11 @@ const
           log('=== Fenêtre PROJETS prête ===')
 
 
-
+          // ---------- TESTS D'INTÉGRATIONS ----------
           if ( PTEST_IT )
           {
             require(path.join(C.LIB_UTILS_FOLDER,'ptests'))
-            PTests.run_file(path.join('integration','essai_integ_spec'))
+            PTests.run_file(path.join('integration','Projets','create_projet_spec'))
           }
 
 
