@@ -7,6 +7,9 @@ const
   , CONSTANTS_PATH  = path.join(app.getAppPath(),'lib','constants.js')
   , C               = require(CONSTANTS_PATH)
 
+// Pour lancer les tests d'intégration
+global.PTEST_IT = true
+
 const
     PROJET_FOLDER     = path.join(C.VIEWS_FOLDER,'projets')
   , PROJET_JS_FOLDER  = path.join(PROJET_FOLDER,'js')
@@ -56,7 +59,28 @@ const
       }// callback setInterval
     )// /setInterval
 
+
+    if ( PTEST_IT )
+    {
+      log('---> Lancement des tests d’intégration')
+      require(path.join(C.LIB_UTILS_FOLDER,'ptests'))
+      PTests.on_start()
+      PTestContainer.init()
+      // Chargement de la feuille de test
+      // TODO L'idéal sera d'avoir juste à faire :
+      //  require('ptests')
+      //  PTests.run_file('path/to/file')
+      require(path.join(C.PTESTS_FOLDER,'integration','essai_integ_spec'))
+      PTestContainer.define_tab_levels()
+      if ('function' === typeof PTests.beforeAll){PTests.beforeAll.call()}
+      PTestContainer.run_lists()
+      if ('function' === typeof PTests.afterAll){PTests.afterAll.call()}
+
+      log('<--- /Lancement des tests d’intégration')
+    }
+
   }
 )
+
 
 console.log('<- projets/js/main.js')

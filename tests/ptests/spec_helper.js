@@ -21,8 +21,8 @@ PTests.options.one_line_describe = true
 // PTests.options.test_file = path.join('autotests','option_no_values_spec.js')
 // PTests.options.test_file = path.join('autotests','file_spec.js')
 
-PTests.options.test_file = path.join('unit','store_spec.js')
-
+// PTests.options.test_file = path.join('unit','store_spec.js')
+PTests.options.test_file = path.join('page_projet','essai_spec.js')
 
 // Le dossier de tests à faire
 // Ce doit être le chemin relatif (sans './') depuis le dossier ./tests/ptests/

@@ -16,15 +16,19 @@ define(
 , function(
       log
     , DOM
-    , Projet
+    , Projets
   ){
 
 
   const KBShortcuts = class {
 
+    /**
+    * Quand la touche Entrée est pressée, on appelle la méthode par défaut en
+    * fonction du contexte dans lequel on se trouve.
+    **/
     static onEnter (evt)
     {
-      log ('-> Projet::onEnter')
+      Projets.defaultEnter.call()
     }
 
     /**
@@ -39,12 +43,12 @@ define(
     {
       switch ( evt.key )
       {
-        case 'l':
-          // log('Liste des projets demandée')
-          return Projet.activeSectionList()
-        case 'n':
-          // log('-> Nouveau projet demandé')
-          return Projet.activeSectionForm()
+        case 'l': // Liste des projets activée
+          return Projets.activeSectionList()
+        case 'n': // Formulaire de nouveau projet activé
+          return Projets.activeSectionForm()
+        case 'Enter': // Bouton par défaut, en fonction de la section activée
+          return this.onEnter()
       }
       return 'poursuivre' // pour dire de poursuivre le test keyUp
     }// /fin de onkeyup

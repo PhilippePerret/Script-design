@@ -28,6 +28,4 @@ app.on('ready', (evt) => {
     }
   })
   .on('message',(e,m,o) => {if(o){console.log(m,o)}else{console.log(m)}})
-
-
 })

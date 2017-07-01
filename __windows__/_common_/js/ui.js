@@ -57,11 +57,17 @@ define(
       *   soit input-text soit textarea
       **/
       static get isEdition () { return !!this._current_text_field }
+
       /*
         Méthode générale recevant tous les évènements "touche relevée",
         qu'on soit dans un champ de texte ou non.
         C'est suivant la valeur de _current_text_field qu'on oriente vers
         un traitement ou un autre
+
+        Noter que c'est la méthode de gestion du Key-Up appelée avant toutes
+        Les autres. On cherche en tout premier lieu à traiter l'évènement par
+        la méthode onkeyup propre à chaque API.
+
        */
       static onKeyUp (evt)
       {
