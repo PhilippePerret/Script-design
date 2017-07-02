@@ -4,9 +4,9 @@
   *   Gestion des évènements en tant qu'ensemble d'{Event}s.
   *
 *** --------------------------------------------------------------------- */
-class Events
+class Parags
 {
 
 }
 
-module.exports = Events
+module.exports = Parags

@@ -1,8 +1,10 @@
 let res
 
-res = "Marion, Phil"
+res = ''
 
-res = res.split(/[ ,]/).map(p => p.trim()).filter(p => p != '')
-
-
+if ( res == '' ) {
+  res = "Oui, ça passe"
+} else {
+  res = "Non, ça ne passe pas"
+}
 console.log(res)

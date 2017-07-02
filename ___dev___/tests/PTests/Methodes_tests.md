@@ -195,7 +195,46 @@ Les méthodes suivantes sont alors applicables :
 
 Vérifie la supériorité entre deux expressions (nombre ou string). Cf. aussi la note sur le mode strict.
 
+### `have_tag` {#methode_test_have_tag}
 
+Cette (grosse) méthode permet de chercher dans une chaine HTML (ou un HTMLElement) la présence de balises avec un certain contenu et certains attributs.
+
+ATTENTION : les arguments de la méthode de comparaison `have_tag` sont légèrement différents des autres méthodes de comparaison : le deux premiers arguments définissent le `tag` et les `attributs` recherchés, et il est impératif qu'il y ait TOUJOURS ces deux arguments, même si seule la `tag` est recherchée :
+
+```js
+
+expect(monDomElement).to.have_tag('a', null, 'nombre de links', {not_a_test: true})
+// => Correct
+
+expect(monDomElement).to.have_tag('a','nombre de links', {not_a_test: true})
+// => ERREUR
+
+```
+
+Il n'y a que dans le cas où on ne fournit que la balise (un seul argument) qu'on peut omettre le second :
+
+```js
+
+expect(monDomElement).to.have_tag('section') // correct
+
+```
+
+Le second argument doit contenir tous les attributs à rechercher dans la balise, plus quelques autres définitions comme :
+
+* `text`. Le innerHTML de la balise, en {String} ou en {RegExp},
+* `count`. Le nombre de balises à trouver, correspondant aux critères spécifiés.
+* `max_count`. Le nombre maximum d'éléments qu'on doit trouver,
+* `min_count`. Le nombre minimum d'éléments qu'on doit trouver.
+
+Exemple :
+
+```js
+
+expect(DomEl).to.have_tag('div',{min_count:3, class:"ma-classe", text:/opt/})
+// Produira un succès s'il y a au moins 3 balises DIV de classe css "ma-classe"
+// qui contient un texte contenant 'opt'
+
+```
 
 ### Méthode `instanceMethod` {#test_instance_method}
 
