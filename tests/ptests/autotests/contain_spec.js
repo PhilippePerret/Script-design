@@ -102,7 +102,9 @@ describe("Méthode de test #contain",[
       })
       , it("produit un échec avec un tableau recherché dans une liste", ()=>{
         // fake(() => {testContain([1,2,3], {un:"une"}, false)})
-        expect(()=>{testContain([1,2,3], {un:"une"}, false)}).to.throwError('On ne peut pas encore vérifier l’appartenance d’un tableau dans une liste')
+        testContain([1,2,3], {un:"une"}, false)
+        expect(Any.containityError,'Any.containityError').to.contain("On ne peut pas encore vérifier l’appartenance d’un tableau dans une liste")
+        // expect(()=>{testContain([1,2,3], {un:"une"}, false)}).to.throwError('On ne peut pas encore vérifier l’appartenance d’un tableau dans une liste')
       })
     ])
 
