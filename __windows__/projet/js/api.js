@@ -175,6 +175,20 @@ class Projet
     this.current_panneau.desactivate()
     this._current_panneau = this.panneaux[panneau_id]
     this.current_panneau.activate()
+
+    // Pour le développement
+    if (panneau_id == 'scenier'){
+      // Construire rapidement trois paragraphes
+      [
+        "Premier paragraphe",
+        "Deuxième paragraphe",
+        "Troisième paragraphe"
+      ].forEach( (t) => {
+        let newP = new Parag({id:Parag.newID(),contents:t})
+        Projet.current_panneau.addParag(newP)
+      })
+
+    }
   }
   /** ---------------------------------------------------------------------
     *

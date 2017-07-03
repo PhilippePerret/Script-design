@@ -46,6 +46,14 @@ define(
           // mode non édition, on édite le paragraphe en question
           if (!Projet.mode_edition&&Parag.current){Parag.current.edit()}
           break
+        case 'ArrowUp':
+          if(Projet.mode_edition){return true}
+          else {Parags.selectPrevious();return DOM.stopEvent(evt)}
+          break
+        case 'ArrowDown':
+          if(Projet.mode_edition){return true}
+          else {Parags.selectNext();return DOM.stopEvent(evt)}
+          break
         case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
           if(!Projet.mode_edition){return Parags.new()}
           else{return true /* dans un champ d'édition */}
@@ -58,6 +66,8 @@ define(
           return Projet.loadPanneau('scenier')
         case 'Y':
           return Projet.loadPanneau('synopsis')
+        default:
+          console.log(evt.key)
       }
       return 'poursuivre' // pour dire de poursuivre le test keyUp
     }// /fin de onkeyup

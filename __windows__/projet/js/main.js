@@ -82,7 +82,6 @@ requirejs(
           PTests.run_file(path.join('integration','Projet','affichage_projet_spec'))
         }
 
-
         return true // module principal => rien à retourner
 
         // ======= FIN DE LA PAGE EST PRÊTE ========

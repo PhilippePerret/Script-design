@@ -27,6 +27,7 @@ class Parag
     return this._lastID
   }
 
+
   // Met le paragraphe +iparag+ en paragraphe courant
   static setCurrent (iparag)
   {
@@ -43,6 +44,7 @@ class Parag
     }
     this.current.select().setCurrent()
   }
+
   // Sort le paragraphe +iparag+ du courant
   static unsetCurrent(iparag)
   {
@@ -75,7 +77,7 @@ class Parag
 
   /** ---------------------------------------------------------------------
     *
-    *   INSTANCE
+    *   INSTANCE Parag
     *
   *** --------------------------------------------------------------------- */
   constructor (data)
@@ -86,6 +88,7 @@ class Parag
     if ( this.id > Parag._lastID ) { Parag._lastID = this.id }
     this.selected = false // à true quand il est sélectionné
     this.current  = false // à true quand c'est le paragraphe courant
+    Parags.addItem(this)
   }
 
   /** ---------------------------------------------------------------------
