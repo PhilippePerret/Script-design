@@ -20,7 +20,7 @@ PTests.options.one_line_describe = true
 // PTests.options.test_file = path.join('autotests','module_require_spec.js')
 // PTests.options.test_file = path.join('autotests','option_no_values_spec.js')
 // PTests.options.test_file = path.join('autotests','file_spec.js')
-PTests.options.test_file = path.join('autotests','have_tag_spec.js')
+// PTests.options.test_file = path.join('autotests','have_tag_spec.js')
 
 // PTests.options.test_file = path.join('unit','store_spec.js')
 // PTests.options.test_file = path.join('page_projet','essai_spec.js')

@@ -1,5 +1,4 @@
-* Comme on utilise souvent des fonctions pour produire l'erreur, il faut relever les lignes des erreurs qui précèdent l'erreur trouvée. Peut-être faut-il simplement relever toutes les lignes du fichier test trouvé !
-* Les pendings doivent laisser un message dans le rapport de test.
+* Quand on est en one_line_it, on peut garder une seule tabulation.
 * Pouvoir provoquer un échec ou un succès explicitement à l'intérieur d'un `it`
 
 ```js
