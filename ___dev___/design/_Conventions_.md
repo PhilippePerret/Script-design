@@ -84,3 +84,12 @@ requirejs([
   }
 )
 ```
+
+
+# Les « panneaux » du projet
+
+Ce qu'on appelle un « panneau » est un élément tel que le synopsis, le scénier, le scénario ou le manuscrit, etc.
+
+Ils sont définis dans la liste `PANNEAUX_LIST` de `Projet` dans `api.js`.
+
+Chaque panneau enregistre ses données (ses `Parags`) dans un fichier portant son name/id dans le dossier des données du projet.

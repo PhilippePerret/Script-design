@@ -24,8 +24,8 @@ requirejs(
     // ---- Cette fenêtre ---
     , PROJET_API_PATH
     , PROJET_KBS_PATH
-    , path.join(C.COMMON_JS_FOLDER,'events_define.js')
-    , path.join(C.COMMON_JS_FOLDER,'event_define.js')
+    , path.join(C.COMMON_JS_FOLDER,'parags_define.js')
+    , path.join(C.COMMON_JS_FOLDER,'parag_define.js')
   ]
 , function(
     log
@@ -34,9 +34,14 @@ requirejs(
   // --- Cette fenêtre ---
   , Projet
   , KBShortcuts
-  , Events
-  , Event
+  , Parags
+  , Parag
 ){
+
+  global.Projet = Projet
+  global.Parags = Parags
+  global.Parag  = Parag
+  global.DOM    = DOM
 
   let timer = setInterval(
     function()

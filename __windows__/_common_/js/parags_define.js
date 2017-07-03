@@ -1,4 +1,6 @@
 define(
-  ['./parags.js'],
-  (Parags)=>{return Parags}
+ [],
+ function(){
+   return require(path.join(C.COMMON_JS_FOLDER,'parags'))
+ }
 )

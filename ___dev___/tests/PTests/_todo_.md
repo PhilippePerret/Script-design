@@ -1,4 +1,3 @@
-* Quand on est en one_line_it, on peut garder une seule tabulation.
 * Pouvoir provoquer un échec ou un succès explicitement à l'intérieur d'un `it`
 
 ```js

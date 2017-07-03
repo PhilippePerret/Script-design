@@ -21,19 +21,16 @@ describe("La class Parag",[
     , it("retourne le code HTML conforme du parag", ()=>{
       let res = parag.build()
       expect(res,'parag.build() ->').to.be.classOf('htmldivelement')
-      // puts(`Le paragraphe : ${res.outerHTML.replace(/</,'&lt;')}`)
-
-      // On teste le contenu conforme du HTMLDivElement retourné par build
-      expect(res,'le code HTML du parag').to.have
-        .tag('div', {
-            class :'p'
-          , id    :'p-1021'
-          , children: [
-            ['div',{class:'p-content', id:'p-content-1021', text:paragContentDisplay}],
-            ['input',{type:'hidden',value:'1021',id:'p-id'}]
+      expect(res,'l’élément DOM du Parag').to.have_tag('div', {
+          id        :'p-1021'
+        , class     :'p'
+        , 'data-id' : '1021'
+        , children  : [
+            // Paragraphe contenant le texte du paragraphe.
+              ['div',{class:'p-contents', id:'p-1021-contents', text:paragContentDisplay}]
+            // , ['input',{type:'hidden',value:'1021',id:'p-id'}]
           ]
         })
-
     })
   ])
 ])
