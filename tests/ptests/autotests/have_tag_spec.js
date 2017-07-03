@@ -15,11 +15,23 @@ divContainer = `
 </div>
 `
 
-function checkRetMessage(resultat, message)
+// Mettre à true au cours du test pour voir un code complet (pendant qu'on
+// implémente les choses)
+// Permet de se concentrer sur un retour en particulier (un case en particulier)
+let whole_message = false
+
+function checkMess(resultat, message, not)
 {
   // expect(resultat.returnedMessage,'returnedMessage').to.contains(message)
-  expect(resultat.returnedMessage,'returnedMessage', {no_values:true} )
-      .to.contains(message)
+  if ( not )
+  {
+    expect(resultat.returnedMessage,'returnedMessage', {no_values:!whole_message} )
+        .not.to.contains(message)
+
+  } else {
+    expect(resultat.returnedMessage,'returnedMessage', {no_values:!whole_message} )
+        .to.contains(message)
+  }
 }
 describe("PTests#have_tag",[
   , context("avec un tag valide",[
@@ -30,13 +42,14 @@ describe("PTests#have_tag",[
     , it("produit un échec si la tag n'a pas été trouvé", ()=>{
       res = expect(divContainer).to.have_tag('inconnu',null,resO)
       expect(res.isOK).to.be.false
+      checkMess(res, 'aucune balise &lt; INCONNU &gt; n’a été trouvée')
     })
   ])
   , context("avec un pseudo-élément invalide",[
     , it("le pseudo-élément * est interdit", ()=>{
       res = expect(divContainer).to.have_tag('*', null, resO)
       expect(res.isOK).to.be.false
-      checkRetMessage(res,'Le pseudo-élément « * » est interdit en valeur de tag.')
+      checkMess(res,'Le pseudo-élément « * » est interdit en valeur de tag.')
     })
   ])
 
@@ -45,17 +58,17 @@ describe("PTests#have_tag",[
     , it("produit un succès si le div la contient", ()=>{
       res = expect(divContainer).to.have_tag('a', null, resO)
       expect(res.isOK).to.be.true
-      checkRetMessage(res,'contient la balise &lt; A &gt;')
+      checkMess(res,'contient la balise &lt; A &gt;')
       res = expect(divContainer).to.have_tag('section',null,resO)
-      checkRetMessage(res,'contient la balise &lt; SECTION &gt;')
+      checkMess(res,'contient la balise &lt; SECTION &gt;')
     })
     , it("produit un échec si le div ne la contient pas", ()=>{
       res = expect(divContainer).to.have_tag('fieldset',null,resO)
       expect(res.isOK).to.be.false
-      checkRetMessage(res,'ne contient pas la balise &lt; FIELDSET &gt;')
+      checkMess(res,'aucune balise &lt; FIELDSET &gt; n’a été trouvée')
       res = expect(divContainer).to.have_tag('blockquote',null,resO)
       expect(res.isOK).to.be.false
-      checkRetMessage(res,'ne contient pas la balise &lt; BLOCKQUOTE &gt;')
+      checkMess(res,'aucune balise &lt; BLOCKQUOTE &gt; n’a été trouvée')
     })
   ])
 
@@ -66,7 +79,7 @@ describe("PTests#have_tag",[
     , it("produit un échec avec le bon message si le nombre d'éléments n'a pas été trouvé", ()=>{
       res = expect(divContainer).to.have_tag('a',{count:4},resO)
       expect(res.isOK).to.be.false
-      checkRetMessage(res,'4 éléments (au lieu de 3) auraient dû être trouvés')
+      checkMess(res,'4 éléments (au lieu de 3) auraient dû être trouvés')
     })
   ])
 
@@ -76,7 +89,7 @@ describe("PTests#have_tag",[
     , it("produit un échec si on ne trouve pas au moins le nombre d'éléments", ()=>{
       res = expect(divContainer).to.have_tag('a',{min_count:4},resO)
       expect(res.isOK).to.be.false
-      checkRetMessage(res,'au moins 4 éléments (au lieu de 3) auraient dû être trouvés')
+      checkMess(res,'au moins 4 éléments (au lieu de 3) auraient dû être trouvés')
     })
     , it("produit un succès si on trouve au moins le nombre d'éléments", ()=>{
       res = expect(divContainer).to.have_tag('a',{min_count:2},resO)
@@ -89,7 +102,7 @@ describe("PTests#have_tag",[
     , it("produit un échec si on trouve plus d'éléments que voulus", ()=>{
       res = expect(divContainer).to.have_tag('a',{max_count:2}, resO)
       expect(res.isOK).to.be.false
-      checkRetMessage(res,'pas plus de 2 éléments (au lieu de 3) auraient dû être trouvés')
+      checkMess(res,'pas plus de 2 éléments (au lieu de 3) auraient dû être trouvés')
     })
     , it("produit un succès si on ne trouve pas plus d'éléments que voulus", ()=>{
       res = expect(divContainer).to.have_tag('a',{max_count:4},resO)
@@ -104,21 +117,21 @@ describe("PTests#have_tag",[
       [true, {un:"objet"}, ['une','liste']].forEach( (badtype) => {
         res = expect(divContainer).to.have_tag('a',{text:badtype},resO)
         expect(res.isOK).to.be.false
-        checkRetMessage(res,"le texte cherché doit être exclusivement de type {String} ou {RegExp}")
-        checkRetMessage(res,`il est de type {${badtype.constructor.name}}`)
+        checkMess(res,"le texte cherché doit être exclusivement de type {String} ou {RegExp}")
+        checkMess(res,`il est de type {${badtype.constructor.name}}`)
       })
     })
     , it("produit un succès si le text {String} fourni est trouvé", ()=>{
       res = expect(divContainer).to.have_tag('a',{text:'Icare'}, resO)
       expect(res.isOK).to.be.true
-      checkRetMessage(res, 'contient la balise &lt; A &gt;')
-      checkRetMessage(res, 'avec le texte « Icare »')
+      checkMess(res, 'contient la balise &lt; A &gt;')
+      checkMess(res, 'avec le texte « Icare »')
     })
     , it("produit un succès si le text {RegExp} fourni est trouvé", ()=>{
       res = expect(divContainer).to.have_tag('a',{text:/I.a.e/}, resO)
       expect(res.isOK).to.be.true
-      checkRetMessage(res, 'contient la balise &lt; A &gt;')
-      checkRetMessage(res, 'avec le texte « /I.a.e/ »')
+      checkMess(res, 'contient la balise &lt; A &gt;')
+      checkMess(res, 'avec le texte « /I.a.e/ »')
     })
   ])
 
@@ -128,41 +141,65 @@ describe("PTests#have_tag",[
     , it("produit un succès en trouvant l'identifiant", ()=>{
       res = expect(divContainer).to.have_tag('div',{id:"div-inner"},resO)
       expect(res.isOK).to.be.true
-      checkRetMessage(res,'contient la balise &lt; DIV &gt;')
-      checkRetMessage(res,'avec ID="div-inner"')
+      checkMess(res,'contient la balise &lt; DIV &gt;')
+      checkMess(res,'avec ID="div-inner"')
     })
     , it("produit un échec en ne trouvant pas l'identifiant", ()=>{
       res = expect(divContainer).to.have_tag('DIV',{id:'nexiste-pas'}, resO)
       expect(res.isOK).to.be.false
-      checkRetMessage(res,'ne contient pas la balise &lt; DIV &gt;')
-      checkRetMessage(res,'avec ID="nexiste-pas"')
+      checkMess(res,'ne contient pas la balise &lt; DIV &gt;')
+      checkMess(res,'avec ID="nexiste-pas"')
     })
     , it("produit un succès en trouvant la class parmi une seule class", ()=>{
       res = expect(divContainer).to.have_tag('section',{class:'la-section'},resO)
       expect(res.isOK).to.be.true
-      checkRetMessage(res,'contient la balise &lt; SECTION &gt;')
-      checkRetMessage(res,'avec CLASS="la-section"')
+      checkMess(res,'contient la balise &lt; SECTION &gt;')
+      checkMess(res,'avec CLASS="la-section"')
     })
     , it("produit un succès en trouvant la class parmi plusieurs class", ()=>{
       res = expect(divContainer).to.have_tag('a',{class:'mon-site', count:2},resO)
       expect(res.isOK).to.be.true
-      checkRetMessage(res,'contient la balise &lt; A &gt; avec CLASS="mon-site"')
+      checkMess(res,'contient la balise &lt; A &gt; avec CLASS="mon-site"')
     })
     , it("produit un échec en ne trouvant la class", ()=>{
       res = expect(divContainer).to.have_tag('a',{class:'unknown-class'},resO)
       expect(res.isOK).to.be.false
-      checkRetMessage(res,'ne contient pas la balise &lt; A &gt; avec CLASS="unknown-class"')
+      checkMess(res,'ne contient pas la balise &lt; A &gt; avec CLASS="unknown-class"')
     })
     , it("produit un succès en trouvant un attribut quelconque", ()=>{
-      res = expect(divContainer).to.have_tag('span',{'data-user':'12'})
+      res = expect(divContainer).to.have_tag('span',{'data-user':'12'}, resO)
       expect(res.isOK).to.be.true
-      checkRetMessage(res,'contient la balise &lt; SPAN &gt; avec DATA-USER="12"')
+      checkMess(res,'contient la balise &lt; SPAN &gt; avec DATA-USER="12"')
     })
-    // , it("produit un échec en ne trouvant pas l'attribut quelconque", ()=>{
-    //   pending()
-    // })
+    , it("produit un échec en ne trouvant pas l'attribut quelconque", ()=>{
+      res = expect(divContainer).to.have_tag('span',{'data-unknown':'12'}, resO)
+      expect(res.isOK).to.be.false
+      checkMess(res, 'ne contient pas la balise &lt; SPAN &gt; avec DATA-UNKNOWN="12"')
+    })
+    , it("produit un échec et retourne un message d'erreur correct avec des attributs trouvés et d'autres non", ()=>{
+      res = expect(divContainer).to.have_tag('span',{'data-user':'12', 'data-unknown':'12' }, resO)
+      expect(res.isOK).to.be.false
+      checkMess(res,'ne contient pas la balise &lt; SPAN &gt; avec DATA-USER="12", DATA-UNKNOWN="12"')
+    })
   ])
 
 
-
+  , context("en recherchant des sous-enfants",[
+    , it("produit un succès si les enfants sont trouvés", ()=>{
+      res = expect(divContainer).to.have_tag('section', {id:'ma-section',children:[
+        ['span',{id:'mon-span'}]
+      ]}, resO)
+      expect(res.isOK).to.be.true
+      checkMess(res,'contient la balise &lt; SECTION &gt; avec ID="ma-section"')
+      checkMess(res,'et contient une balise &lt; SPAN &gt; avec {"id":"mon-span"}')
+    })
+    , it("produit un échec si les enfants ne sont pas trouvés", ()=>{
+      res = expect(divContainer).to.have_tag('section', {id:'ma-section',children:[
+        ['div',{id:'div-inner'}]
+      ]}, resO)
+      expect(res.isOK).to.be.false
+      checkMess(res,'ne contient pas la balise &lt; SECTION &gt;')
+      checkMess(res,'qui contiendrait une balise &lt; DIV &gt; avec {"id":"div-inner"}')
+    })
+  ])
 ])

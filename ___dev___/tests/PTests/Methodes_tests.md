@@ -199,7 +199,21 @@ Vérifie la supériorité entre deux expressions (nombre ou string). Cf. aussi l
 
 Cette (grosse) méthode permet de chercher dans une chaine HTML (ou un HTMLElement) la présence de balises avec un certain contenu et certains attributs.
 
-ATTENTION : les arguments de la méthode de comparaison `have_tag` sont légèrement différents des autres méthodes de comparaison : le deux premiers arguments définissent le `tag` et les `attributs` recherchés, et il est impératif qu'il y ait TOUJOURS ces deux arguments, même si seule la `tag` est recherchée :
+```js
+
+expect({HTMLString}).to.have_tag('<tag>',{attributes}[, [valeur-pseudo][, options]])
+
+expect({DOMElement}).to.have_tag(<idem>))
+
+// En projet :
+expect({CSSSelector}).to.have_tag(<idem>)
+// => cherche dans le document
+
+```
+
+On peut mettre en argument de l'expectation (`expect`) les arguments normaux, à savoir en deuxième et en troisième la valeur-pseudo et les options.
+
+ATTENTION : **les arguments de la méthode de comparaison `have_tag` sont légèrement différents des autres méthodes de comparaison** : le deux premiers arguments définissent le `tag` et les `attributs` recherchés, et il est impératif qu'il y ait TOUJOURS ces deux arguments, même si seule la `tag` est recherchée :
 
 ```js
 
@@ -219,10 +233,19 @@ expect(monDomElement).to.have_tag('section') // correct
 
 ```
 
+Les pseudos-éléments, pour le moment, sont impossibles. On ne peut pas utiliser :
+
+```js
+
+expect(monDomElement).to.have_tag('*',{id:'idkelquonk'}) // => FAILURE
+
+```
+
 Le second argument doit contenir tous les attributs à rechercher dans la balise, plus quelques autres définitions comme :
 
 * `text`. Le innerHTML de la balise, en {String} ou en {RegExp},
-* `count`. Le nombre de balises à trouver, correspondant aux critères spécifiés.
+* `children`. Liste des enfants - donc des autres balises — que doit contenir l'élément,
+* `count`. Le nombre de balises à trouver, correspondant aux critères spécifiés,
 * `max_count`. Le nombre maximum d'éléments qu'on doit trouver,
 * `min_count`. Le nombre minimum d'éléments qu'on doit trouver.
 
@@ -233,6 +256,51 @@ Exemple :
 expect(DomEl).to.have_tag('div',{min_count:3, class:"ma-classe", text:/opt/})
 // Produira un succès s'il y a au moins 3 balises DIV de classe css "ma-classe"
 // qui contient un texte contenant 'opt'
+
+```
+
+#### `children` dans `have_tag` {#method_test_children}
+
+`children` doit être une liste (`Array`) d'élément `Array` qui contiennt :
+
+```js
+
+  ['<balise>', {attributes de la balise}]
+
+```
+
+Chacun de ces éléments est formé exactement comme les deux premiers argument de la méthode de comparaison, ni plus ni moins.
+
+Exemple :
+
+```js
+
+  expect(thisCode).to.have_tag('div',{
+    class:'du-contenu',
+    children:[
+        ['div', {id:'un-premier-div',class:'de-class'}]
+      , ['span', {class:'un-span',text:'avec du texte'}]
+      , ['span']
+      , ['div', {id:"un-parent", children:[
+          ['div', {id:'petit-enfant-1'}]
+        , ['div', {id:'petit-enfant-2'}]
+      ]}]
+    ]
+  })
+```
+
+Noter que pour réaliser le même test, on peut utiliser des expectations muettes (`not_a_test: true`) en prenant chaque sous-élément et en le testant individuellement :
+
+```js
+
+let premierDiv = thisCode.getElementById('un-parent')
+expect(premierDiv).to.exist
+let itHasTags = expect(premierDiv).to.have_tag('div', {id:'petit-enfant-1'}, {not_a_test: true})
+if ( itHasTags ){
+  …
+} else {
+  …
+}
 
 ```
 

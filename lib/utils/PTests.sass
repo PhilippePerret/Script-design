@@ -33,7 +33,9 @@ section#ptests-results
       color         : red
       font-weight   : bold
     &.notice
-      color           : $notice-color
+      color         : $notice-color
+    &.pending
+      color         : orange
 
   div.describe, div.context, div.case
     &.tab0
@@ -106,6 +108,7 @@ section#ptests-results
   div.error-after-resume, div.pending-after-resume
     margin-left   : 4em
     margin-bottom : 1em
+  div.error-after-resume, div.pending-after-resume, div.pending
     a
       text-decoration   : none
       font-family       : inherit
