@@ -7,16 +7,37 @@
 class Parags
 {
 
+  /**
+  * Appelée pour créer un parag. Contrairement à la méthode `new`, qui
+  * instancie un paragraphe qui existe déjà (qui a déjà été créé), cette
+  * méthode crée un tout nouveau parag et, notamment, l'ajoute à la liste
+  * des `relatives`.
+  *
+  * C'est la méthode qui est appelée par la touche `n` hors mode d'édition
+  * depuis n'importe quel pano.
+  **/
+  static create ()
+  {
+    // On crée le paragraphe est on l'affiche
+    let newP = this.new({current:true, edited: true})
+    // On l'ajoute à la liste des relatives qui tient à jour la relation entre
+    // les paragraphes dans les différents panneaux
+    let iprojet = Projet.current
+    iprojet.relatives.addParag(newP)
+  }
+
 
   /**
   * Appelée par la touche 'n' en dehors du mode édition, cette méthode
   * permet d'initier la création d'un paragraphe {Parag}.
   **/
-  static new ()
+  static new (options)
   {
     let newP = new Parag({id:Parag.newID(),contents:''})
-    Projet.current_panneau.addParag(newP, {current: true, edited: true})
+    Projet.current_panneau.addParag(newP, options)
+    return newP
   }
+
 
   /** ---------------------------------------------------------------------
     *
@@ -32,7 +53,7 @@ class Parags
   {
     return this.items[parag_id]
   }
-  
+
   static get items () {
     if(undefined===this._items){this._items = {}}
     return this._items

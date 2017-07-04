@@ -51,12 +51,14 @@ define(
           break
 
         case 's':
-          if ( evt.metaKey )
+          if( ! Projet.mode_edition )
           {
-            Projet.current_panneau.save()
+            if ( evt.metaKey )
+            {
+              Projet.current_panneau.save()
+            }
+            return DOM.stopEvent(evt)
           }
-          return DOM.stopEvent(evt)
-
       }
     }
     /**
@@ -69,60 +71,40 @@ define(
     **/
     static onkeyup (evt)
     {
+      // Les touches ci-dessous sont considérées même si l'on est en
+      // mode édition, dans un champ de texte.
       switch ( evt.key )
       {
 
-        // case 'Escape'://en mode édition, sort de l'édition
-        //   return UI.stop_edit()
+      }
+      // On ne passe à la suite que si l'on n'est plus en mode Édition
+      if ( Projet.mode_edition ){ return 'poursuivre' }
+      
+      switch ( evt.key )
+      {
+
         case 'D':
           return Projet.loadPanneau('data')
         case 'Enter':
           // Suivant le mode, on fait quelque chose de différent
           // Si un paragraphe est sélectionné, ou courant, et qu'on est en
           // mode non édition, on édite le paragraphe en question
-          if (!Projet.mode_edition&&Parag.current){Parag.current.edit()}
+          if ( Parag.current ){ Parag.current.edit() }
           break
 
         case 'ArrowUp':
-          if ( evt.metaKey )
-          {
-            // Ne fonctionne pas, car la combinaison CMD+Arrow est captée
-            // par le système. On utilise onkeydown pour contourner le
-            // problème.
-            Parags.moveCurrentUp(evt)
-          }
-          else if ( Projet.mode_edition )
-          {
-            return true
-          }
-          else
-          {
-            Parags.selectPrevious(evt)
-            return DOM.stopEvent(evt)
-          }
+          Parags.selectPrevious(evt)
+          return DOM.stopEvent(evt)
 
         case 'ArrowDown':
-          if ( evt.metaKey )
-          {
-            // Cf. la note ci-dessus pour ArrowUp. Même chose ici, donc on ne
-            // passe pas.
-            Parags.moveCurrentDown(evt)
-          }
-          else if ( Projet.mode_edition )
-          {
-            return true
-          }
-          else
-          {
-            Parags.selectNext(evt)
-            return DOM.stopEvent(evt)
-          }
+          Parags.selectNext(evt)
+          return DOM.stopEvent(evt)
 
         case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
-          if(!Projet.mode_edition){return Parags.new()}
-          else{return true /* dans un champ d'édition */}
+          return Parags.create()
+        case 'O':
+          alert("La fenêtre des outils n'est pas encore implémentée")
           break
-
         // Activation des panneaux
         case 'M':
           return Projet.loadPanneau('manuscrit')
@@ -132,6 +114,8 @@ define(
           return Projet.loadPanneau('personnages')
         case 'S':
           return Projet.loadPanneau('scenier')
+        case 'T':
+          return Projet.loadPanneau('treatment')
         case 'Y':
           return Projet.loadPanneau('synopsis')
         default:

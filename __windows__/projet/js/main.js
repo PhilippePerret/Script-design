@@ -13,6 +13,8 @@ const
   , PROJET_JS_FOLDER  = path.join(PROJET_FOLDER,'js')
   , PROJET_API_PATH   = path.join(PROJET_JS_FOLDER,'api.js')
   , PROJET_KBS_PATH   = path.join(PROJET_JS_FOLDER,'kbshortcuts.js')
+  , PROJET_PAN_PATH   = path.join(PROJET_JS_FOLDER, 'pan_projet.js')
+  , PROJET_RELS_PATH  = path.join(PROJET_JS_FOLDER, 'relatives.js')
 
 const PTEST_IT = false
 
@@ -21,27 +23,39 @@ requirejs(
       C.LOG_MODULE_PATH
     , C.DOM_MODULE_PATH
     , C.COMMON_UI_MODULE_PATH
+    , C.STORE_MODULE_PATH   // => Store
     // ---- Cette fenêtre ---
     , PROJET_API_PATH
     , PROJET_KBS_PATH
     , path.join(C.COMMON_JS_FOLDER,'parags_define.js')
     , path.join(C.COMMON_JS_FOLDER,'parag_define.js')
+    , PROJET_PAN_PATH
+    , PROJET_RELS_PATH
   ]
 , function(
     log
   , DOM
   , UI
+  , Store
   // --- Cette fenêtre ---
   , Projet
   , KBShortcuts
   , Parags
   , Parag
+  , PanProjet
+  , Relatives
 ){
 
-  global.Projet = Projet
-  global.Parags = Parags
-  global.Parag  = Parag
-  global.DOM    = DOM
+  global.DOM        = DOM
+  global.Projet     = Projet
+  global.PanProjet  = PanProjet
+  global.Parags     = Parags
+  global.Parag      = Parag
+  global.Relatives  = Relatives
+  global.Store      = Store
+
+  // On donne l'app à Store, pour qu'il sache où chercher les fichiers.
+  Store._app = app
 
   let timer = setInterval(
     function()
@@ -57,7 +71,7 @@ requirejs(
           , api:                  Projet
           , KeyboardObject:       KBShortcuts
         })
-        
+
 
         // Dire que la fenêtre est prête, pour pouvoir charger le projet
         // courant

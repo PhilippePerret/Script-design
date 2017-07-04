@@ -25,7 +25,7 @@ class Parag
   {
     if (undefined === this._lastID) { this._lastID = -1 }
     ++ this._lastID
-    return this._lastID
+    return Number(this._lastID)
   }
 
 
@@ -87,6 +87,9 @@ class Parag
     this.data = data
     this.dispatch(data)
     if ( this.id > Parag._lastID ) { Parag._lastID = this.id }
+    if ( ! this.panneau_id ) {
+      this.panneau_id = Projet.current_panneau.id // = name
+    }
     this.selected = false // à true quand il est sélectionné
     this.current  = false // à true quand c'est le paragraphe courant
     Parags.addItem(this)
@@ -110,6 +113,7 @@ class Parag
   get as_data ()
   {
     // Pour le moment, on a juste à retourner les données
+    this.data.panneau_id = this.panneau_id
     return this.data
   }
 
@@ -154,7 +158,8 @@ class Parag
   **/
   get panneau ()
   {
-    if ( undefined === this._panneau ) { this._panneau = Projet.current_panneau }
+    if ( undefined === this._panneau )
+    { this._panneau = Projet.panneaux[this.panneau_id] }
     return this._panneau
   }
   /**
