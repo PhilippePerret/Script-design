@@ -118,6 +118,16 @@ define(
         return this._light
       }
 
+      setModeDouble (cote)
+      {
+        DOM.addClass(this.section, `modedbl${cote}`)
+      }
+      unsetModeDouble ()
+      {
+        DOM.removeClass(this.section, `modedblleft`)
+        DOM.removeClass(this.section, `modedblright`)
+      }
+
       /** ---------------------------------------------------------------------
         *
         *   Méthodes préférences
@@ -139,25 +149,16 @@ define(
       **/
       load ()
       {
-        console.log('[load] Début de dispatch des données')
         let my = this
         my.data = my.store.data
         for( let prop in my.data ) {
-          console.log(`Je mets la propriété ${prop} à `)
           my[prop] = my.data[prop]
-          console.log(my.data[prop])
         }
-        console.log('[load] /FIN de dispatch des données')
         // S'il y a des paragraphes, il faut les afficher
         // Attention, ici, on ne peut pas faire `this.parags`, car cette méthode
         // relève les parags dans l'interface (pour enregistrement) et, pour le
         // moment, il n'y en a pas.
-        if ( this._hparags ) {
-          console.log(`Il y a ${this._hparags.length} parags à afficher`)
-          this.displayParags()
-        } else {
-          console.log('[load] Il n’y a pas de parags à afficher')
-        }
+        if ( this._hparags ) { this.displayParags() }
         this.loaded = true
       }
       /**
@@ -286,7 +287,8 @@ define(
         }
         return this._store_path
       }
-    }
+
+    }// /fin class PanProjet
 
     return PanProjet
   }

@@ -1,3 +1,7 @@
+* Comment procéder à la liaison (relatives) entre deux ou plusieurs paragraphes ?
+  Idée : pouvoir passer en mode double, avec deux sections côtes à côtes
+  Pour passer en mode double, on tient la touche MAJ appuyée en choisissant un autre panneau
+
 * Il faut calculer les tailles des éléments dans la fenêtre projet :
   - au resize de la fenêtre (si on permet son redimensionnement)
   - au chargement

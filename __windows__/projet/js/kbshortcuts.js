@@ -79,7 +79,7 @@ define(
       }
       // On ne passe à la suite que si l'on n'est plus en mode Édition
       if ( Projet.mode_edition ){ return 'poursuivre' }
-      
+
       switch ( evt.key )
       {
 
@@ -107,9 +107,9 @@ define(
           break
         // Activation des panneaux
         case 'M':
-          return Projet.loadPanneau('manuscrit')
+          return Projet.loadPanneau('manuscrit', evt)
         case 'N':
-          return Projet.loadPanneau('notes')
+          return Projet.loadPanneau('notes', evt)
         case 'P':
           return Projet.loadPanneau('personnages')
         case 'S':

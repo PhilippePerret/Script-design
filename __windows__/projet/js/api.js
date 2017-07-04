@@ -91,12 +91,39 @@ class Projet
   /**
   * Méthode fonctionnelle chargeant le plateau voulant
   **/
-  static loadPanneau (panneau_id)
+  static loadPanneau (panneau_id, evt)
   {
-    // console.log('Panneau à ouvrir', panneau_id)
-    this.current_panneau.desactivate()
-    this._current_panneau = this.panneaux[panneau_id]
-    this.current_panneau.activate()
+    // Si on était en mode double panneau, il faut en sortir, même
+    // si on va y revenir tout de suite
+    if (this.mode_double_panneaux)
+    {
+      this.alt_panneau.desactivate()
+      this.alt_panneau.unsetModeDouble()
+      this.current_panneau.unsetModeDouble()
+    }
+    // Pour savoir s'il faut passer en mode double
+    let passerEnModeDouble  = !!evt.shiftKey
+    let dejaEnModeDouble    = !!this.mode_double_panneaux
+    this.mode_double_panneaux = !!passerEnModeDouble
+
+    if ( passerEnModeDouble )
+    {
+      // Le mode double
+      // Le panneau courant passe ne panneau_alt
+      this.alt_panneau = this.panneaux[this.current_panneau.id]
+      this.alt_panneau.setModeDouble('left')
+      this._current_panneau = this.panneaux[panneau_id]
+      this.current_panneau.activate()
+      this.current_panneau.setModeDouble('right')
+    }
+    else
+    {
+      // Le mode normal
+      this.current_panneau.desactivate()
+      this._current_panneau = this.panneaux[panneau_id]
+      this.current_panneau.activate()
+    }
+
   }
   /** ---------------------------------------------------------------------
     *

@@ -17,6 +17,14 @@ body
     //&:not(#panneau-data)
     height      : 760px
     width       : 1220px
+
+    // Pour passer en mode double
+    &.modedblleft, &.modedblright
+      width       : 39% !important
+    &.modedblleft
+      left        : -40px
+    &.modedblright
+      left        : 46%
     // Seul le panneau de conntent scroll
     div.panneau-contents
       height      : 660px
