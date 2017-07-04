@@ -44,6 +44,11 @@ define(
         // Il faut activer le onkeyup
         window.onkeyup = UI.onKeyUp.bind(UI) //options.KeyboardObject.onkeyup
 
+        // Si un capteur d'évènement touche pressée existe, il faut le connecter
+        if ( 'function' === typeof this.KeyboardObject.onkeydown )
+        {
+          window.onkeydown = this.KeyboardObject.onkeydown
+        }
 
         // Si un champ par défaut est défini, on focus devant
         if ( options.default_field )

@@ -137,6 +137,15 @@ class Parag
   **/
 
   /**
+  * @return {HTMLElement} Le container du paragraphe dans le panneau
+  * C'est un raccourci de Projet.current_panneau.container.
+  **/
+  get container ()
+  {
+    if (!this._container){this._container=Projet.current_panneau.container}
+    return this._container
+  }
+  /**
   * @return {HTMLDivElement} Le div principal du Parag
   *
   * Note : le construit si nécessaire.
@@ -148,7 +157,7 @@ class Parag
   }
 
   /**
-  * @return {HTMLElement} Div du contenu du paragraphe.
+  * @return {HTMLElement} Div du contenu textuel du paragraphe.
   **/
   get divContents ()
   {
@@ -196,6 +205,23 @@ class Parag
     DOM.removeClass(this.mainDiv,'current')
     this.current = false
     return this
+  }
+
+  /**
+  * Déplace le parag après le parag +iparag+
+  * @param {Parag} iparag Instance de paragraphe
+  **/
+  moveAfter (iparag)
+  {
+    this.container.insertBefore(this.mainDiv, iparag.mainDiv.nextSibling)
+  }
+  /**
+  * Déplace le parag avant le parag +iparag+
+  * @param {Parag} iparag Instance de paragraphe
+  **/
+  moveBefore (iparag)
+  {
+    this.container.insertBefore(this.mainDiv, iparag.mainDiv)
   }
 
   /**

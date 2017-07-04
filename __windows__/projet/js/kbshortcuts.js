@@ -21,9 +21,36 @@ define(
 
     static onEnter (evt)
     {
-      log ('-> Projet::onEnter')
+      // log ('-> Projet::onEnter')
     }
 
+    static onkeydown (evt)
+    {
+      // console.log('-> onkeydown')
+      // console.log(evt)
+      // if ( 'Meta' === evt.key ) { this.metaIsOn = true }
+      // console.log('<- onkeydown')
+      switch (evt.key)
+      {
+        case 'ArrowDown':
+          // Les flèches avec la touche CMD, sur Mac, sont captés avant le
+          // onkeyup, donc sont inutilisables telles quelles. Il faut donc
+          // les capter avant pour les faire agir.
+          if ( evt.metaKey )
+          {
+            Parags.moveCurrentDown(evt)
+            return DOM.stopEvent(evt)
+          }
+          break
+        case 'ArrowUp':
+          if ( evt.metaKey )
+          {
+            Parags.moveCurrentUp(evt)
+            return DOM.stopEvent(evt)
+          }
+          break
+      }
+    }
     /**
     *   Gestionnaire de l'évènement KeyUP
     *
@@ -37,12 +64,10 @@ define(
       switch ( evt.key )
       {
 
-        case 'Escape'://en mode édition, sort de l'édition
-          // return UI.stop_edit()
-
+        // case 'Escape'://en mode édition, sort de l'édition
+        //   return UI.stop_edit()
         case 'D':
           return Projet.loadPanneau('data')
-
         case 'Enter':
           // Suivant le mode, on fait quelque chose de différent
           // Si un paragraphe est sélectionné, ou courant, et qu'on est en
@@ -51,18 +76,37 @@ define(
           break
 
         case 'ArrowUp':
-          if(Projet.mode_edition){
+          if ( evt.metaKey )
+          {
+            // Ne fonctionne pas, car la combinaison CMD+Arrow est captée
+            // par le système. On utilise onkeydown pour contourner le
+            // problème.
+            Parags.moveCurrentUp(evt)
+          }
+          else if ( Projet.mode_edition )
+          {
             return true
-          } else {
-            Parags.selectPrevious()
+          }
+          else
+          {
+            Parags.selectPrevious(evt)
             return DOM.stopEvent(evt)
           }
 
         case 'ArrowDown':
-          if(Projet.mode_edition){
+          if ( evt.metaKey )
+          {
+            // Cf. la note ci-dessus pour ArrowUp. Même chose ici, donc on ne
+            // passe pas.
+            Parags.moveCurrentDown(evt)
+          }
+          else if ( Projet.mode_edition )
+          {
             return true
-          } else {
-            Parags.selectNext()
+          }
+          else
+          {
+            Parags.selectNext(evt)
             return DOM.stopEvent(evt)
           }
 

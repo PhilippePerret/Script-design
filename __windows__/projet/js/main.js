@@ -57,6 +57,7 @@ requirejs(
           , api:                  Projet
           , KeyboardObject:       KBShortcuts
         })
+        
 
         // Dire que la fenêtre est prête, pour pouvoir charger le projet
         // courant
