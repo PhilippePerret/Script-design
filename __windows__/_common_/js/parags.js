@@ -23,6 +23,16 @@ class Parags
     *   ITEMS
     *
   *** --------------------------------------------------------------------- */
+
+  /**
+  * @return {Parag} Le parag d'identifiant +parag_id+ ou null s'il n'existe pas
+  * @param {Number} parag_id Identifiant du parag à retourner
+  **/
+  static get ( parag_id )
+  {
+    return this.items[parag_id]
+  }
+  
   static get items () {
     if(undefined===this._items){this._items = {}}
     return this._items

@@ -34,7 +34,8 @@ Store._app = app
   *   ---------------
   *   Un panneau est bien plus qu'un panneau. Il gère aussi un élément
   *   complet du projet comme le scénier, le synopsis ou le manuscrit.
-  *
+  *   C'est par lui que passe la sauvegarde, il est associé à un fichier
+  *   JSON qui contient toutes ses données, même ses préférences.
   *
 *** --------------------------------------------------------------------- */
 
@@ -84,6 +85,7 @@ class PanProjet
   * courant, affiché dans l'interface.
   **/
   activate () {
+    if ( ! this.loaded ) { this.load() }
     DOM.addClass(`btn-${this.id}`,'actif')
     DOM.addClass(`panneau-${this.id}`,'actif')
     this.actif = true
@@ -133,10 +135,46 @@ class PanProjet
 
   /** ---------------------------------------------------------------------
     *
+    *   Méthodes préférences
+    *
+  *** --------------------------------------------------------------------- */
+
+  // Les préférences. Pour le moment, rien
+  get prefs () { return this._prefs }
+  set prefs (v){ this._prefs = v    }
+
+  /** ---------------------------------------------------------------------
+    *
     *   Méthodes DATA
     *
   *** --------------------------------------------------------------------- */
 
+  /**
+  * Procède au chargement des données de ce panneau/élément narratif
+  **/
+  load ()
+  {
+    console.log('[load] Début de dispatch des données')
+    let my = this
+    my.data = my.store.data
+    for( let prop in my.data ) {
+      console.log(`Je mets la propriété ${prop} à `)
+      my[prop] = my.data[prop]
+      console.log(my.data[prop])
+    }
+    console.log('[load] /FIN de dispatch des données')
+    // S'il y a des paragraphes, il faut les afficher
+    // Attention, ici, on ne peut pas faire `this.parags`, car cette méthode
+    // relève les parags dans l'interface (pour enregistrement) et, pour le
+    // moment, il n'y en a pas.
+    if ( this._hparags ) {
+      console.log(`Il y a ${this._hparags.length} parags à afficher`)
+      this.displayParags()
+    } else {
+      console.log('[load] Il n’y a pas de parags à afficher')
+    }
+    this.loaded = true
+  }
   /**
   * Procède à la sauvegarde des données actuelles
   **/
@@ -146,14 +184,93 @@ class PanProjet
     {
       alert(`Le panneau ${Projet.current.id}/${this.name} n'est pas marqué modifié, normalement, je ne devrais pas avoir à le sauver.`)
     }
+    let resultat_save = this.store.set(this.data2save)
+    if ( resultat_save ) {
+      this.setAllParagsUnmodified()
+      this.modified = false
+    }
+  }
+
+  /**
+  * @return {Object} La table des données à sauver
+  **/
+  get data2save ()
+  {
     let now = moment().format()
-    let resultat_save = this.store.set({
+    return {
         name        : this.name
+      , prefs       : this.prefs
+      , parags      : this.parags_as_data
       , updated_at  : now
       , created_at  : this.created_at || now
+    }
+  }
 
-    })
-    if ( resultat_save ) { this.modified = false }
+  /**
+  * @return {Object} Les données par défaut pour le panneau. C'est celle qui
+  * sont transmises à l'instanciation du store du panneau.
+  **/
+  get defaultData () {
+    return {
+        name    : this.name
+      , id      : this.name
+      , prefs   : this.prefs
+      , parags  : []
+    }
+  }
+
+  /**
+  * Méthode qui après la sauvegarde marque toutes les paragraphes
+  * comme non modifiés
+  **/
+  setAllParagsUnmodified ()
+  {
+    this.parags.forEach( p => p.modified = false )
+  }
+  /**
+  * @return {Array} Une liste des Parags tels qu'il faut les enregistrer
+  * dans le fichier JSON de données
+  **/
+  get parags_as_data ()
+  {
+    return this.parags.map( p => p.as_data )
+  }
+
+  /**
+  * @return {Array} of {Parag} La liste des Parags tels qu'ils se présentend
+  * dans le container de ce tableau.
+  * Noter que la liste est actualisée chaque fois qu'on appelle la méthode.
+  **/
+  get parags ()
+  {
+    let
+          arr = []
+        , ps = this.container.getElementsByClassName('p')
+        , nb = ps.length
+        , i  = 0
+
+    for(; i < nb ; ++i ){
+      arr.push( Parags.get(Number(ps[i].getAttribute('data-id'))) )
+    }
+    return arr
+  }
+
+  /**
+  * Méthode appelée au chargement du panneau (`load`) qui permet d'écrire les
+  * paragraphes.
+  **/
+  set parags ( hparags )
+  {
+    this._hparags = hparags
+  }
+  /**
+  * Méthode appelée après le load, permettant d'afficher les paragraphes
+  * courants.
+  **/
+  displayParags ()
+  {
+    this.container.innerHTML = ''
+    this._hparags.forEach( hparag => Projet.current_panneau.addParag( new Parag( hparag ) ) )
   }
 
   /**
@@ -164,7 +281,7 @@ class PanProjet
   {
     if ( undefined === this._store )
     {
-      this._store = new Store(this.store_path)
+      this._store = new Store(this.store_path, this.defaultData)
     }
     return this._store
   }
@@ -220,7 +337,9 @@ class Projet
     this.current.load.bind(this.current)()
   }
 
-  // Méthodes répondant aux boutons principaux de l'interface
+  /**
+  * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
+  **/
   static get current_panneau () {
     if ( undefined === this._current_panneau){this._current_panneau = this.panneaux['data']}
     return this._current_panneau
@@ -252,19 +371,17 @@ class Projet
     this._current_panneau = this.panneaux[panneau_id]
     this.current_panneau.activate()
 
-    // Pour le développement
-    if (panneau_id == 'scenier'){
-      // Construire rapidement trois paragraphes
-      [
-        "Premier paragraphe",
-        "Deuxième paragraphe",
-        "Troisième paragraphe"
-      ].forEach( (t) => {
-        let newP = new Parag({id:Parag.newID(),contents:t})
-        Projet.current_panneau.addParag(newP)
-      })
-
-    }
+    // // Pour le développement
+    // if (panneau_id == 'scenier'){
+    //   // Construire rapidement trois paragraphes
+    //   [
+    //     "Premier paragraphe",
+    //     "Deuxième paragraphe",
+    //     "Troisième paragraphe"
+    //   ].forEach( (t) => {
+    //   })
+    //
+    // }
   }
   /** ---------------------------------------------------------------------
     *

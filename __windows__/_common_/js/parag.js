@@ -8,6 +8,7 @@
   *   Despite its name, a <Parag> can own several real paragraphs.
   *
 *** --------------------------------------------------------------------- */
+let moment = require('moment')
 
 class Parag
 {
@@ -94,13 +95,22 @@ class Parag
   /** ---------------------------------------------------------------------
   *   DATA Methods
   *
-  **/
+  * --------------------------------------------------------------------- */
   dispatch (data)
   {
     for(let prop in data){
       if(!data.hasOwnProperty(prop)){continue}
       this[prop]=data[prop]
     }
+  }
+
+  /**
+  * @return {Object} les données du parag pour enregistrement
+  **/
+  get as_data ()
+  {
+    // Pour le moment, on a juste à retourner les données
+    return this.data
   }
 
   edit ()
@@ -116,9 +126,19 @@ class Parag
   onChangeContents ()
   {
     this.contents = this.divContents.innerHTML // TODO Corriger
+    this.data.contents = this.contents
+    this.setModified()
     this.panneau.modified = true
   }
 
+  /**
+   * Pour marquer le parag modifié
+   */
+  setModified ()
+  {
+    this.modified = true
+    this.data.updated_at = moment().format()
+  }
   /** ---------------------------------------------------------------------
     *   EVENTS Méthodes
     *
