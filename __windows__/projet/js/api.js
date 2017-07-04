@@ -102,7 +102,7 @@ class Projet
       this.current_panneau.unsetModeDouble()
     }
     // Pour savoir s'il faut passer en mode double
-    let passerEnModeDouble  = !!evt.shiftKey
+    let passerEnModeDouble  = evt && evt.shiftKey
     let dejaEnModeDouble    = !!this.mode_double_panneaux
     this.mode_double_panneaux = !!passerEnModeDouble
 

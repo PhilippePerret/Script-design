@@ -23,6 +23,7 @@ PTests.options.one_line_describe = true
 // PTests.options.test_file = path.join('autotests','have_tag_spec.js')
 
 // PTests.options.test_file = path.join('unit','store_spec.js')
+PTests.options.test_file = path.join('unit','Parags','relatives_spec.js')
 // PTests.options.test_file = path.join('page_projet','essai_spec.js')
 
 // Le dossier de tests à faire

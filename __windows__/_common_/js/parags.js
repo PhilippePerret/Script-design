@@ -38,6 +38,28 @@ class Parags
     return newP
   }
 
+  /** ---------------------------------------------------------------------
+    *
+    *   RELATIVES
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * Prend les paragraphes sélectionnés dans Parag.selecteds et les associe
+  *
+  **/
+  static setSelectedsAsRelatives ()
+  {
+    if ( Parag.selecteds.length < 2 )
+    {
+      return alert("Accordez-moi une chose : pour associer deux paragraphes, avouez qu'il faut qu'il y en ait au moins deux…")
+    }
+    if ( ! confirm(`Voulez-vous vraiment associer les ${Parag.selecteds.length} parags sélectionnés ?`) )
+    { return false }
+    // OK, on procède à l'association
+    Projet.current.relatives.associate(Parag.selecteds)
+
+  }
 
   /** ---------------------------------------------------------------------
     *

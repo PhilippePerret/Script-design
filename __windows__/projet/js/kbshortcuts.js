@@ -89,7 +89,14 @@ define(
           // Suivant le mode, on fait quelque chose de différent
           // Si un paragraphe est sélectionné, ou courant, et qu'on est en
           // mode non édition, on édite le paragraphe en question
-          if ( Parag.current ){ Parag.current.edit() }
+          if ( Projet.mode_double_panneaux )
+          {
+            return Parags.setSelectedsAsRelatives()
+          }
+          else if ( Parag.current )
+          {
+            Parag.current.edit()
+          }
           break
 
         case 'ArrowUp':
@@ -102,7 +109,7 @@ define(
 
         case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
           return Parags.create()
-        case 'O':
+        case 'o':
           alert("La fenêtre des outils n'est pas encore implémentée")
           break
         // Activation des panneaux

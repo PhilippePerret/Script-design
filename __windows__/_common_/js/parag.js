@@ -19,12 +19,23 @@ class Parag
   *** --------------------------------------------------------------------- */
 
   /**
-  * @return {Number} Un nouvel identifiant pour un paragraphe
+  * @return {Number} Un nouvel identifiant pour un paragraphe. C'est un ID
+  * absolu et universel qui doit être fourni, unique à tous les panneaux
+  * confondus.
   **/
   static newID ()
   {
-    if (undefined === this._lastID) { this._lastID = -1 }
+    if (undefined === this._lastID) {
+      this._lastID = Projet.current.data_generales.last_parag_id || -1
+    }
     ++ this._lastID
+    // On enregistre toujours le nouveau dernier ID dans les données
+    // du projet
+    Projet.current.store_data.set({
+        updated_at: moment().format()
+      , last_parag_id: this._lastID
+    })
+    console.log('this._lastID',this._lastID)
     return Number(this._lastID)
   }
 
@@ -57,6 +68,25 @@ class Parag
   {
     if(undefined===this._selecteds){this._selecteds=[]}
     this._selecteds.push(iparag)
+  }
+  static supSelect (iparag)
+  {
+    if(this.selecteds.length==1)
+    {
+      this._selecteds = []
+    }
+    else
+    {
+      let nb = this.selecteds.length
+        , i  = 0
+      for(; i < nb ; ++i)
+      {
+        if ( this.selecteds[i].id == iparag.id ){
+          this._selecteds.splice(i,1)
+          break
+        }
+      }
+    }
   }
   /**
   * @return {Parag} Le paragraphe courant.
@@ -209,6 +239,7 @@ class Parag
   {
     if ( ! this.selected ) { return this }
     DOM.removeClass(this.mainDiv, 'selected')
+    Parag.supSelect(this)
     this.selected = false
     return this
   }
@@ -267,10 +298,16 @@ class Parag
     // Ajout du contenu textuel
 
     div.appendChild(divCont)
+    this.observe_div(div)
     this.observe_contents(divCont)
     return div
   }
 
+  observe_div (div)
+  {
+    if(undefined===div){div = this.mainDiv}
+    div.addEventListener('click', this.onClick.bind(this))
+  }
   observe_contents (divCont)
   {
     if(undefined === divCont){ divCont = this.divContents }
@@ -278,11 +315,38 @@ class Parag
     divCont.addEventListener('blur',  this.undoEdit.bind(this))
   }
 
-  // *private* Passer le champ contents en mode édition
+  /**
+  * Méthode appelée lorsque l'on clique sur le div principal
+  * Pour le moment, ça n'agit que lorsque la touche Méta (CMD) est pressée,
+  * pour ne pas rentrer en collision avec le clique sur le divContents qui
+  * met le paragraphe en édition.
+  **/
+  onClick (evt)
+  {
+    if (evt.metaKey)
+    {
+      console.log('Click avec la touche CMD')
+      if ( Projet.mode_double_panneaux )
+      {
+        console.log('Click avec la touche CMD en mode double panneaux')
+        if ( this.selected ){ this.deselect() }
+        else { this.select() }
+      }
+      return DOM.stopEvent(evt)
+    }
+  }
+
+  // --- private ---
+
+
+  // Passer le champ contents en mode édition (sauf si la touche CMD est
+  // pressée)
   // On conserve la valeur actuelle du champ pour la comparer à la nouvelle
   // et savoir s'il y a eu un changement.
+
   doEdit (evt)
   {
+    if (evt && evt.metaKey) { return true }
     this.divContents.contentEditable = 'true'
     this.divContents.focus()
     Projet.mode_edition = true
