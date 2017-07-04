@@ -49,6 +49,14 @@ define(
             return DOM.stopEvent(evt)
           }
           break
+
+        case 's':
+          if ( evt.metaKey )
+          {
+            Projet.current_panneau.save()
+          }
+          return DOM.stopEvent(evt)
+
       }
     }
     /**
@@ -127,7 +135,8 @@ define(
         case 'Y':
           return Projet.loadPanneau('synopsis')
         default:
-          console.log(evt.key)
+          // Pour voir la touche :
+          // console.log(evt.key)
       }
       return 'poursuivre' // pour dire de poursuivre le test keyUp
     }// /fin de onkeyup

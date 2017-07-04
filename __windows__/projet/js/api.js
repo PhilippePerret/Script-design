@@ -103,6 +103,82 @@ class PanProjet
     if (undefined===this._container){this._container=DOM.get(`panneau-${this.id}-contents`)}
     return this._container
   }
+  /**
+  * @return {HTML} La section complète du panneau
+  **/
+  get section ()
+  {
+    if ( !this._section ) { this._section = DOM.get(`panneau-${this.name}`) }
+    return this._section
+  }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   Méthodes interface
+    *
+  *** --------------------------------------------------------------------- */
+  get modified () { return this._modified }
+  set modified (v)
+  {
+    this._modified = !!v
+    this.light.innerHTML = this._modified ? '🔴' : '🔵'
+  }
+  get light () {
+    if ( ! this._light )
+    {
+      this._light = this.section.getElementsByClassName('statelight')[0]
+    }
+    return this._light
+  }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   Méthodes DATA
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * Procède à la sauvegarde des données actuelles
+  **/
+  save ()
+  {
+    if ( ! this.modified )
+    {
+      alert(`Le panneau ${Projet.current.id}/${this.name} n'est pas marqué modifié, normalement, je ne devrais pas avoir à le sauver.`)
+    }
+    let now = moment().format()
+    let resultat_save = this.store.set({
+        name        : this.name
+      , updated_at  : now
+      , created_at  : this.created_at || now
+
+    })
+    if ( resultat_save ) { this.modified = false }
+  }
+
+  /**
+  * @return {Store} L'instance store qui va permettre d'enregistrer les
+  * données du panneau.
+  **/
+  get store ()
+  {
+    if ( undefined === this._store )
+    {
+      this._store = new Store(this.store_path)
+    }
+    return this._store
+  }
+  /**
+  * @return {String} Le path du fichier JSON contenant les données du panneau
+  **/
+  get store_path ()
+  {
+    if ( undefined === this._store_path )
+    {
+      this._store_path = path.join('projets',Projet.current.id,this.name)
+    }
+    return this._store_path
+  }
 }
 
 
@@ -240,10 +316,6 @@ class Projet
       })
     }
   }
-
-  onChangePersonnage (o) {}
-  onChangeScenes(o) {}
-
 
   onChangeData (o)
   {

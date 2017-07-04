@@ -7,9 +7,9 @@ body
   // Tous les éléments à l'intérieur sont en position fixes, donc pour
   // voir le fond, il faut mettre cette dimension
   height    : 5000px
+  // Pour que lorsqu'on utilise les flèches pour sélectionner et déplacer
+  // les paragraphes, on ne fasse pas apparaitre le scrollbar principal.
   overflow  : hidden
-      // Pour que lorsqu'on utilise les flèches pour sélectionner et déplacer
-      // les paragraphes, on ne fasse pas apparaitre le scrollbar principal.
   section.projet
     position    : fixed
     top         : 0
@@ -35,6 +35,12 @@ section.projet
     border-radius       : 1em
   &:not(.actif)
     display   : none
+
+  // La lumière qui indique l'état de sauvegarde des donnée
+  span.statelight
+    position      : fixed
+    top           : 1px
+    right         : 5px
 
   // Le titre du panneau
   div.panneau-title
@@ -90,6 +96,7 @@ section#top-buttons
 // Styles des paragraphes (Parags)
 div.panneau-contents
   overflow    : scroll
+  // Tous les paragraphes
   div.p
     &.selected
       background-color      : #EDEDFF

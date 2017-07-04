@@ -111,11 +111,12 @@ class Parag
 
   /**
   * Méthode appelée quand on blur le champ contents pour actualiser
-  * le contenu du paragraphe.
+  * le contenu du paragraphe **et que la valeur a changé**
   **/
   onChangeContents ()
   {
-    console.log("Je vais modifier le contents du paragraphe",this.id)
+    this.contents = this.divContents.innerHTML // TODO Corriger
+    this.panneau.modified = true
   }
 
   /** ---------------------------------------------------------------------
@@ -123,26 +124,26 @@ class Parag
     *
   *** --------------------------------------------------------------------- */
 
-  // /**
-  // * Méthode appelée quand on clique sur le paragraphe courant
-  // **/
-  // onclick (evt)
-  // {
-  //   // this.select()
-  //   Parag.setCurrent(this) // ne pas utiliser this.setCurrent
-  // }
 
   /** ---------------------------------------------------------------------
     * DOM Methods
   **/
 
   /**
+  * @return {PanProjet} Le panneau courant, auquel appartient le paragraphe
+  **/
+  get panneau ()
+  {
+    if ( undefined === this._panneau ) { this._panneau = Projet.current_panneau }
+    return this._panneau
+  }
+  /**
   * @return {HTMLElement} Le container du paragraphe dans le panneau
   * C'est un raccourci de Projet.current_panneau.container.
   **/
   get container ()
   {
-    if (!this._container){this._container=Projet.current_panneau.container}
+    if ( ! this._container ){ this._container = this.panneau.container }
     return this._container
   }
   /**
@@ -214,6 +215,7 @@ class Parag
   moveAfter (iparag)
   {
     this.container.insertBefore(this.mainDiv, iparag.mainDiv.nextSibling)
+    this.panneau.modified = true
   }
   /**
   * Déplace le parag avant le parag +iparag+
@@ -222,6 +224,7 @@ class Parag
   moveBefore (iparag)
   {
     this.container.insertBefore(this.mainDiv, iparag.mainDiv)
+    this.panneau.modified = true
   }
 
   /**
@@ -251,17 +254,23 @@ class Parag
   }
 
   // *private* Passer le champ contents en mode édition
+  // On conserve la valeur actuelle du champ pour la comparer à la nouvelle
+  // et savoir s'il y a eu un changement.
   doEdit (evt)
   {
     this.divContents.contentEditable = 'true'
     this.divContents.focus()
     Projet.mode_edition = true
+    this.prevValue = this.divContents.innerHTML
   }
   // *private* Sortir le champ contents du mode édition (et enregistrer
   // la nouvelle donnée si nécessaire)
   undoEdit (evt)
   {
-    this.onChangeContents.bind(this)(this.divContents)
+    if ( this.prevValue != this.divContents.innerHTML )
+    {
+      this.onChangeContents.bind(this)(this.divContents)
+    }
     this.divContents.contentEditable = 'false'
     Projet.mode_edition = false
   }
