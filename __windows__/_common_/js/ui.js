@@ -40,12 +40,20 @@ define(
           DOM.listen(tf,'blur',  UI.onBlurTextField.bind(UI, tf))
         })
 
+
         // Il faut activer le onkeyup
         window.onkeyup = UI.onKeyUp.bind(UI) //options.KeyboardObject.onkeyup
 
+
         // Si un champ par défaut est défini, on focus devant
-        if ( options.default_field ) { DOM.focus(options.default_field)}
+        if ( options.default_field )
+        {
+          DOM.focus(options.default_field)
+        }
+
+
         log("  = Interface préparé.")
+
       }// /setup
 
       // Raccourci pour obtenir l'API courante (par exemple Projet si c'est

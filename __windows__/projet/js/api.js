@@ -117,7 +117,7 @@ class Projet
 {
   static get PANNEAU_LIST () {
     if(undefined===this._panneaulist){
-      this._panneaulist = ['data','scenier','synopsis','personnages','notes']
+      this._panneaulist = ['data','scenier','synopsis','personnages','notes','manuscrit']
     }
     return this._panneaulist
   }
@@ -127,7 +127,7 @@ class Projet
   get mode_edition () { return !!this._mode_edition }
   set mode_edition (v){ this._mode_edition = !!v }
 
-  static UIinit ()
+  static UIprepare ()
   {
     this.PANNEAU_LIST.forEach( (btn_id) => {
       DOM.get(`btn-${btn_id}`)

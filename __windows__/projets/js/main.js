@@ -44,7 +44,7 @@ const
 
           UI.setup({
               window:               'projets'
-            , default_field:        'projet_titre'
+            , default_field:        null // 'projet_titre'
             , api:                  Projet
             , KeyboardObject:       KBShortcuts
           })

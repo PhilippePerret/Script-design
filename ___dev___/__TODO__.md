@@ -1,3 +1,8 @@
+* Il faut calculer les tailles des éléments dans la fenêtre projet :
+  - au resize de la fenêtre (si on permet son redimensionnement)
+  - au chargement
+  * section.projet (section blanche avec bords arronds sur fond body)
+  * div.panneau-contents (le contenu scrollable des panneaux). Normalement, doit faire 100 de moins que section.projet
 
 * Enregistrer les données dans le fichier du PanProjet
 

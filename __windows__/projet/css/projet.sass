@@ -2,6 +2,28 @@ body
   padding   : 0 !important
   margin    : 0 !important
 
+// --- Dimensionnement ---
+body
+  // Tous les éléments à l'intérieur sont en position fixes, donc pour
+  // voir le fond, il faut mettre cette dimension
+  height    : 5000px
+  overflow  : hidden
+      // Pour que lorsqu'on utilise les flèches pour sélectionner et déplacer
+      // les paragraphes, on ne fasse pas apparaitre le scrollbar principal.
+  section.projet
+    position    : fixed
+    top         : 0
+    left        : 0
+    //&:not(#panneau-data)
+    height      : 760px
+    width       : 1220px
+    // Seul le panneau de conntent scroll
+    div.panneau-contents
+      height      : 660px
+      max-height  : 660px
+      overflow    : scroll
+
+// Les autres styles
 section.projet
   margin      : 3em
   font-family : Avenir
@@ -9,7 +31,6 @@ section.projet
 
   &:not(#panneau-data)
     background-color    : white
-    min-height          : 2000px
     padding             : 1em 3em
     border-radius       : 1em
   &:not(.actif)
@@ -61,15 +82,16 @@ section#top-buttons
     font-size       : 0.8em
     letter-spacing  : 0.5px
     &.actif
-      background-color    : #008860
-      color               : white
+      background-color    : #008860 // green
+      color               : white !important
       span
-        color : inherit
+        color : inherit !important
 
 // Styles des paragraphes (Parags)
 div.panneau-contents
+  overflow    : scroll
   div.p
     &.selected
       background-color      : #EDEDFF
     &.current
-      background-color      : #9999AA
+      background-color      : #EAEBF1

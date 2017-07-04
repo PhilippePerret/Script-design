@@ -57,7 +57,6 @@ requirejs(
           , api:                  Projet
           , KeyboardObject:       KBShortcuts
         })
-        // Projet.UISetUp()
 
         // Dire que la fenêtre est prête, pour pouvoir charger le projet
         // courant
@@ -67,7 +66,7 @@ requirejs(
         // le processus main retourne l'identifiant du projet à voir.
         ipc.on('show-projet-id', (evt, data) => {
 
-          Projet.UIinit()
+          Projet.UIprepare()
           Projet.load(data)
 
         })

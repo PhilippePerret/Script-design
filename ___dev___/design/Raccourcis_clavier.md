@@ -57,7 +57,10 @@ requirejs(
     {
 
       // =======> DÉFINITION DES RACCOURCIS (ET AUTRES) <==========
-      UI.setup({window: '<nom de fenêtre>', KeyboardObject: KBObject})
+      UI.setup({
+          window: '<nom de fenêtre>' // (1)
+        , KeyboardObject: KBObject
+      })
 
     }
 
@@ -65,3 +68,5 @@ requirejs(
 )
 
 ```
+
+(1) Le nom de fenêtre est celui utilisé dans `lib/main/window.js`. C'est également le nom du fichier `ejs` ou du dossier qui contient les `js/css/img` de la fenêtre en question.
