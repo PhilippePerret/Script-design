@@ -17,7 +17,8 @@
     </style>
   </head>
   <body>
-    <section id="top-buttons">
+    <!--
+    <section id="top-buttons" class="section-">
       <span class="shortcutletter tiny-size">[MAJ]</span>
       <button id="btn-data"         type="button" class="actif"><span class="shortcutletter">D</span>onnées générales</button>
       <button id="btn-personnages"  type="button"><span class="shortcutletter">P</span>ersonnages</button>
@@ -27,7 +28,7 @@
       <button id="btn-treatment"    type="button"><span class="shortcutletter">T</span>raitement</button>
       <button id="btn-manuscrit"    type="button"><span class="shortcutletter">M</span>anuscrit</button>
     </section>
-
+    -->
     <section id="panneau-data" class="projet actif">
       <span class="statelight">🔵</span>
       <fieldset class="normal">
@@ -80,6 +81,16 @@
       <div id="panneau-manuscrit-title" class="panneau-title">Manuscrit</div>
       <div id="panneau-manuscrit-contents" class="panneau-contents"></div>
       <div class="clear"></div>
+    </section>
+
+    <section class="section-tabulaire" tabindex="1">
+      <button id="btn-data"          tabindex="2" type="button" class="actif"><span class="shortcutletter">D</span>onnées générales</button>
+      <button id="btn-personnages"   tabindex="3" type="button"><span class="shortcutletter">P</span>ersonnages</button>
+      <button id="btn-synopsis"      tabindex="4" type="button">S<span class="shortcutletter">y</span>nopsis</button>
+      <button id="btn-scenier"       tabindex="5" type="button"><span class="shortcutletter">S</span>cénier</button>
+      <button id="btn-notes"         tabindex="6" type="button"><span class="shortcutletter">N</span>otes</button>
+      <button id="btn-treatment"     tabindex="7" type="button"><span class="shortcutletter">T</span>raitement</button>
+      <button  id="btn-manuscrit"    tabindex="8" type="button"><span class="shortcutletter">M</span>anuscrit</button>
     </section>
 
     <script type="text/javascript" src="projet/js/main.js"></script>
