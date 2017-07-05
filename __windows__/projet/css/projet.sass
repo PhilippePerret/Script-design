@@ -104,9 +104,19 @@ section#top-buttons
 // Styles des paragraphes (Parags)
 div.panneau-contents
   overflow    : scroll
-  // Tous les paragraphes
+  // Tous les paragraphes, quels qu'ils soient
   div.p
+    border-width            : 1px
+    border-style            : solid
+    &:not(.exergue):not(.referent):not(.relatif)
+      border-color          : white
     &.selected
       background-color      : #EDEDFF
     &.current
       background-color      : #EAEBF1
+    &.exergue
+      border-color          : #FFC09E
+    &.referent
+      border-color          : #FF0000
+    &.relatif
+      border-color          : #E3C2DB

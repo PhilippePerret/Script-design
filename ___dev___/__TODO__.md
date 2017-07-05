@@ -1,3 +1,19 @@
+* Quand on CMD+Click sur un paragraphe pour le sélectionner, en mode double panneau, on indique ses relatifs
+  -> exergueRelatifs (dans l'autre panneau)
+    - pour ne pas avoir à chercher en fonction de l'autre panneau, on
+      met tous les relatifs en exergue.
+  -> unexergueRelatifs (dans l'autre panneau)
+  -> showOnlyRelatifs
+  -> unshowOnlyRelatifs
+  * Penser à appeler la méthode lorsqu'on vient de définir une relation
+  * Penser aux deux cas qui peuvent se produire :
+    1. Le paragraphe sélectionné contient plus parags dans l'autre panneau
+    2. Plusieurs paragraphes sélectionnés (ou non) sont relatifs d'un unique
+        parag dans l'autre panneau => dès qu'on sélectionne un parag, on sélectionne
+        aussi ses frères et on met en exergue le parag de l'autre panneau
+
+* CMD+Click sur paragraphe le sort de current
+
 * Pouvoir supprimer une association (Relatives)
 
 * Il faut calculer les tailles des éléments dans la fenêtre projet :

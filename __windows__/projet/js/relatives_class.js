@@ -214,8 +214,10 @@ class Relatives
   * Méthode qui procède à l'association des parags contenus dans la liste
   * @param {Array} parags Liste de {Parag} à associer
   * @product
-  * @return {Boolean} True en cas de succès et false en cas de problème ou
-  * d'impossibilité, mais c'est surtout pour les tests.
+  * @return {Parag} Le paragraphe référent si l'association a pu se faire
+  *                 et false dans le cas contraire.
+  *                 Note : on renvoie le référent pour mettre tout de suite
+  *                 ses relatifs en exergue.
   *
   * Rappel:
   *
@@ -306,7 +308,7 @@ class Relatives
     this.data.relatives[String(ref_id)] = ref_relatives
 
     console.log("\n==== RELATIVES est devenue : ", JSON.stringify(this.data))
-    return true
+    return Parags.get(ref_id)
   }
 
 } // class Relatives

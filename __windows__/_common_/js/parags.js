@@ -56,8 +56,15 @@ class Parags
     }
     if ( ! confirm(`Voulez-vous vraiment associer les ${Parag.selecteds.length} parags sélectionnés ?`) )
     { return false }
+
     // OK, on procède à l'association
-    Projet.current.relatives.associate(Parag.selecteds)
+    // Si le référent est retourné (ce qui se produit en cas de réussite)
+    // alors on met en exergue les relatives de ce référent
+    let referent = Projet.current.relatives.associate(Parag.selecteds)
+    if ( referent ) {
+      Parag.setCurrent(referent)
+      referent.exergueRelatifs()
+    }
 
   }
 

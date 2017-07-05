@@ -76,6 +76,11 @@ class Projet
       DOM.get(`btn-${btn_id}`)
         .addEventListener('click', Projet.loadPanneau.bind(Projet, btn_id))
     })
+    // On place un listener d'event click sur le body, pour tout déselectionner
+    document.body.addEventListener('click', (evt) => {
+      Parag.deselectAll()
+      // alert("Click sur le body hors des paragraphes.")
+    })
   }
 
   /**
