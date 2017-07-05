@@ -1,3 +1,4 @@
+* Pouvoir supprimer une association (Relatives)
 
 * Il faut calculer les tailles des éléments dans la fenêtre projet :
   - au resize de la fenêtre (si on permet son redimensionnement)

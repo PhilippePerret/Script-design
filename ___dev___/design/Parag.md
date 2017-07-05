@@ -34,56 +34,42 @@ Propriétés conservant la date de création et de dernière modification du par
 
 
 
-## Les relatives (relatifs) {#parag_relatives}
+## Les Relatives (relatifs) {#parag_relatives}
 
-```js
+Les “relatives” permettent de tenir à jour la liste des relations entre les `parags`.
 
-/* Pour un Parag #6 du synopsis */
+Cette liste permet par exemple de savoir que 25 parags du manuscrits sont issus de 12 parags du traitement qui eux-mêmes sont issus de 4 parags du scénier qui eux-mêmes sont issus de 2 parags du synopsis.
 
-{
-    "scenier":[12] // Ce parag du synopsis correspond au paragraphe #12 du scénier
-  , "manuscrit":[256,3698]  // ce parag du synopsis correspond aux parags 356 et
-                          // 3698 du manuscrit
-  , "notes":[14,15] // il correspond aux Parags 14 et 15 des notes
-}
+```                    
+                                  /-- P568(treatment)
+                /-- P89(scenier)----- P241(treatment)
+                |                 \-- P546(treatment) ...
+  P1(synopsis)--|                  \- P654(treatment)
+                |    
+                \-- P56(scenier)----- P478(treatment) ...
 
-// En conséquence, le Parag #12, appartenant au synopsis, aura les relatives :
-{
-    "synopsis"  : [6]
-  , "manuscrit" : [256,3698]
-  , "notes"     : [14,15]
-}
+                                  /-- P321(treatment)
+                /-- P23(scenier)----- P322(treatment) ...
+                |                 \-- P323(treatment)
+  P2(synopsis)--|                 \-- P324(treatment)
+                |                 \-- P328(treatment)
+                |   
+                \-- P12(scenier) ---- P456(treatment) ...
+                                  \-- P489(treatment)
 
 ```
 
-En conséquence, est-ce qu'il ne serait pas plus intelligent d'enregistrer une table contenant ces informations, à côté. Une table appelée par exemple `relatives.json` dans le dossier du projet, et qui contiendrait :
+La propriété `Projet#relatives` du projet est une instance `Relatives` qui conserve ces données.
 
-* la table des données relatives,
-* la correspondance entre un identifiant et un élément de cette table.
+Sa propriété `data` contient :
 
-C'est-à-dire, par exemple pour le parag #6 que nous venons de voir :
 
 ```js
 {
+  "created_at": "<date de création>",
+  "updated_at": "<data de dernière modification>",
   "relatives": {
-    153 : {
-        "synopsis"  : [6]
-      , "scenier"   : [12]
-      , "manuscrit" : [256,3698]
-      , "notes"     : [14,15]
-      // Noter qu'on distingue les provenances des ID (scénier, synopsis, etc)
-      // mais que cette information pourrait très bien être zappée puisque les
-      // IDs sont uniques et universels et qu'on peut donc retrouver, d'après
-      // un ID, le containeur du parag.
-    }    
-  }
-  "id2relatives":{
-    6: 153
-    12: 153
-    256: 153
-    3698: 153
-    14: 153
-    15: 153
+    // Définition des relations
   }
 }
 ```
@@ -96,37 +82,39 @@ Comment ça marche :
 Cela crée automatiquement une donnée `relative` :
 
 ```js
+
 {
   "relatives":{
-    ...
-    12:{
-      "synopsis":[1]
-    }
-  },
-  "id2rel":{
-    1: 12
+    "<id du parag>":{"t":"<panneau une lettre>","r":{}}
   }
 }
+
+{
+  "relatives":{
+    "1":{"t":"y","r":{}} // "y" pour "synopsis"
+  }
+}
+
 ```
+
+La donnée est créée mais aucune relation (`r`) n'est affectée.
+
+Noter que `"t"` signifie `type` et peut avoir comme valeur la lettre correspondant au panneau dans `Projet::DATA_PANNEAUX`. `"r"` signifie “relatives”.
+
+On utilise des données courtes car cette table va être amenées à contenir des dizaines de milliers de relations.
+
 
 2. Je fais un autre parag. dans le scénier. Il porte l'identifiant #2. Ça crée une nouvelle donnée relative :
 
 ```js
+
 {
   "relatives":{
-    ...
-    12:{
-      "synopsis":[1]
-    }
-    , 13:{
-      "scenier":[2]
-    }
-  },
-  "id2rel":{
-    1: 12,
-    2: 13
+    "1":{"t":"y","r":{}} // "s" pour "scenier"
+    "2":{"t":"s","r":{}}
   }
 }
+
 ```
 
 3. Je fais un autre paragraphe dans le scénier, qui porte l'identifiant #3. Ça crée un autre relatif :
@@ -134,167 +122,29 @@ Cela crée automatiquement une donnée `relative` :
 ```js
 {
   "relatives":{
-    ...
-    12:{
-      "synopsis":[1]
-    }
-    , 13:{
-      "scenier":[2]
-    }
-    , 14:{
-      "scenier":[3]
-    }
-  },
-  "id2rel":{
-    1: 12,
-    2: 13
-    3: 14
+    "1":{"t":"y","r":{}} // "s" pour "scenier"
+    "2":{"t":"s","r":{}}
+    "3":{"t":"s","r":{}}
   }
 }
+
 ```
 
-Ensuite, on dit que le #1 et le #2 sont les mêmes (plus tard, on pourra dire que le #1 et les deux autres sont mergés). Le programme transforme alors la donnée en :
+Ensuite, on associe les parags #1 et #2. Le programme transforme alors la donnée en :
 
 
 ```js
+
 {
   "relatives":{
-    ...
-    12:{
-        "synopsis":[1]
-      , "scenier": [2]
-    }
-    // SUPPRESSION DE LA DONNÉE 13
-    // , 13:{
-    //   "scenier":[2]
-    // }
-    , 14:{
-      "scenier":[3]
-    }
-  },
-  "id2rel":{
-      1: 12
-    , 2: 12,  // <= avant, c'était 13
-    , 3: 14
-  }
-}
-```
-
-Comment ça marche :
--------------------
-
-* Le programme cherche la donnée relatives de #2. C'est la #13
-* Le programme cherche la donnée relatives de #1. C'est la #12
-* Le programme merge la donnée #13 dans la 12
-* Le programme supprimer la relative #13
-* Le programme met l'id2rel de la #2 à #12
-
-
-« Faire une synchro » correspond alors à créer des relations de relatives en créant des parags.
-
-Par exemple, on a les parags #2, #4 et #5 dans le synopsis.
-
-On a donc, dans la données des relatives :
-
-```js
-{
-  "relatives":{
-    12: { "synopsis":[2]}
-    15: { "synopsis":[4]}
-    25: { "synopsis":[5]}
-  }
-  "id2rel":{
-    2: 12,
-    4: 15,
-    5: 25
+    "1":{"t":"y","r":{"s":[2]}} // "s" pour "scenier"
+    "2":{"t":"s","r":{"y":[1]}}
+    "3":{"t":"s","r":{}}
   }
 }
 
 ```
 
-On va donc créer pour chaque parag un parag équivalent dans les autres panneaux :
+### Principe d'unicité du référent {#parag_principe_unicite_referent}
 
-* le scénier,
-* le traitement,
-* les notes,
-* le manuscrit,
-
-Ce qui va créer au niveau de la table des relatives, après le scénier :
-
-
-```js
-{
-  "relatives":{
-    12: { "synopsis":[2], "scenier":[7]}
-    15: { "synopsis":[4], "scenier":[8]}
-    25: { "synopsis":[5], "scenier":[9]}
-  }
-  "id2rel":{
-    2:  12,
-    4:  15,
-    5:  25,
-    7:  12,
-    8:  15,
-    9:  25
-  }
-}
-
-```
-
-Après le traitement :
-
-
-```js
-{
-  "relatives":{
-    12: { "synopsis":[2], "scenier":[7], "treatment":[10]}
-    15: { "synopsis":[4], "scenier":[8], "treatment":[11]}
-    25: { "synopsis":[5], "scenier":[9], "treatment":[12]}
-  }
-  "id2rel":{
-    2:  12,
-    4:  15,
-    5:  25,
-    7:  12,
-    8:  15,
-    9:  25,
-    10: 12,
-    11: 15,
-    12: 25
-  }
-}
-
-```
-
-
-Après les notes :
-
-
-```js
-{
-  "relatives":{
-    12: { "synopsis":[2], "scenier":[7], "treatment":[10], "notes":[13]}
-    15: { "synopsis":[4], "scenier":[8], "treatment":[11], "notes":[14]}
-    25: { "synopsis":[5], "scenier":[9], "treatment":[12], "notes":[15]}
-  }
-  "id2rel":{
-    2:  12,
-    4:  15,
-    5:  25,
-    7:  12,
-    8:  15,
-    9:  25,
-    10: 12,
-    11: 15,
-    12: 25,
-    13: 12,
-    14: 15,
-    15: 25
-  }
-}
-
-```
-
-… etc.
-
-Noter que la table "id2rel" pourrait être calculée lorsqu'il y a modification des relations.
+Ce principe veut qu'un groupe de paragraphe donné dans un panprojet possède un et un seul référent. En d'autres termes, deux parags du synopsis ne peuvent avoir ensemble qu'un seul relatif dans le scénier.

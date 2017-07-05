@@ -9,7 +9,7 @@ define(
     , DOM
     , Projet
   ){
-   return require(path.join(PROJET_API_PATH,'js','relatives_class'))
+   return require(path.join(PROJET_JS_FOLDER,'relatives_class'))
  }
 )
 //
@@ -43,7 +43,7 @@ define(
 //         let newRelID = ++ this.data.lastRelativeID
 //         this.data.relatives[newRelID] = {}
 //         this.data.relatives[newRelID][iparag.panneau_id] = [iparag.id]
-//         this.data.id2relative[iparag.id] = newRelID
+//         this.data.id2relatives[iparag.id] = newRelID
 //         // Non, on enregistrera les relatives que lorsqu'on sauvera
 //         // les paragraphes. On note simplement que relatives a été modifié
 //         this.modified = true
@@ -70,7 +70,7 @@ define(
 //         return {
 //             "lastRelativeID"  : 0
 //           , "relatives"       : {}
-//           , "id2relative"     : {}
+//           , "id2relatives"     : {}
 //         }
 //       }
 //
@@ -143,7 +143,7 @@ define(
 //
 //         // Le référent possède forcément un enregistrement relative. On ajoute dedans les autres
 //         // paragraphes
-//         let referent_relative_id = this.data.id2relative[String(referent.id)]
+//         let referent_relative_id = this.data.id2relatives[String(referent.id)]
 //         let referent_relatives = this.data.relatives[referent_relative_id]
 //         console.log(`Enregistrement actuel du référent : ${JSON.stringify(referent_relatives)}`)
 //         let autre_panneau = Object.keys(hrelate)[0]
@@ -165,14 +165,14 @@ define(
 //           // Et <<<other>>> qui sont, l'un après l'autre, tous les autres
 //           // paragraphes qu'on doit lui associer
 //
-//           let relative_id_other = this.data.id2relative[String(pid)]
+//           let relative_id_other = this.data.id2relatives[String(pid)]
 //           let relatives_other   = this.data.relatives[relative_id_other]
 //
 //           // TODO Poursuivre
 //
 //           // On peut effacer cette enregistrement et désassocier l'other
 //           delete this.data.relatives[relative_id_other]
-//           this.data.id2relative[String(pid)] = referent_relative_id
+//           this.data.id2relatives[String(pid)] = referent_relative_id
 //
 //         })
 //

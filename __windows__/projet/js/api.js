@@ -41,6 +41,29 @@ class Projet
     }
     return this._panneaulist
   }
+  static get PANNEAUX_DATA ()
+  {
+    if (undefined === this._panneauData )
+    {
+      this._panneauData = {
+          'data'        : {oneLetter: 'd'/* pour relatives*/ }
+        , 'd' : 'data'
+        , 'manuscrit'   : {oneLetter: 'm'}
+        , 'm' : 'manuscrit'
+        , 'notes'       : {oneLetter: 'n'}
+        , 'n' : 'notes'
+        , 'personnages' : {oneLetter: 'p'}
+        , 'p' : 'personnages'
+        , 'scenier'     : {oneLetter: 's'}
+        , 's' : 'scenier'
+        , 'synopsis'    : {oneLetter: 'y'}
+        , 'y' : 'synopsis'
+        , 'treatment'   : {oneLetter: 't'}
+        , 't' : 'treatment'
+      }
+    }
+    return this._panneauData
+  }
   // Détermine si on se trouve en mode édition, c'est-à-dire dans un contenu
   // éditable. Ce mode détermine surtout l'action des raccourcis-clavier
   // uno-touche.

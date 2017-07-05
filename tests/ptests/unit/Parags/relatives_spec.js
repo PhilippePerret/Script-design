@@ -4,17 +4,12 @@
   C'est un problème complexe qui demande d'être traité en profondeur
 *** --------------------------------------------------------------------- */
 
-// Pour utiliser `exec`
-var util = require('util')
-var exec = require('child_process').exec
-function wexec(error, stdout, stderr) {
-  if(error){puts(error,'warning')}
-  puts(stdout)
-  if(stderr){puts(stderr,'warning')}
-}
-// exec("ls -la", puts);
+const oldoptionsOneLinevalue = PTests.options.one_line_describe
+PTests.options.one_line_describe = false
 
-
+afterAll( () => {
+  PTests.options.one_line_describe = oldoptionsOneLinevalue
+})
 
 // On charge le module `relatives.js`
 const Relatives = require_module('./__windows__/projet/js/relatives_class.js')
@@ -45,7 +40,31 @@ class Projet {
     { this._relatives = new Relatives(this) }
     return this._relatives
   }
+  static get PANNEAUX_DATA ()
+  {
+    if (undefined === this._panneauData )
+    {
+      this._panneauData = {
+          'data'        : {oneLetter: 'd'/* pour relatives*/ }
+        , 'd' : 'data'
+        , 'manuscrit'   : {oneLetter: 'm'}
+        , 'm' : 'manuscrit'
+        , 'notes'       : {oneLetter: 'n'}
+        , 'n' : 'notes'
+        , 'personnages' : {oneLetter: 'p'}
+        , 'p' : 'personnages'
+        , 'scenier'     : {oneLetter: 's'}
+        , 's' : 'scenier'
+        , 'synopsis'    : {oneLetter: 'y'}
+        , 'y' : 'synopsis'
+        , 'treatment'   : {oneLetter: 't'}
+        , 't' : 'treatment'
+      }
+    }
+    return this._panneauData
+  }
 }
+global.Projet = Projet
 
 //  On mocke la classe Parag pour qu'elle donne le minium
 class Parag {
@@ -67,8 +86,9 @@ class Parag {
 // On crée un faux objet relatives
 let projet, relatives
 
-// À appeler par les tests pour obtenir une instance relative
-
+// À appeler par les tests pour obtenir une instance relative qui permettra
+// d'invoquer la méthode `associate` pour procéder à l'association des
+// paragraphes.
 function newRelatives(withData) {
   projet = new Projet('test')
   relatives = projet.relatives
@@ -77,12 +97,31 @@ function newRelatives(withData) {
 }
 
 let par1, par2, par3, par4, par5
-let pan_scenier = "scenier", pan_notes = "notes"
-let ir, hir_exp // pour instance Relatives (fournie et attendue)
+let ir, relatives_exp // pour instance Relatives (fournie et attendue)
+
+// On stub la méthode alert pour qu'elle mette le message d'alerte
+// dans la propriété 'alertMessage' de PTests
+global.alert = function(mess){
+  PTests.alertMessage = mess
+  // puts(`Message Alert: ${mess}`)
+}
 
 
-global.alert = function(mess){puts(`Message Alert: ${mess}`)}
-
+/**
+* Méthode principale créant l'association entre les parags fournis et
+* checkant que le résultat correspond aux attentes
+*
+* @param {Array} parag_list
+*     Liste des paragraphes {Parag} qu'il faut associer.
+* @param {Relatives} irelatives
+*     L'objet relatives du projet.
+* @param {Object} hexpected
+*     La table attendue. ATTENTION : si cette table est fausse, le test produira
+*     une erreur. Il faut donc la vérifier trois fois.
+* @param {Boolean} show_with_json
+*     Pour l'implémentation du test, on peut mettre cet argument à true pour
+*     afficher les deux tables des relatives, celle attendue et celle obtenue.
+**/
 function associateAndCheck(parag_list, irelatives, hexpected, show_with_json)
 {
   if ( show_with_json )
@@ -96,64 +135,127 @@ function associateAndCheck(parag_list, irelatives, hexpected, show_with_json)
     let data_str_after = JSON.stringify(irelatives.data)
     puts(`DATA APRÈS : ${data_str_after}`)
   }
-  expect(ir.data).to.equal(hexpected, {diff: true})
+  expect(irelatives.data.relatives,{template:{success:"La données des relatives correspond à celle attendue."}, no_values:true}).to.equal(hexpected, {diff: true})
+}
+/**
+* Méthode qui doit produire un échec
+**/
+const TempAssoInv = {
+  success: "L'association n'a pas pu se faire.",
+  failure: "L'association a pu se faire."
+}
+function associateAndFailure(parag_list, irelatives, alertMessage)
+{
+  // On conserve la valeur initiale
+  let initialData = function(){return irelatives.data}()
+  // puts(`initialData: ${JSON.stringify(initialData)}`)
+  let result = irelatives.associate(parag_list)
+  expect(result,{template:TempAssoInv}).to.be.false
+  // irelatives ne doit pas avoir été modifié
+  let opts = {
+    template:{
+      failure:"La donnée Relatives ne devrait pas avoir été modifiée…"
+      , success: "La données des relatives n'a pas été affectée."
+    },
+    no_values: true
+  }
+  expect(irelatives.data).to.equal(initialData, opts)
+  // Le message d'alerte doit avoir été fourni
+  if (alertMessage){
+    expect(PTests.alertMessage,'le message d’alerte donné',{no_values:true}).to.contains(alertMessage)
+  }
 }
 
-describe("Relatives d'un parag",[
+describe("Association des parags (Relatives)",[
 
 
   // --------------- SUCCÈS -----------------
   , context("avec des données valides",[
-    , context("Un paragraphe choisi dans deux panneaux différents, sans association",[
-      , it("produit un succès avec un parag choisi", ()=>{
+    , context("2 parags sans aucune association dans deux panneaux différents",[
+      , it("produit un succès", ()=>{
         par1 = new Parag(0, "scenier")
         par2 = new Parag(1, "notes")
         ir = newRelatives({
           "relatives":{
-              "1":{"scenier":[0]}
-            , "2":{"notes":[1]}
-          }
-          , "lastRelID":2
-          , "id2relative":{
-              "0":1
-            , "1":2
+              "0":{"t":"s", "r":{}}
+            , "1":{"t":"n", "r":{}}
           }
         })
-
-        // Le tableau qu'on attend
-        hir_exp = {
-          "relatives":{
-            "1":{"scenier":[0], "notes":[1]}
-          }
-          , "lastRelID":2
-          , "id2relative":{
-            "0":1,
-            "1":1
-          }
+        relatives_exp = {
+            "0":{"t":"s", "r":{"n":[1]}}
+          , "1":{"t":"n", "r":{"s":[0]}}
         }
-
         // ===> TEST <===
-        associateAndCheck([par1, par2], ir, hir_exp)
-
+        associateAndCheck([par1, par2], ir, relatives_exp)
       })
     ])
-  //   , context("avec 1 parag dans un panneau et 2 dans un autre",[
-  //     , it("produit un succès", ()=>{
-  //       pending("Succès avec 1 contre 2")
-  //     })
-  //   ])
-  //   , context("avec 2 parags dont le référent est déjà associé à un autre,dans un autre panneau",[
-  //     , it("produit un succès", ()=>{
-  //       pending("Succès avec 2 parags dont 1 associé")
-  //       // L'other doit hériter de l'association
-  //     })
-  //   ])
-  //   , context("avec 2 parags dont l'other est déjà associé à un autre, dans un autre panneau",[
-  //     , it("produit un succès", ()=>{
-  //       pending("2 parags avec other associé à un autre panneau")
-  //       // Le référent doit hériter de l'association
-  //     })
-  //   ])
+    , context("avec 1 parag dans un panneau et 2 dans un autre",[
+      , it("produit un succès", ()=>{
+        par1 = new Parag(0, "scenier")
+        par2 = new Parag(1, "notes")
+        par3 = new Parag(2, "notes")
+        ir = newRelatives({
+          "relatives":{
+              "0":{"t":"s", "r":{}}
+            , "1":{"t":"n", "r":{}}
+            , "2":{"t":"n", "r":{}}
+          }
+        })
+        relatives_exp = {
+            "0":{"t":"s", "r":{"n":[1,2]}}
+          , "1":{"t":"n", "r":{"s":[0]}}
+          , "2":{"t":"n", "r":{"s":[0]}}
+        }
+        // ===> TEST <===
+        associateAndCheck([par1, par2, par3], ir, relatives_exp)
+      })
+    ])
+    , context("avec 2 parags dont le référent est déjà associé à un autre, dans un autre panneau",[
+      , it("produit un succès", ()=>{
+        par1 = new Parag(0, "scenier")
+        par2 = new Parag(1, "notes")
+        ir = newRelatives({
+          "relatives":{
+              "0":{"t":"s", "r":{"m":[5,6]}}
+            , "1":{"t":"n", "r":{}}
+            , "5":{"t":"m", "r":{"s":[0]}}
+            , "6":{"t":"m", "r":{"s":[0]}}
+          }
+        })
+        relatives_exp = {
+            "0":{"t":"s", "r":{"m":[5,6],"n":[1]}}
+          , "1":{"t":"n", "r":{"s":[0]}}
+          , "5":{"t":"m", "r":{"s":[0]}}
+          , "6":{"t":"m", "r":{"s":[0]}}
+        }
+        // ===> TEST <===
+        associateAndCheck([par1, par2], ir, relatives_exp)
+      })
+    ])
+    , context("avec 2 parags dont l'other est déjà associé à un autre, dans un autre panneau",[
+      , it("produit un succès", ()=>{
+        par1 = new Parag(0, "scenier")
+        par2 = new Parag(1, "notes")
+        ir = newRelatives({
+          "relatives":{
+              "0":{"t":"s", "r":{"m":[5,6]}}
+            , "1":{"t":"n", "r":{"m":[12]}}
+            , "5":{"t":"m", "r":{"s":[0]}}
+            , "6":{"t":"m", "r":{"s":[0]}}
+            , "12":{"t":"m", "r":{"n":[1]}}
+          }
+        })
+        relatives_exp = {
+            "0":{"t":"s", "r":{"m":[5,6], "n":[1]}}
+          , "1":{"t":"n", "r":{"m":[12],"s":[0]}}
+          , "5":{"t":"m", "r":{"s":[0]}}
+          , "6":{"t":"m", "r":{"s":[0]}}
+          , "12":{"t":"m", "r":{"n":[1]}}
+        }
+        // ===> TEST <===
+        associateAndCheck([par1, par2], ir, relatives_exp)
+      })
+    ])
   //   , context("avec 2 parags dont l'other est associé au paragraphe précédent du référent",[
   //     , it("produit un succès", ()=>{
   //       pending("2 parags, other lié à précédent du référent")
@@ -190,38 +292,94 @@ describe("Relatives d'un parag",[
 
 
   // ---------------- ÉCHECS ----------------
-  , context("Cas simples qui échouent",[
-    , context("avec deux paragraphes choisis dans le même panneau",[
-      , it("doit produire un échec d'impossibilité", ()=>{
-        pending("Échec à implémenter")
-        // TODO Se servir du stub de alert (en haut de feuille de test)
-        // pour contrôler le message d'erreur transmis.
+  , context("avec des données invalides",[
+    , context("échoue quand le paragraphe est associé à lui-même",[
+      , it("produit un échec", ()=>{
+        par1 = new Parag(1, "scenier")
+        par2 = new Parag(1, "notes") // <== ERREUR, MÊME #ID
+        ir = newRelatives({
+          "relatives":{
+              "0":{"t":"s", "r":{}}
+            , "1":{"t":"n", "r":{}}
+          }
+        })
+        associateAndFailure([par1,par2],ir,"Le parag #1 ne peut être associé à lui-même")
       })
     ])
-  //   , context("deux paragraphes déjà associés",[
-  //     , it("produit un échec", ()=>{
-  //       pending("Échec à cause de deux paragraphes déjà associés")
-  //     })
-  //   ])
-  //   , context("deux paragraphes dont l'un est associé à un autre paragraphe distant",[
-  //     , it("produit un échec de distance", ()=>{
-  //       pending("Échec pour association avec deux paragraphes trop distants")
-  //     })
-  //   ])
-  //   , context("deux paragraphes dont l'un est déjà associé avec deux autres",[
-  //     , it("produit un échec", ()=>{
-  //       // Ce cas est plus difficile à expliquer :
-  //       // Soit trois panneaux, P1 et P2
-  //       // Soit un parag T1 de P1 associé à T2 de P2 et T3 de P3
-  //       // Non… je ne trouve plus…
-  //
-  //
-  //     })
-  //   ])
-  //   , context("2 parags choisi dans un panneau, 2 dans l'autre) ",[
-  //     , it("doit produire un échec, il faut un seul référent", ()=>{
-  //       pending("Échec un seul référent attendu, pas 2")
-  //     })
-  //   ])
+    , context("échoue quand deux paragraphes sont choisis dans le même panneau",[
+      , it("produit un échec", ()=>{
+        par1 = new Parag(1, "scenier")
+        par2 = new Parag(2, "scenier") // <== ERREUR, MÊME PANNEAU
+        ir = newRelatives({
+          "relatives":{
+              "1":{"t":"s", "r":{}}
+            , "2":{"t":"s", "r":{}}
+          }
+        })
+        associateAndFailure([par1,par2],ir,"Plusieurs parags ont été sélectionnés dans les deux panneaux. Je n'ai donc aucun référent.")
+      })
+    ])
+    , context("échoue si deux paragraphes sont déjà relatifs",[
+      , it("produit un échec", ()=>{
+        par1 = new Parag(1, "scenier")
+        par2 = new Parag(2, "manuscrit") // <== ERREUR, DÉJÀ ASSOCIÉ
+        ir = newRelatives({
+          "relatives":{
+              "1":{"t":"s", "r":{"m":[2]}}
+            , "2":{"t":"m", "r":{"s":[1]}}
+          }
+        })
+        associateAndFailure([par1,par2],ir,"Les parags #1 et #2 sont déjà relatifs.")
+      })
+    ])
+    , context("échoue en essayant d'associer 2 parags choisi dans un panneau, 2 dans l'autre (aucun référent) ",[
+      , it("produit un échec avec le message un seul référent nécessaire", ()=>{
+        par1 = new Parag(1, "scenier")
+        par2 = new Parag(4, "scenier")
+        par3 = new Parag(2, "manuscrit")
+        par4 = new Parag(12, "manuscrit")
+        ir = newRelatives({
+          "relatives":{
+              "1":{"t":"s", "r":{}}
+            , "2":{"t":"m", "r":{}}
+            , "4":{"t":"s", "r":{}}
+            , "12":{"t":"m", "r":{}}
+          }
+        })
+        associateAndFailure([par1,par2,par3,par4],ir,"Plusieurs parags ont été sélectionnés dans les deux panneaux. Je n'ai donc aucun référent.")
+      })
+    ])
+    , context("échoue en associant un parag à un 1 parag associé avec un frère à un autre parag du même panneau",[
+      /*
+        Ici on tente d'associer 2 parags d'un panneau à 2 parags d'un autre, mais
+        en deux temps (en un temps, l'erreur de manque de référent est signalé, cf. le
+        cas précédent).
+        Ici, on a déjà associé P1(scénier) à P2(notes) et P3(notes)
+        Et on essaie d'associer P4(scénier) à P2(notes)
+        Si on réussit, on aurait les deux paragraphes P1 et P4 (scénier) qui
+        seraient associés aux parags P2 et P3 (notes). On ne peut pas, il faut
+        toujours qu'un seul parag-référent s'adresse à un ou plusieur parag
+        d'un autre panneau.
+        Et surtout, 2 parags du même panneau ne peuvent avoir qu'un seul
+        référent dans un autre panneau.
+        Cf. "Principe de l'unicité du référent"
+      */
+      , it("produit un échec", ()=>{
+        // par1 = new Parag(1, "scenier") // déjà associé à 2 et 12
+        par2 = new Parag(4, "scenier")
+        par3 = new Parag(2, "notes")
+        // par4 = new Parag(12, "notes")
+        ir = newRelatives({
+          "relatives":{
+              "1":{"t":"s", "r":{"n":[2,12]}}
+            , "2":{"t":"n", "r":{"s":[1]}}
+            , "4":{"t":"s", "r":{}}
+            , "12":{"t":"n", "r":{"s":[1]}}
+          }
+        })
+        associateAndFailure([par2,par3],ir,"impossible d'associer les parags #4 et #2, on obtiendrait 2 parags d'un même panneau avec 2 référents différents.")
+      })
+
+    ])
   ])
 ])
