@@ -164,6 +164,21 @@ C'est un tableau qu'on doit envoyer au tableau, ce tableau (`expected`) contenan
 
 Vérifie l'égalité entre deux expressions. Cf. aussi la note sur le mode strict.
 
+Lorsque des éléments complexes sont fournis, par exemple des tables (dictionnaires), on peut demander d'afficher la différence (en cas de différence) avec l'option `diff:true`. Cela ralentira les tests, mais affichera un résultat plus parlant.
+
+Par exemple :
+
+```js
+
+  let table1 = {'un': "une", 'le': "la"}
+  let table2 = {'un': "une", 'le': "il", 'il': "elle"}
+  expect(table1).to.equal(table2, {diff: true})
+  // => Indique que la clé 'il' est inconnue dans actual
+
+
+```
+
+
 ### Fichiers et dossiers {#methodes_fichiers_et_dossier}
 
 Pour tester les fichiers et les dossiers, on passe un path relatif ou absolu en ajoutant `asFile` ou `asFolder` dans la chaine de l'expectation.

@@ -4,6 +4,18 @@
   C'est un problème complexe qui demande d'être traité en profondeur
 *** --------------------------------------------------------------------- */
 
+// Pour utiliser `exec`
+var util = require('util')
+var exec = require('child_process').exec
+function wexec(error, stdout, stderr) {
+  if(error){puts(error,'warning')}
+  puts(stdout)
+  if(stderr){puts(stderr,'warning')}
+}
+// exec("ls -la", puts);
+
+
+
 // On charge le module `relatives.js`
 const Relatives = require_module('./__windows__/projet/js/relatives_class.js')
 
@@ -66,10 +78,26 @@ function newRelatives(withData) {
 
 let par1, par2, par3, par4, par5
 let pan_scenier = "scenier", pan_notes = "notes"
-let ir // pour instance Relatives
+let ir, hir_exp // pour instance Relatives (fournie et attendue)
 
 
 global.alert = function(mess){puts(`Message Alert: ${mess}`)}
+
+function associateAndCheck(parag_list, irelatives, hexpected, show_with_json)
+{
+  if ( show_with_json )
+  {
+    let data_str_before = JSON.stringify(irelatives.data)
+    puts(`DATA AVANT : ${data_str_before}`)
+  }
+  irelatives.associate(parag_list)
+  if ( show_with_json )
+  {
+    let data_str_after = JSON.stringify(irelatives.data)
+    puts(`DATA APRÈS : ${data_str_after}`)
+  }
+  expect(ir.data).to.equal(hexpected, {diff: true})
+}
 
 describe("Relatives d'un parag",[
 
@@ -92,14 +120,21 @@ describe("Relatives d'un parag",[
           }
         })
 
-        // ===> TEST <===
-        puts(`DATA AVANT : ${JSON.stringify(ir.data)}`)
-        ir.associate([par1, par2])
-        puts(`DATA APRÈS : ${JSON.stringify(ir.data)}`)
+        // Le tableau qu'on attend
+        hir_exp = {
+          "relatives":{
+            "1":{"scenier":[0], "notes":[1]}
+          }
+          , "lastRelID":2
+          , "id2relative":{
+            "0":1,
+            "1":1
+          }
+        }
 
-        // le relative_id de l'other a changé
-        // la donnée relative de l'other a été détruite
-        expect(ir.data.relatives[String(old_relative_id)]).to.be.strictly.undefined
+        // ===> TEST <===
+        associateAndCheck([par1, par2], ir, hir_exp)
+
       })
     ])
   //   , context("avec 1 parag dans un panneau et 2 dans un autre",[
