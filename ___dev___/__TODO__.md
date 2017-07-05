@@ -1,18 +1,20 @@
-* Quand on CMD+Click sur un paragraphe pour le sélectionner, en mode double panneau, on indique ses relatifs
-  -> exergueRelatifs (dans l'autre panneau)
-    - pour ne pas avoir à chercher en fonction de l'autre panneau, on
-      met tous les relatifs en exergue.
-  -> unexergueRelatifs (dans l'autre panneau)
-  -> showOnlyRelatifs
-  -> unshowOnlyRelatifs
-  * Penser à appeler la méthode lorsqu'on vient de définir une relation
-  * Penser aux deux cas qui peuvent se produire :
-    1. Le paragraphe sélectionné contient plus parags dans l'autre panneau
-    2. Plusieurs paragraphes sélectionnés (ou non) sont relatifs d'un unique
-        parag dans l'autre panneau => dès qu'on sélectionne un parag, on sélectionne
-        aussi ses frères et on met en exergue le parag de l'autre panneau
+* Penser à un fonctionnement comme ça :
+  - Une lettre permet de focusser sur une partie de l'interface
+  - La touche tabulation permet alors de se déplacer à l'intérieur de cette partie
+  - la touche entrée permet de sélectionner la chose
+  NOTE : c'est un peu mis en place avec la "section active" dans la fenêtre Projets (pluriel).
+  Par exemple :
+    - O     permet de focusser sur les onglets
+    - TAB   permet alors de se déplacer d'onglet en onglet (en revenant au premier)
+    - ENTER permet de choisir l'onglet et donc de l'afficher
+  Autre exemple :
+    - T     permet d'afficher et de focusser sur la liste des outils généraux
+    - TAB   permet de passer d'outil en outil
+    - ENTER permet de jouer l'outil choisi.
 
-* CMD+Click sur paragraphe le sort de current
+    - P     permet de focusser sur le panneau courant
+      TAB   permet de se déplacer de parag en parag
+      ENTER permet d'éditer le parag courant
 
 * Pouvoir supprimer une association (Relatives)
 

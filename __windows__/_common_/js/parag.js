@@ -431,8 +431,6 @@ class Parag
   **/
   exergueRelatifs ()
   {
-    this.relatifs.as_relatifs.forEach( iparag => iparag.exergue(false) )
-    this.relatifs.as_referent.forEach( iparag => iparag.exergue(true) )
     // Il faut régler la classe du paragraphe cliqué en fonction
     // de son statut dans les doubles panneaux, referent ou relatif
     let statutDblPan = this.statutDoublePanneau
@@ -449,7 +447,9 @@ class Parag
       }
       else
       {
+        // Le parag est un référent
         DOM.addClass(this.mainDiv, statutDblPan)
+        this.relatifs.as_relatifs.forEach( iparag => iparag.exergue(false) )
       }
     }
     this.relatifsExergued = true
@@ -459,8 +459,6 @@ class Parag
   **/
   unexergueRelatifs ()
   {
-    this.relatifs.as_relatifs.forEach( iparag => iparag.unexergue() )
-    this.relatifs.as_referent.forEach( iparag => iparag.unexergue() )
     let statutDblPan = this.statutDoublePanneau
     if ( statutDblPan != 'none' )
     {
@@ -469,7 +467,9 @@ class Parag
       }
       else
       {
-        DOM.removeClass(this.mainDiv, statutDblPan)        
+        // Le parag est un référent
+        this.relatifs.as_relatifs.forEach( iparag => iparag.unexergue() )
+        DOM.removeClass(this.mainDiv, statutDblPan)
       }
     }
     this.relatifsExergued = false
