@@ -26,6 +26,27 @@ define(
         this.actif  = false
       }
 
+      /* --- Public --- */
+      print ()
+      {
+        alert("Pour le moment, je ne sais pas encore imprimer un panneau.")
+      }
+
+      export ()
+      {
+        alert("Pour le moment, je ne sais pas encore exporter un panneau.")
+      }
+
+      synchronize ()
+      {
+        alert("Pour le moment, je ne sais pas encore synchroniser un panneau.")
+      }
+
+      /** ---------------------------------------------------------------------
+        *
+        *   DATA
+        *
+      *** --------------------------------------------------------------------- */
 
       /**
       * @return {Projet} Le projet courant (raccourci)
@@ -71,12 +92,10 @@ define(
       **/
       activate () {
         if ( ! this.loaded ) { this.load() }
-        DOM.addClass(`btn-${this.id}`,'actif')
         DOM.addClass(`panneau-${this.id}`,'actif')
         this.actif = true
       }
       desactivate () {
-        DOM.removeClass(`btn-${this.id}`, 'actif')
         DOM.removeClass(`panneau-${this.id}`,'actif')
         this.actif = false
       }

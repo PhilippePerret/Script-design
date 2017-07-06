@@ -83,8 +83,8 @@ define(
       switch ( evt.key )
       {
 
-        case 'D':
-          return Projet.loadPanneau('data')
+        // case 'D':
+        //   return Projet.loadPanneau('data')
         case 'Enter':
           // Suivant le mode, on fait quelque chose de différent
           // Si un paragraphe est sélectionné, ou courant, et qu'on est en
@@ -112,19 +112,21 @@ define(
         case 'o':
           alert("La fenêtre des outils n'est pas encore implémentée")
           break
-        // Activation des panneaux
-        case 'M':
-          return Projet.loadPanneau('manuscrit', evt)
-        case 'N':
-          return Projet.loadPanneau('notes', evt)
-        case 'P':
-          return Projet.loadPanneau('personnages')
-        case 'S':
-          return Projet.loadPanneau('scenier')
-        case 'T':
-          return Projet.loadPanneau('treatment')
-        case 'Y':
-          return Projet.loadPanneau('synopsis')
+        // // Activation des panneaux
+        // OBSOLÈTE : MAINTENANT GÉRÉ PAR UN TABULATOR
+        // case 'M':
+        //   return Projet.loadPanneau('manuscrit', evt)
+        // case 'N':
+        //   return Projet.loadPanneau('notes', evt)
+        // case 'P':
+        //   return Projet.loadPanneau('personnages')
+        // case 'S':
+        //   return Projet.loadPanneau('scenier')
+        // case 'T':
+        //   return Projet.loadPanneau('treatment')
+        // case 'Y':
+        //   return Projet.loadPanneau('synopsis')
+
         default:
           // Pour voir la touche :
           // console.log(evt.key)

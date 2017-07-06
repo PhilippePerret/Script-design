@@ -1,17 +1,37 @@
-tabulator.section-tabulaire
-  // Contient les boutons "Data", "Personnages", "Scénier", etc.
-  &#boutons-panneaux
-    top   : 0
-    left  : 0
-
 // -------- Les tabulators -----------
+
+tabulator
+  // Tabulator façon fenêtre d'outils
+  &.tools
+    &:not(:focus)
+      width       : 40px
+      height      : 33px
+      text-align  : center
+      // Le picto qui contient 🛠
+      > picto
+        display : block
+      > button
+        display : none !important
+    &:focus
+      > picto
+        display : none
+      width   : 600px
+      height  : auto
+      > button
+        white-space : nowrap
+
 tabulator
   display           : inline-block
-  border            : 1px solid red
+  // border            : 1px solid red
   overflow          : hidden
   position          : fixed
   z-index           : 500
   background-color  : white
+  opacity           : 0.9
+
+  &:not(.tools)
+    min-width         : 240px
+    min-height        : 28px
 
   // Les boutons/menus
   > button

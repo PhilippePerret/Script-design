@@ -91,13 +91,21 @@
     </section>
 
     <tabulator id="boutons-panneaux" tabindex="1">
-      <button id="btn-data">Données générales</button>
-      <button id="btn-personnages">Personnages</button>
-      <button id="btn-synopsis">Synopsis</button>
-      <button id="btn-scenier">Scénier</button>
-      <button id="btn-notes">Notes</button>
-      <button id="btn-treatment">Traitement</button>
-      <button id="btn-manuscrit">Manuscrit</button>
+      <button data-tab="data">Données générales</button>
+      <button data-tab="personnages">Personnages</button>
+      <button data-tab="synopsis">Synopsis</button>
+      <button data-tab="scenier">Scénier</button>
+      <button data-tab="notes">Notes</button>
+      <button data-tab="treatment">Traitement</button>
+      <button data-tab="manuscrit">Manuscrit</button>
+    </tabulator>
+
+    <tabulator id="operations" class="tools" tabindex="2">
+      <picto>🛠</picto>
+      <button data-tab="synchronize">Tout synchroniser</button>
+      <button data-tab="export">Exporter le panneau</button>
+      <button data-tab="print">Imprimer le panneau</button>
+      <button data-tab="stats">Afficher les statistiques</button>
     </tabulator>
 
     <script type="text/javascript" src="projet/js/main.js"></script>

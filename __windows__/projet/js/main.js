@@ -76,9 +76,6 @@ requirejs(
           , KeyboardObject:       KBShortcuts
         })
 
-        // On prépare les tabulators
-        log(Tabulator)
-        Tabulator.setup()
 
         // Dire que la fenêtre est prête, pour pouvoir charger le projet
         // courant
@@ -90,6 +87,26 @@ requirejs(
 
           Projet.UIprepare()
           Projet.load(data)
+
+
+
+          // On prépare les tabulators
+          let currentpan = Projet.current_panneau
+          // DÉFINITION DE LA MAP DES TABULATORS
+          Tabulator.Map = {
+            "boutons-panneaux":{
+                maxSelected: 2
+              , enter_method: Projet.loadPanneauByTabulator.bind(Projet)
+            }
+            , "operations":{
+                'synchronize' : currentpan.synchronize.bind(currentpan)
+              , 'export'      : currentpan.export.bind(currentpan)
+              , 'print'       : currentpan.print.bind(currentpan)
+              , 'stats'       : Projet.current.afficherStatistiques.bind(Projet.current)
+            }
+          }
+          // Prépation des tabulateurs
+          Tabulator.setup()
 
         })
 

@@ -72,10 +72,6 @@ class Projet
 
   static UIprepare ()
   {
-    this.PANNEAU_LIST.forEach( (btn_id) => {
-      DOM.get(`btn-${btn_id}`)
-        .addEventListener('click', Projet.loadPanneau.bind(Projet, btn_id))
-    })
     // On place un listener d'event click sur le body, pour tout déselectionner
     document.body.addEventListener('click', (evt) => {
       Parag.deselectAll()
@@ -117,52 +113,96 @@ class Projet
   }
 
   /**
+  * Méthode appelée par le tabulator des panneaux pour ouvrir un ou plusieurs
+  * panneaux
+  *
+  * @param {Array} keys Liste des id-panneaux (un ou deux seulement) définissant
+  *                     le ou les panneaux à ouvrir.
+  **/
+  static loadPanneauByTabulator ( keys )
+  {
+    console.log("keys:", keys)
+    if ( keys.length == 1 )
+    {
+      this.loadPanneau(keys[0])
+    }
+    else
+    {
+      this.loadDoublePanneaux(...keys)
+    }
+  }
+
+  /**
+  * Méthode fonction passant en mode double panneau
+  **/
+  static loadDoublePanneaux (pan1_id, pan2_id)
+  {
+    // Désactiver les panneaux courants (if any)
+    this.desactiveAllCurrents()
+
+    this._current_panneau = this.panneaux[pan2_id]
+    this.current_panneau.activate()
+    this.current_panneau.setModeDouble('right')
+
+    this.alt_panneau = this.panneaux[pan1_id]
+    this.alt_panneau.activate()
+    this.alt_panneau.setModeDouble('left')
+
+    this.mode_double_panneaux = true
+  }
+
+  /**
   * Méthode fonctionnelle chargeant le plateau voulant
   **/
   static loadPanneau (panneau_id, evt)
   {
     // Si on était en mode double panneau, il faut en sortir, même
     // si on va y revenir tout de suite
-    if (this.mode_double_panneaux)
+    this.desactiveAllCurrents()
+    this._current_panneau = this.panneaux[panneau_id]
+    this.current_panneau.activate()
+    this.mode_double_panneaux = false
+  }
+
+
+  /**
+  * Désactive le ou les panneaux affichés, en les repassant dans leur
+  * mode normal (en mode double panneaux, ils sont rétrécis et placés à
+  * gauche et à droite)
+  **/
+  static desactiveAllCurrents ()
+  {
+    if ( this.mode_double_panneaux )
     {
       this.alt_panneau.desactivate()
       this.alt_panneau.unsetModeDouble()
       this.current_panneau.unsetModeDouble()
     }
-    // Pour savoir s'il faut passer en mode double
-    let passerEnModeDouble  = evt && evt.shiftKey
-    let dejaEnModeDouble    = !!this.mode_double_panneaux
-    this.mode_double_panneaux = !!passerEnModeDouble
-
-    if ( passerEnModeDouble )
-    {
-      // Le mode double
-      // Le panneau courant passe ne panneau_alt
-      this.alt_panneau = this.panneaux[this.current_panneau.id]
-      this.alt_panneau.setModeDouble('left')
-      this._current_panneau = this.panneaux[panneau_id]
-      this.current_panneau.activate()
-      this.current_panneau.setModeDouble('right')
-    }
-    else
-    {
-      // Le mode normal
-      this.current_panneau.desactivate()
-      this._current_panneau = this.panneaux[panneau_id]
-      this.current_panneau.activate()
-    }
-
+    if ( this.current_panneau ) { this.current_panneau.desactivate() }
   }
+
+
+
+
+
   /** ---------------------------------------------------------------------
     *
     *   INSTANCE
     *
   *** --------------------------------------------------------------------- */
+
   constructor (projet_id)
   {
     this.id = projet_id
   }
 
+
+  /* --- publiques --- */
+  afficherStatistiques ()
+  {
+    alert("Pour le moment, je ne sais pas encore afficher les statistiques du projet.")
+  }
+  
   /**
   * Chargement du projet
   **/

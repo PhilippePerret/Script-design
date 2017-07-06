@@ -1,20 +1,7 @@
-* Penser à un fonctionnement comme ça :
-  - Une lettre permet de focusser sur une partie de l'interface
-  - La touche tabulation permet alors de se déplacer à l'intérieur de cette partie
-  - la touche entrée permet de sélectionner la chose
-  NOTE : c'est un peu mis en place avec la "section active" dans la fenêtre Projets (pluriel).
-  Par exemple :
-    - O     permet de focusser sur les onglets
-    - TAB   permet alors de se déplacer d'onglet en onglet (en revenant au premier)
-    - ENTER permet de choisir l'onglet et donc de l'afficher
-  Autre exemple :
-    - T     permet d'afficher et de focusser sur la liste des outils généraux
-    - TAB   permet de passer d'outil en outil
-    - ENTER permet de jouer l'outil choisi.
+* Documenter Tabulator sur le fait qu'on peut maintenant mettre une donnée dans 'data-tab' dans la balise pour trouver le système de pointeur dont je parlais. S'il est défini, c'est cette `data-tab` qui peut être utilisée en clé dans la Map, sinon c'est la lettre. Pour la méthode `enter_method`, ce sont soit ces `data-tab` qui sont envoyés — si définis — soit la lettre.
 
-    - P     permet de focusser sur le panneau courant
-      TAB   permet de se déplacer de parag en parag
-      ENTER permet d'éditer le parag courant
+* Ajouter un petit numéro au bout du menu/outil quand il est dans les boutons sélectionnés et qu'il y en a plusieurs.
+
 
 * Pouvoir supprimer une association (Relatives)
 

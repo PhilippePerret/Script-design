@@ -26,10 +26,10 @@ class Tabulator
   **/
   static setup ()
   {
-    log('-> Tabulator::setup')
+    // log('-> Tabulator::setup')
     this._items = {} // les tabulateurs
     this.observe()
-    log('<- Tabulator::setup')
+    // log('<- Tabulator::setup')
   }
 
   /**
@@ -51,7 +51,7 @@ class Tabulator
 
   static observe ()
   {
-    log('-> Tabulator::observe')
+    // log('-> Tabulator::observe')
     let tabulators = document.getElementsByTagName('tabulator')
     let nombre_tabulators = tabulators.length
     let itab = 0
@@ -87,24 +87,7 @@ class Tabulator
         if ( ibut == 0 ) { instTab.setCurrentButton(instBouton) }
       }
     }
-    log('<- Tabulator::observe')
-  }
-
-  /** ---------------------------------------------------------------------
-    *
-    *   Méthodes EVENTS
-    *
-  *** --------------------------------------------------------------------- */
-
-  /**
-  * Méthode évènement appelée quand on focus sur un bouton d'un tabulator
-  *
-  * @param {String} tabulator_id  ID du tabulator dans le DOM
-  * @param {HTMLElement} bouton   Objet DOM du bouton focussé
-  **/
-  static onFocusButton (tabulator_id, bouton)
-  {
-    bouton.style.visibility = 'hidden'
+    // log('<- Tabulator::observe')
   }
 
 
@@ -126,6 +109,9 @@ class Tabulator
     this.tabulator  = odom
     // La liste de ses boutons/menus
     this.buttons    = {}
+    // La liste des boutons/menus activés (on peut en effet en choisir plusieurs,
+    // dans un ordre précis, pour les activer à la suite)
+    this.current_buttons = []
     // On l'ajoute à la liste. On pourra utiliser `Tabulator.get(<id>)` pour
     // récupérer l'instance.
     Tabulator._items[this.id] = this
@@ -136,8 +122,9 @@ class Tabulator
   **/
   observe ()
   {
-    this.tabulator.addEventListener('focus',  this.onFocus.bind(this))
-    this.tabulator.addEventListener('blur',   this.onBlur.bind(this))
+    let my = this
+    this.tabulator.addEventListener('focus',  my.onFocus.bind(my))
+    this.tabulator.addEventListener('blur',   my.onBlur.bind(my))
     // this.tabulator.addEventListener('focus', Tabulator.onFocusTabulator.bind(Tabulator, tabulator))
     // this.tabulator.addEventListener('blur', Tabulator.onBlurTabulator.bind(Tabulator, tabulator))
   }
@@ -148,48 +135,185 @@ class Tabulator
   onFocus (evt)
   {
     Tabulator.current = this
+    this.memorizeInitState()
     this.setOnKeys()
   }
+
   /**
   * Quand on blure du tabulateur
   **/
   onBlur (evt)
   {
-    delete Tabulator.current
+    // Si le bouton/menu n'a pas été joué (touche Enter), on revient à
+    // l'état initial
+    if( ! this.hasBeenRun ) { this.resetInitState() }
     this.unsetOnKeys()
+    delete Tabulator.current
   }
 
   onKeyDown (evt)
   {
     // console.log(`Key down : ${evt.key}`)
-    if ( undefined !== this.buttons[evt.key] && !this.buttons[evt.key].downed )
+    let keymin = evt.key.toLowerCase()
+    if ( undefined !== this.buttons[keymin] && !this.buttons[keymin].downed )
     {
       // <= Un bouton existe, portant cette lettre
-      let bouton = this.buttons[evt.key]
-      console.log(`Bouton ${bouton.key} pressé`)
+      let bouton = this.buttons[keymin]
+      // console.log(`Bouton ${bouton.key} pressé`)
       bouton.downed = true
     }
   }
+
+  // La map de ce tabulator définissant les méthodes à utiliser en
+  // fonction des keys
+  get Map () {
+    if ( undefined === this._map ) { this._map = Tabulator.Map[this.id] }
+    return this._map
+  }
+
+  get maxSelected () { return this.Map.maxSelected }
+
   onKeyUp (evt)
   {
-    // console.log(`Key up : ${evt.key}`)
-    if ( undefined !== this.buttons[evt.key] )
+    let my = this
+    switch ( evt.key )
     {
-      let bouton = this.buttons[evt.key]
-      bouton.downed = false
-      this.setCurrentButton(bouton)
+      case 'Enter':
+        let method
+        // S'il y a une méthode de traitement propre, on l'utilise
+        // Sinon, on utilise les méthodes définies pour chaque lettre.
+        // La méthode de substition peut être utile, par exemple, pour les
+        // panneau qui passent en mode double panneau si deux panneaux sont
+        // choisis.
+        if ( 'function' === typeof my.Map.enter_method ) {
+
+          my.Map.enter_method.call(Projet, this.current_buttons.map(b =>{return b.data}))
+
+        } else {
+
+          // Si une méthode Before-All est définie
+          if ( 'function' === typeof my.Map.beforeAll ){
+            my.Map.beforeAll.call()
+          }
+
+          my.current_buttons.forEach( (bouton) => {
+
+            // Si une méthode Before-Each est définie
+            if ( 'function' === typeof my.Map.beforeEach ){
+              my.Map.beforeEach.call()
+            }
+
+            // === Exécution de la méthode de data ou de lettre ===
+            method = my.Map[bouton.data]
+            if ( 'function' == typeof method ) { method.call() }
+            else { throw new Error(`Aucune méthode d'action n'est définie pour ${bouton.data} (lettre ${bouton.key})`)}
+
+            // Si une méthode After-Each est définie
+            if ( 'function' === typeof my.Map.afterEach ){
+              my.Map.afterEach.call()
+            }
+
+
+          })
+
+          // Si une méthode After-All est définie
+          if ( 'function' === typeof my.Map.afterAll ){
+            my.Map.afterAll.call()
+          }
+        }
+        this.tabulator.blur()
+        this.hasBeenRun = true
+        return DOM.stopEvent(evt)
+
+      default:
+        let keymin = evt.key.toLowerCase()
+        let withCapsLock = keymin != evt.key
+        if ( undefined !== this.buttons[keymin] )
+        {
+          let bouton = this.buttons[keymin]
+          bouton.downed = false
+          this.setCurrentButton(bouton, withCapsLock)
+        }
     }
   }
 
-  setCurrentButton (bouton)
+  /**
+  * Met le bouton +bouton+ ({TabulatorButton}) en bouton courant. Si +withMaj+
+  * est true, on conserve les boutons courants (multi sélection).
+  *
+  * @param {TabulatorButton}  bouton Le bouton activé
+  * @param {Boolean}          withMaj  True si la touche majuscule est activée.
+  **/
+  setCurrentButton (bouton, withMaj)
   {
     // il y a toujours un bouton courant, sauf quand on règle le premier
     // bouton à la préparation du tabulateur.
-    if ( this.current_button ) { this.current_button.actif = false }
-    this.current_button = bouton
+    if ( withMaj )
+    {
+      if ( bouton.actif )
+      {
+        // <= Un bouton déjà actif
+        // => On le désactive et on le sort de la liste des boutons courants
+        this.current_buttons.splice(bouton.index_in_current_buttons,1)
+        bouton.actif = false
+        return
+      }
+      else
+      {
+        // <= Un bouton pas encore actif
+        // => On l'active et on l'ajoute à la liste des boutons courants
+        // Il suffit de poursuivre pour l'ajouter à la liste
+      }
+    }
+    else // mode normal, sans SHIFT
+    {
+      // En mode sans MAJ, s'il y a un bouton courant, on le désactive
+      if ( this.current_buttons.length > 0 ) {
+        this.current_buttons.forEach( b => b.actif = false)
+      }
+      this.current_buttons = []
+    }
+    bouton.index_in_current_buttons = this.current_buttons.length
+    this.current_buttons.push(bouton)
     bouton.actif        = true
+
+    // S'il y a un maximum de sélections et que ce maximum est atteint,
+    // il faut retirer les premières sélections
+    if ( this.maxSelected && this.current_buttons.length > this.maxSelected )
+    {
+      while(this.current_buttons.length > this.maxSelected)
+      {
+        let button = this.current_buttons.shift()
+        button.actif = false
+        // Il faut actualiser les indexes des boutons
+        let index = -1 // pour commencer à 0
+        this.current_buttons.forEach( (b) => { b.index_in_current_buttons = ++index} )
+      }
+    }
   }
+
+
   /* - Private - */
+
+  /**
+  * On mémorise l'état courant (quand on focusse dans le tabulateur)
+  * On enregistre notamment les boutons actifs.
+  **/
+  memorizeInitState ()
+  {
+    let my = this
+    this.actifs_init = function(){return my.current_buttons}()
+  }
+  /**
+  * Si on blure du tabulator sans jouer la touche Enter, on doit revenir à
+  * l'état initial.
+  **/
+  resetInitState ()
+  {
+    let my = this
+    this.current_buttons = function(){return my.actifs_init}()
+    this.current_buttons.forEach( bouton => bouton.actif = true)
+  }
 
   setOnKeys ()
   {
@@ -268,6 +392,18 @@ class TabulatorButton
   set actif (v){
     this._is_active = v
     DOM[v?'addClass':'removeClass'](this.button,'actif')
+  }
+
+  /**
+  * La donnée contenu dans l'attribut `data-tab`, s'il est défini. Sinon,
+  * retourne la key
+  **/
+  get data () {
+    if ( undefined === this._data )
+    {
+      this._data = this.button.getAttribute('data-tab') || this.key
+    }
+    return this._data
   }
 }
 
