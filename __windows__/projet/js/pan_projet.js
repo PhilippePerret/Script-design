@@ -42,6 +42,11 @@ define(
         alert("Pour le moment, je ne sais pas encore synchroniser un panneau.")
       }
 
+      cutParagByReturn ()
+      {
+        return alert("Pour le moment, on ne peut pas découper les parags suivant les retours chariot")
+        if(!confirm("Voulez-vous vraiment découper les parags suivant les retours-chariot.\n\nDès qu'un parag contient un retour-chariot, on le découpe en plusieurs Parags séparés (mais héritant des mêmes propriétés)"))
+      }
       /** ---------------------------------------------------------------------
         *
         *   DATA

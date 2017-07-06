@@ -146,7 +146,7 @@ class Tabulator
   {
     // Si le bouton/menu n'a pas été joué (touche Enter), on revient à
     // l'état initial
-    if( ! this.hasBeenRun ) { this.resetInitState() }
+    if( ! this.hasBeenRan ) { this.resetInitState() }
     this.unsetOnKeys()
     delete Tabulator.current
   }
@@ -213,7 +213,6 @@ class Tabulator
               my.Map.afterEach.call()
             }
 
-
           })
 
           // Si une méthode After-All est définie
@@ -221,8 +220,8 @@ class Tabulator
             my.Map.afterAll.call()
           }
         }
+        this.hasBeenRan = true
         this.tabulator.blur()
-        this.hasBeenRun = true
         return DOM.stopEvent(evt)
 
       default:
@@ -246,6 +245,7 @@ class Tabulator
   **/
   setCurrentButton (bouton, withMaj)
   {
+    // console.log(`-> setCurrentButton(${bouton.id}/${bouton.key})`)
     // il y a toujours un bouton courant, sauf quand on règle le premier
     // bouton à la préparation du tabulateur.
     if ( withMaj )
@@ -258,24 +258,19 @@ class Tabulator
         bouton.actif = false
         return
       }
-      else
-      {
-        // <= Un bouton pas encore actif
-        // => On l'active et on l'ajoute à la liste des boutons courants
-        // Il suffit de poursuivre pour l'ajouter à la liste
-      }
     }
     else // mode normal, sans SHIFT
     {
       // En mode sans MAJ, s'il y a un bouton courant, on le désactive
       if ( this.current_buttons.length > 0 ) {
-        this.current_buttons.forEach( b => b.actif = false)
+        this.current_buttons.forEach( b => { b.actif = false })
       }
       this.current_buttons = []
     }
+
     bouton.index_in_current_buttons = this.current_buttons.length
     this.current_buttons.push(bouton)
-    bouton.actif        = true
+    bouton.actif = true
 
     // S'il y a un maximum de sélections et que ce maximum est atteint,
     // il faut retirer les premières sélections
@@ -285,11 +280,15 @@ class Tabulator
       {
         let button = this.current_buttons.shift()
         button.actif = false
-        // Il faut actualiser les indexes des boutons
-        let index = -1 // pour commencer à 0
-        this.current_buttons.forEach( (b) => { b.index_in_current_buttons = ++index} )
       }
     }
+
+    // On actualise chaque fois les indexes des boutons, en ne les affichant
+    // que s'il y a plusieurs sélections
+    let index = -1 // pour commencer à 0
+    this.selectionMultiple = this.current_buttons.length > 1
+    this.current_buttons.forEach( (b) => { b.index_in_current_buttons = ++index} )
+
   }
 
 
@@ -301,6 +300,7 @@ class Tabulator
   **/
   memorizeInitState ()
   {
+    // console.log('-> Tabulator#memorizeInitState')
     let my = this
     this.actifs_init = function(){return my.current_buttons}()
   }
@@ -310,6 +310,7 @@ class Tabulator
   **/
   resetInitState ()
   {
+    // console.log('-> Tabulator#resetInitState')
     let my = this
     this.current_buttons = function(){return my.actifs_init}()
     this.current_buttons.forEach( bouton => bouton.actif = true)
@@ -391,7 +392,24 @@ class TabulatorButton
   get actif () { return this._is_active }
   set actif (v){
     this._is_active = v
+    // this.button.className = v ? 'actif' : ''
     DOM[v?'addClass':'removeClass'](this.button,'actif')
+    if ( ! v ) { this.index_in_current_buttons = null }
+  }
+
+  get index_in_current_buttons () { return this._index_in_current_buttons }
+  set index_in_current_buttons (v){
+    this._index_in_current_buttons = v
+    // Dans tous les cas, on efface le petit sélecteur qui peut exister
+
+    let displayedValue
+    if ( !this.button.querySelector('.smallidx') )
+    {
+      let smallIndex = DOM.create('span',{class:'smallidx'})
+      this.button.appendChild(smallIndex)
+    }
+    displayedValue = (this.tabulator.selectionMultiple && v !== null) ? Number(v)+1 : ''
+    this.button.querySelector('.smallidx').innerHTML = displayedValue
   }
 
   /**

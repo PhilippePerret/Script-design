@@ -89,6 +89,7 @@ requirejs(
           Projet.load(data)
 
 
+          // --------- T A B U L A T O R S -------------
 
           // On prépare les tabulators
           let currentpan = Projet.current_panneau
@@ -103,6 +104,7 @@ requirejs(
               , 'export'      : currentpan.export.bind(currentpan)
               , 'print'       : currentpan.print.bind(currentpan)
               , 'stats'       : Projet.current.afficherStatistiques.bind(Projet.current)
+              , 'cutreturn'   : currentpan.cutParagByReturn.bind(currentpan)
             }
           }
           // Prépation des tabulateurs
