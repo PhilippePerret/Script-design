@@ -1,0 +1,62 @@
+tabulator.section-tabulaire
+  // Contient les boutons "Data", "Personnages", "Scénier", etc.
+  &#boutons-panneaux
+    top   : 0
+    left  : 0
+
+// -------- Les tabulators -----------
+tabulator
+  display           : inline-block
+  border            : 1px solid red
+  overflow          : hidden
+  position          : fixed
+  z-index           : 500
+  background-color  : white
+
+  // Les boutons/menus
+  > button
+    width           : 240px
+    line-height     : 28px
+    vertical-align  : middle
+    text-align      : left
+    border          : none
+    padding-left    : 12px !important
+    &.downed // pressé sans être encore relâché
+      background-color  : #116CD5 //#000055
+      color             : white
+    &:not(.actif)
+      display   : none
+    &.actif
+      display   : block
+      z-index     : 500
+      // Pour régler la couleur de l'actif quand on focus dessus :
+      // (mais il est défini plus bas)
+      // background-color  : #0C42A9
+      // color             : white
+    // Le span contenant les lettres
+    span.tab-letter
+      border          : 1px solid
+      padding         : 0px 9px 3px
+      border-color    : #999 #000 #000 #999
+      vertical-align  : top
+      margin-right    : 0.8em
+      font-size       : 0.7em
+    // Le span contenant le menu
+    // Note : il est ajouté programmatiquement à l'initialisation
+    // Cf. Tabulator::setup
+    span.tab-label
+      vertical-align  : bottom
+  // Quand on focus dans le tabulateur
+  &:focus
+    outline         : none // pour ne pas avoir le bord bleu
+    height          : auto
+    border          : 1px solid blue !important
+    padding-top     : 1em
+    padding-bottom  : 1em
+    > button
+      display         : block
+
+      // Le bouton actif est mis en exergue
+      &.actif
+        background-color  : #0C42A9
+        color             : white

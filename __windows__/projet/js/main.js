@@ -29,6 +29,7 @@ requirejs(
     , PROJET_KBS_PATH
     , path.join(C.COMMON_JS_FOLDER,'parags_define.js')
     , path.join(C.COMMON_JS_FOLDER,'parag_define.js')
+    , path.join(C.COMMON_JS_FOLDER,'tabulators_define.js')
     , PROJET_PAN_PATH
     , PROJET_RELS_PATH
   ]
@@ -42,10 +43,12 @@ requirejs(
   , KBShortcuts
   , Parags
   , Parag
+  , Tabulator
   , PanProjet
   , Relatives
 ){
 
+  global.log        = log
   global.DOM        = DOM
   global.Projet     = Projet
   global.PanProjet  = PanProjet
@@ -53,6 +56,7 @@ requirejs(
   global.Parag      = Parag
   global.Relatives  = Relatives
   global.Store      = Store
+  // global.Tabulator = Tabulator
 
   // On donne l'app à Store, pour qu'il sache où chercher les fichiers.
   Store._app = app
@@ -72,6 +76,9 @@ requirejs(
           , KeyboardObject:       KBShortcuts
         })
 
+        // On prépare les tabulators
+        log(Tabulator)
+        Tabulator.setup()
 
         // Dire que la fenêtre est prête, pour pouvoir charger le projet
         // courant
@@ -86,7 +93,7 @@ requirejs(
 
         })
 
-        log('=== Fenêtre PROJETS prête ===')
+        log('=== Fenêtre PROJET prête ===')
 
 
         // ---------- TESTS D'INTÉGRATIONS ----------
