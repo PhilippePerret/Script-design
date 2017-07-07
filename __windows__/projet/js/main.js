@@ -20,7 +20,7 @@ const
 // METTRE À TRUE POUR LANCER LE TEST D'INTÉGRATION
 //
 // Dossier : integration/Projet
-// 
+//
 const PTEST_IT = true
 
 requirejs(
@@ -124,7 +124,8 @@ requirejs(
         if ( PTEST_IT )
         {
           require(path.join(C.LIB_UTILS_FOLDER,'ptests'))
-          PTests.run_folder(path.join('integration','Projet'))
+          // PTests.run_folder(path.join('integration','Projet'))
+          PTests.run_file(path.join('integration','Projet','affichage_panneaux_spec.js'))
         }
 
         return true // module principal => rien à retourner

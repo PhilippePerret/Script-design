@@ -1,3 +1,7 @@
+# 0.1.7
+
+  * Implémentation complète des `Tabulators` (et leur système de raccourci-clavier intelligents).
+
 # 0.1.6
 
   * Sélection et déselection (mise en exergue) des éléments relatifs, avec une exergue particulière pour le référent. On doit être en mode double panneau pour atteindre cette fonctionnalité, et le référent est entouré de rouge tandis que les relatifs sont entourés de pourpre.

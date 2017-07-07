@@ -220,9 +220,10 @@ expect({HTMLString}).to.have_tag('<tag>',{attributes}[, [valeur-pseudo][, option
 
 expect({DOMElement}).to.have_tag(<idem>))
 
-// En projet :
 expect({CSSSelector}).to.have_tag(<idem>)
 // => cherche dans le document
+// p.e.
+expect('tabulator#operations').to.have_tag('button',{'data-tab':'scenier'})
 
 ```
 
