@@ -313,7 +313,9 @@ class Tabulator
     // console.log('-> Tabulator#resetInitState')
     let my = this
     this.current_buttons = function(){return my.actifs_init}()
-    this.current_buttons.forEach( bouton => bouton.actif = true)
+    if(this.current_buttons){
+      this.current_buttons.forEach( bouton => bouton.actif = true)
+    }
   }
 
   setOnKeys ()

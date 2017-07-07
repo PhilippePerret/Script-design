@@ -16,13 +16,6 @@ const
   , PROJET_PAN_PATH   = path.join(PROJET_JS_FOLDER, 'pan_projet.js')
   , PROJET_RELS_PATH  = path.join(PROJET_JS_FOLDER, 'relatives.js')
 
-//
-// METTRE À TRUE POUR LANCER LE TEST D'INTÉGRATION
-//
-// Dossier : integration/Projet
-//
-const PTEST_IT = true
-
 requirejs(
   [
       C.LOG_MODULE_PATH
@@ -121,6 +114,8 @@ requirejs(
 
 
         // ---------- TESTS D'INTÉGRATIONS ----------
+        PTEST_IT = false
+        // PTEST_IT = true
         if ( PTEST_IT )
         {
           require(path.join(C.LIB_UTILS_FOLDER,'ptests'))

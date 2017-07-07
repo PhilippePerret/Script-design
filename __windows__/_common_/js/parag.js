@@ -8,7 +8,10 @@
   *   Despite its name, a <Parag> can own several real paragraphs.
   *
 *** --------------------------------------------------------------------- */
-let moment = require('moment')
+let moment    = require('moment')
+
+let Kramdown
+requirejs([path.join(C.LIB_UTILS_FOLDER,'kramdown.js')], (K)=>{Kramdown=K})
 
 class Parag
 {
@@ -214,8 +217,12 @@ class Parag
   **/
   onChangeContents ()
   {
-    this.contents = this.divContents.innerHTML // TODO Corriger
+    console.log('-> onChangeContents')
+    this.contents = this.newContents
+    console.log('On met le contents à ', this.contents)
     this.data.contents = this.contents
+    // pour forcer l'actualisation du contenu mis en forme
+    delete this._formated_contents
     this.setModified()
     this.panneau.modified = true
   }
@@ -372,7 +379,7 @@ class Parag
     let
           div_id  = `p-${this.id}`
         , div     = DOM.create('div', {class:'p', id: div_id, 'data-id':String(this.id)})
-        , divCont = DOM.create('div',{class:'p-contents',id:`${div_id}-contents`,inner:this.contentsDisplayed})
+        , divCont = DOM.create('div',{class:'p-contents',id:`${div_id}-contents`,inner:this.formatedContents})
     // Ajout du contenu textuel
 
     div.appendChild(divCont)
@@ -526,20 +533,44 @@ class Parag
   {
     if (evt && evt.metaKey) { return true }
     this.divContents.contentEditable = 'true'
+    this.divContents.innerHTML = this.contents.replace(/\n/g,'<br>')
     this.divContents.focus()
     Projet.mode_edition = true
-    this.prevValue = this.divContents.innerHTML
+    this.actualContents = String(this.contents)
   }
-  // *private* Sortir le champ contents du mode édition (et enregistrer
+  // Sortir le champ contents du mode édition (et enregistrer
   // la nouvelle donnée si nécessaire)
   undoEdit (evt)
   {
-    if ( this.prevValue != this.divContents.innerHTML )
+    if ( this.contentsHasChanged() )
     {
-      this.onChangeContents.bind(this)(this.divContents)
+      this.onChangeContents.bind(this)()
     }
     this.divContents.contentEditable = 'false'
+    // Il faut toujours remettre le contenu car le code original est en
+    // kramdown avec des variables.
+    this.divContents.innerHTML = this.formatedContents
     Projet.mode_edition = false
+  }
+
+  /**
+  * @return true si le contenu, après édition, a été modifié. On en profite
+  *         aussi pour définir le nouveau contenu dans this.newContents
+  **/
+  contentsHasChanged () {
+    this.defineNewContents()
+    return this.actualContents != this.newContents
+  }
+
+  /**
+  * @return {String} Le nouveau contenu (non formaté, donc pour enregistrement)
+  **/
+  defineNewContents ()
+  {
+    let c = this.divContents.innerHTML.replace(/<br>/g,"\n")
+    c = c.replace(/<div>/g,'')
+    c = c.replace(/<\/?div>/g,"\n").trim()
+    this.newContents = c
   }
 
   /**
@@ -549,11 +580,18 @@ class Parag
   * du paragraphe, notamment lorsqu'il y aura des balises propres au projet, comme les
   * personnages, etc.
   **/
-  get contentsDisplayed () {
-    if (undefined === this._contents_displayed){
-      this._contents_displayed = this.contents.replace(/\r?\n/g,'<br>')
+  get formatedContents () {
+    if (undefined === this._formated_contents){
+      if ( this.contents )
+      {
+        this._formated_contents = Kramdown.parse(this.contents)
+      }
+      else
+      {
+        this._formated_contents = ''
+      }
     }
-    return this._contents_displayed
+    return this._formated_contents
   }
 }
 
