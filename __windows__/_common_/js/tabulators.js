@@ -125,8 +125,6 @@ class Tabulator
     let my = this
     this.tabulator.addEventListener('focus',  my.onFocus.bind(my))
     this.tabulator.addEventListener('blur',   my.onBlur.bind(my))
-    // this.tabulator.addEventListener('focus', Tabulator.onFocusTabulator.bind(Tabulator, tabulator))
-    // this.tabulator.addEventListener('blur', Tabulator.onBlurTabulator.bind(Tabulator, tabulator))
   }
 
   /**
@@ -178,6 +176,35 @@ class Tabulator
     let my = this
     switch ( evt.key )
     {
+      case 'ArrowDown':
+        // On sélectionner le menu inférieur, s'il existe, sauf si la
+        // touche majuscule est pressée
+        if ( ! evt.shiftKey ){
+          let curBut = this.current_buttons[0]
+            , offcur = Tabulator.LETTERS.indexOf(curBut.key)
+            , autbut = this.buttons[Tabulator.LETTERS[Number(offcur)+1]]
+          if ( autbut )
+          {
+            this.setCurrentButton(autbut, false)
+          }
+        }
+        break
+      case 'ArrowUp':
+        // On sélectionne le menu supérieur, s'il existe, sauf si la touche
+        // majuscule est pressée
+        if ( !evt.shiftKey )
+        {
+          // let bouton = this.buttons[keymin]
+          // this.setCurrentButton(bouton, withCapsLock)
+          let curBut = this.current_buttons[0]
+            , offcur = Tabulator.LETTERS.indexOf(curBut.key)
+          if ( offcur > 1 )
+          {
+            let autbut = this.buttons[Tabulator.LETTERS[offcur-1]]
+            this.setCurrentButton(autbut, false)
+          }
+        }
+        break
       case 'Enter':
         let method
         // S'il y a une méthode de traitement propre, on l'utilise
@@ -374,9 +401,9 @@ class TabulatorButton
   {
     let btn = this.button
     btn.innerHTML =
-            `<span class="tab-letter">${this.key}</span>` +
-            `<span class="tab-label">${btn.innerHTML}</span>`
-    // btn.setAttribute('tab-letter',this.key)
+            `<span class="tab-letter">${this.key}</span>`     +
+            `<span class="tab-label">${btn.innerHTML}</span>` +
+            `<span class="smallidx"></span>`
   }
 
   get downed () { return this._downed }
@@ -402,15 +429,7 @@ class TabulatorButton
   get index_in_current_buttons () { return this._index_in_current_buttons }
   set index_in_current_buttons (v){
     this._index_in_current_buttons = v
-    // Dans tous les cas, on efface le petit sélecteur qui peut exister
-
-    let displayedValue
-    if ( !this.button.querySelector('.smallidx') )
-    {
-      let smallIndex = DOM.create('span',{class:'smallidx'})
-      this.button.appendChild(smallIndex)
-    }
-    displayedValue = (this.tabulator.selectionMultiple && v !== null) ? Number(v)+1 : ''
+    let displayedValue = (this.tabulator.selectionMultiple && v !== null) ? Number(v)+1 : ''
     this.button.querySelector('.smallidx').innerHTML = displayedValue
   }
 
