@@ -22,5 +22,5 @@ let timer = setInterval( () => {
   }else{
     puts("Attente pour le chargement du projet…")
   }
-  , 200
-})
+
+}, 200)
