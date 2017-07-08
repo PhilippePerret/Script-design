@@ -26,10 +26,12 @@ class Tabulator
   **/
   static setup ()
   {
-    console.log('-> Tabulator::setup')
+    // console.log('-> Tabulator::setup')
+    this.ready = false // pour les tests
     this._items = {} // les tabulateurs
     this.observe()
-    console.log('<- Tabulator::setup')
+    this.ready = true
+    // console.log('<- Tabulator::setup')
   }
 
   /**
@@ -51,7 +53,7 @@ class Tabulator
 
   static observe ()
   {
-    console.log('-> Tabulator::observe')
+    // console.log('-> Tabulator::observe')
     let tabulators = document.getElementsByTagName('tabulator')
     let nombre_tabulators = tabulators.length
     let itab = 0
@@ -89,7 +91,7 @@ class Tabulator
       }
       instTab.ready = true
     } // fin de boucle sur tous les tabulateurs
-    console.log('<- Tabulator::observe')
+    // console.log('<- Tabulator::observe')
   }
 
   /**
@@ -133,11 +135,11 @@ class Tabulator
   **/
   observe ()
   {
-    console.log(`-> Tabulator#observe (tabulator#${this.id})`)
+    // console.log(`-> Tabulator#observe (tabulator#${this.id})`)
     let my = this
     this.tabulator.addEventListener('focus',  my.onFocus.bind(my))
     this.tabulator.addEventListener('blur',   my.onBlur.bind(my))
-    console.log(`<- Tabulator#observe (tabulator#${this.id})`)
+    // console.log(`<- Tabulator#observe (tabulator#${this.id})`)
   }
 
   /**
@@ -145,11 +147,11 @@ class Tabulator
   **/
   onFocus (evt)
   {
-    console.log(`-> Tabulator#onFocus (tabulator#${this.id})`)
+    // console.log(`-> Tabulator#onFocus (tabulator#${this.id})`)
     Tabulator.current = this
     this.memorizeInitState()
     this.setOnKeys()
-    console.log(`<- Tabulator#onFocus (tabulator#${this.id})`)
+    // console.log(`<- Tabulator#onFocus (tabulator#${this.id})`)
   }
 
   /**

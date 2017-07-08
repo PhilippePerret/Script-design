@@ -121,7 +121,6 @@ class Projet
   **/
   static loadPanneauByTabulator ( keys )
   {
-    console.log("keys:", keys)
     if ( keys.length == 1 )
     {
       this.loadPanneau(keys[0])
@@ -202,7 +201,7 @@ class Projet
   {
     alert("Pour le moment, je ne sais pas encore afficher les statistiques du projet.")
   }
-  
+
   /**
   * Chargement du projet
   **/
