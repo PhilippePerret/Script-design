@@ -54,7 +54,7 @@ requirejs(
   global.Parag      = Parag
   global.Relatives  = Relatives
   global.Store      = Store
-  // global.Tabulator = Tabulator
+  global.Tabulator  = Tabulator
 
   // On donne l'app à Store, pour qu'il sache où chercher les fichiers.
   Store._app = app
@@ -114,8 +114,9 @@ requirejs(
 
 
         // ---------- TESTS D'INTÉGRATIONS ----------
-        PTEST_IT = false
-        // PTEST_IT = true
+        // PTEST_IT = false
+        PTEST_IT = true
+
         if ( PTEST_IT )
         {
           require(path.join(C.LIB_UTILS_FOLDER,'ptests'))

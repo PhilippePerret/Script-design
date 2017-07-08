@@ -1,4 +1,9 @@
+* Quand on édite un champ, placer le curseur à la fin plutôt qu'au début
+
+* Poursuivre l'essai sur les tests d'inégration et notamment le fonctionnement des tabulators.
+
 * Pouvoir supprimer une association (Relatives)
+
 * Pouvoir supprimer un parag (il y a une issue sur github)
 
 * Il faut calculer les tailles des éléments dans la fenêtre projet :

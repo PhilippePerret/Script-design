@@ -7,7 +7,6 @@ let path = require('path')
 // Pour écrire la description des tests sur une seule ligne.
 PTests.options.one_line_describe = true
 
-
 // Mettre à null pour que tous les tests soient joués ou définir le seul
 // test à faire
 // PTests.options.test_file = path.join('autotests','template_message_spec.js')

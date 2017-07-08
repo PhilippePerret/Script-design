@@ -33,26 +33,10 @@ describe("Un test seulement si un nœud existe",[
 
 ```
 
-On peut envoyer des options à ces deux méthodes :
+On peut envoyer des options à ces deux méthodes. Cf. `Methodes_attentes.md`.
 
 ```js
 
   waitForVisible(<element>[, <options>])
-
-  <options>
-
-      /*
-        timeout       Le laps maximum d'attente. Si rien n'a changé après ce
-                      temps, on considère qu'on ne peut pas continer et on
-                      passe à `else`.
-                      Défaut : 30 secondes
-
-
-        checklaps     L'intervale entre deux checks du DOM, 1 10e de seconde
-                      par défaut. Si l'on sait que l'élément peut mettre du
-                      temps à apparaitre, on peut augmenter cette valeur pour
-                      ne pas multiplier les vérifications.
-                      Défaut : 100ms
-       */
 
 ```

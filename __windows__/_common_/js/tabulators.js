@@ -26,10 +26,10 @@ class Tabulator
   **/
   static setup ()
   {
-    // log('-> Tabulator::setup')
+    console.log('-> Tabulator::setup')
     this._items = {} // les tabulateurs
     this.observe()
-    // log('<- Tabulator::setup')
+    console.log('<- Tabulator::setup')
   }
 
   /**
@@ -51,7 +51,7 @@ class Tabulator
 
   static observe ()
   {
-    // log('-> Tabulator::observe')
+    console.log('-> Tabulator::observe')
     let tabulators = document.getElementsByTagName('tabulator')
     let nombre_tabulators = tabulators.length
     let itab = 0
@@ -64,6 +64,7 @@ class Tabulator
 
       // On crée une instance pour ce tabulateur
       instTab = new Tabulator(tabulator)
+      instTab.ready = false
 
       // --- Réglage du tabulateur ---
       instTab.observe()
@@ -86,11 +87,19 @@ class Tabulator
         // courant du tabulateur
         if ( ibut == 0 ) { instTab.setCurrentButton(instBouton) }
       }
-    }
-    // log('<- Tabulator::observe')
+      instTab.ready = true
+    } // fin de boucle sur tous les tabulateurs
+    console.log('<- Tabulator::observe')
   }
 
-
+  /**
+  * @return {Tabulator} l'instance Tabulator de l'élément DOM domElement
+  *
+  **/
+  static instanceFrom (domElement)
+  {
+    return this._items[domElement.id]
+  }
 
   /** ---------------------------------------------------------------------
     *
@@ -115,6 +124,8 @@ class Tabulator
     // On l'ajoute à la liste. On pourra utiliser `Tabulator.get(<id>)` pour
     // récupérer l'instance.
     Tabulator._items[this.id] = this
+    // Pour les tests, pour savoir si le tabulateur est prêt
+    this.ready = false
   }
 
   /**
@@ -122,9 +133,11 @@ class Tabulator
   **/
   observe ()
   {
+    console.log(`-> Tabulator#observe (tabulator#${this.id})`)
     let my = this
     this.tabulator.addEventListener('focus',  my.onFocus.bind(my))
     this.tabulator.addEventListener('blur',   my.onBlur.bind(my))
+    console.log(`<- Tabulator#observe (tabulator#${this.id})`)
   }
 
   /**
@@ -132,9 +145,11 @@ class Tabulator
   **/
   onFocus (evt)
   {
+    console.log(`-> Tabulator#onFocus (tabulator#${this.id})`)
     Tabulator.current = this
     this.memorizeInitState()
     this.setOnKeys()
+    console.log(`<- Tabulator#onFocus (tabulator#${this.id})`)
   }
 
   /**
@@ -151,6 +166,7 @@ class Tabulator
 
   onKeyDown (evt)
   {
+    console.log(`-> Tabulator#onKeyDown (de tabulator#${this.id} - touche '${evt.key}')`)
     // console.log(`Key down : ${evt.key}`)
     let keymin = evt.key.toLowerCase()
     if ( undefined !== this.buttons[keymin] && !this.buttons[keymin].downed )
@@ -173,6 +189,7 @@ class Tabulator
 
   onKeyUp (evt)
   {
+    console.log(`-> Tabulator#onKeyUp (de tabulator#${this.id} - touche '${evt.key}')`)
     let my = this
     switch ( evt.key )
     {
@@ -289,7 +306,7 @@ class Tabulator
     else // mode normal, sans SHIFT
     {
       // En mode sans MAJ, s'il y a un bouton courant, on le désactive
-      if ( this.current_buttons.length > 0 ) {
+      if ( this.current_buttons && this.current_buttons.length > 0 ) {
         this.current_buttons.forEach( b => { b.actif = false })
       }
       this.current_buttons = []
@@ -345,12 +362,20 @@ class Tabulator
     }
   }
 
+  /**
+  * Mémorise le gestionnaire de key-events actuel et place le nouveau qui
+  * doit servir au tabulateur courant.
+  * À la fin, unsetOnKeys remettra le gestionnaire key-events courant pour
+  * revenir à l'état précédent.
+  **/
   setOnKeys ()
   {
+    console.log('-> #setOnKey (mémorisation gestionnaire keyevents)')
     this.old_onkeydown = window.onkeydown
     this.old_onkeyup   = window.onkeyup
     window.onkeydown  = this.onKeyDown.bind(this)
     window.onkeyup    = this.onKeyUp.bind(this)
+    console.log('<- #setOnKey (mémorisation gestionnaire keyevents et placement du nouveau)')
   }
   /**
   * Après le blur du tabulateur, remet les anciens gestionnaires
