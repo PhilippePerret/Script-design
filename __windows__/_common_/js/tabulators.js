@@ -29,6 +29,7 @@ class Tabulator
     // console.log('-> Tabulator::setup')
     this.ready = false // pour les tests
     this._items = {} // les tabulateurs
+    this._list  = [] // Idem mais en array
     this.observe()
     this.ready = true
     // console.log('<- Tabulator::setup')
@@ -91,6 +92,27 @@ class Tabulator
       }
       instTab.ready = true
     } // fin de boucle sur tous les tabulateurs
+
+    // Une fois qu'on a récupéré les tabulateurs, on peut construire le
+    // code qui va gérer les raccourcis-clavier
+    let current_window_onkeyup = window.onkeyup
+    window.onkeyup = (evt) => {
+      if ( ! Projet.mode_edition )
+      {
+        let offset_key = this.LETTERS.indexOf(evt.key)
+        // console.log(`La clé '${evt.key}' dans le onkeyup général est ${offset_key}`)
+        if ( offset_key > -1 && offset_key < nombre_tabulators )
+        {
+          // <= La touche a été trouvée mais est inférieure au nombre de
+          //    tabulateur
+          // => Elle peut déclencher un tabulateur
+          // console.log(`Le tabulator a été trouvé : ${this._list[offset_key].id}, on focusse dessus.`)
+          this._list[offset_key].tabulator.focus()
+          return DOM.stopEvent(evt)
+        }
+      }
+      return current_window_onkeyup(evt)
+    }
     // console.log('<- Tabulator::observe')
   }
 
@@ -126,6 +148,7 @@ class Tabulator
     // On l'ajoute à la liste. On pourra utiliser `Tabulator.get(<id>)` pour
     // récupérer l'instance.
     Tabulator._items[this.id] = this
+    Tabulator._list.push(this)
     // Pour les tests, pour savoir si le tabulateur est prêt
     this.ready = false
   }
