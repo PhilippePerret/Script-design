@@ -186,8 +186,7 @@ class Tabulator
 
   onKeyDown (evt)
   {
-    console.log(`-> Tabulator#onKeyDown (de tabulator#${this.id} - touche '${evt.key}')`)
-    // console.log(`Key down : ${evt.key}`)
+    // console.log(`-> Tabulator#onKeyDown (de tabulator#${this.id} - touche '${evt.key}')`)
     let keymin = evt.key.toLowerCase()
     if ( undefined !== this.buttons[keymin] && !this.buttons[keymin].downed )
     {
@@ -209,7 +208,7 @@ class Tabulator
 
   onKeyUp (evt)
   {
-    console.log(`-> Tabulator#onKeyUp (de tabulator#${this.id} - touche '${evt.key}')`)
+    // console.log(`-> Tabulator#onKeyUp (de tabulator#${this.id} - touche '${evt.key}')`)
     let my = this
     switch ( evt.key )
     {
@@ -368,12 +367,12 @@ class Tabulator
   **/
   memorizeInitState ()
   {
-    console.log('-> Tabulator#memorizeInitState')
+    // console.log('-> Tabulator#memorizeInitState')
     let my = this
     // this.actifs_init = function(){return my.current_buttons}()
     this.actifs_init = Object(my.current_buttons)
-    console.log('this.actifs_init',this.actifs_init)
-    console.log('<- Tabulator#memorizeInitState')
+    // console.log('this.actifs_init',this.actifs_init)
+    // console.log('<- Tabulator#memorizeInitState')
   }
   /**
   * Si on blure du tabulator sans jouer la touche Enter, on doit revenir à
@@ -406,12 +405,12 @@ class Tabulator
   **/
   setOnKeys ()
   {
-    console.log('-> #setOnKey (mémorisation gestionnaire keyevents)')
+    // console.log('-> #setOnKey (mémorisation gestionnaire keyevents)')
     this.old_onkeydown = window.onkeydown
     this.old_onkeyup   = window.onkeyup
     window.onkeydown  = this.onKeyDown.bind(this)
     window.onkeyup    = this.onKeyUp.bind(this)
-    console.log('<- #setOnKey (mémorisation gestionnaire keyevents et placement du nouveau)')
+    // console.log('<- #setOnKey (mémorisation gestionnaire keyevents et placement du nouveau)')
   }
   /**
   * Après le blur du tabulateur, remet les anciens gestionnaires
@@ -465,10 +464,15 @@ class TabulatorButton
   prepare ()
   {
     let btn = this.button
-    btn.innerHTML =
-            `<span class="tab-letter">${this.key}</span>`     +
-            `<span class="tab-label">${btn.innerHTML}</span>` +
-            `<span class="smallidx"></span>`
+    btn.insertAdjacentHTML(
+      'afterbegin',
+      `<span class="tab-letter">${this.key}</span>` +
+      '<span class="tab-label">'
+    )
+    btn.insertAdjacentHTML(
+      'beforeend',
+      '</span><span class="smallidx"></span>'
+    )
   }
 
   get downed () { return this._downed }

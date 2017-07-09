@@ -25,10 +25,11 @@ function checkPanneau()
 
   // On passe par ici lorsque le tabulator est ouvert. On va
   // activer les touches claviers pour sélectionner les éléments
+  otabulator = DOM.get('tabulator#boutons-panneaux')
   EV.focusIn(otabulator)
   KB.press(key, {target: otabulator})
   KB.press('Enter', {target: otabulator})
-  waitForVisible(`section#panneau-${id}`, {timeout: 5})
+  waitForVisible(`section#panneau-${id}`, {timeout: 5, wait: 1})
     .then( () => {
       expect(`section#panneau-${id}`).asNode.to.exist
       if (titre){
@@ -83,9 +84,8 @@ describe("Données du tabulator #boutons-panneaux",[
 describe("Affichage des panneaux",[
   , describe("le tabulator #boutons-panneaux", [
     , it("répond au focus", ()=>{
-      otabulator = DOM.get('tabulator#boutons-panneaux')
       expect('tabulator#boutons-panneaux').asNode.to.exist
-      waitForTrue( ()=>{return tabulator.ready}, {timeout:10} )
+      waitForTrue( ()=>{return Tabulator.ready}, {timeout:10, wait: 2} )
         .else( () => {
           console.log("Le tabulator N'est PAS ready, je dois renoncer")
         })
