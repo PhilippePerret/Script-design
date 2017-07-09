@@ -29,7 +29,7 @@ function checkPanneau()
   EV.focusIn(otabulator)
   KB.press(key, {target: otabulator})
   KB.press('Enter', {target: otabulator})
-  waitForVisible(`section#panneau-${id}`, {timeout: 5, wait: 1})
+  waitForVisible(`section#panneau-${id}`, {timeout: 5, wait: 0})
     .then( () => {
       expect(`section#panneau-${id}`).asNode.to.exist
       if (titre){
@@ -39,7 +39,9 @@ function checkPanneau()
 
       // On prend l'instance PanProjet du panneau
       let ipanneau = Projet.panneaux[id]
+      console.log("--- EXPECTATION PANNEAU loaded ---")
       expect(ipanneau.loaded,'ipanneau.loaded').to.be.true
+      console.log("--- /EXPECTATION PANNEAU loaded ---")
       // Si le store du panneau existe, on teste le chargement correct de ses
       // données.
       let pstore = ipanneau.store._file_path
@@ -48,13 +50,16 @@ function checkPanneau()
         let data_panneau = require(pstore)
         // console.log("DATA DU PSTORE:", data_panneau)
         // On fait la liste des enfants
-        let children = []
-        data_panneau.parags.forEach( (p) => {
-          children.push(['div', {id: `p-${p.id}`, class:'p', 'data-id': String(p.id) } ])
-          children.push(['div', {class: 'p-contents', id:`p-${p.id}-contents`, text: p.contents}])
-        })
-        expect(`section#panneau-${id}`).to
-          .have_tag('div',{id:`panneau-${id}-contents`, children: children})
+        if ( data_panneau.parags )
+        {
+          let children = []
+          data_panneau.parags.forEach( (p) => {
+            children.push(['div', {id: `p-${p.id}`, class:'p', 'data-id': String(p.id) } ])
+            children.push(['div', {class: 'p-contents', id:`p-${p.id}-contents`, text: p.contents}])
+          })
+          expect(`section#panneau-${id}`).to
+            .have_tag('div',{id:`panneau-${id}-contents`, children: children})
+        }
       }
 
       // === ON PASSE AU PANNEAU SUIVANT ===

@@ -1,4 +1,3 @@
-* Charger la page à l'activation (si loaded est false)
 
 * Quand on édite un champ, placer le curseur à la fin plutôt qu'au début
 

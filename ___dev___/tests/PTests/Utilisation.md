@@ -168,6 +168,7 @@ Ces `valeurs-pseudo` peuvent se définir aussi bien pour l'actual que pour l'exp
 
 ```
 
+> Noter que par défaut, lorsqu'une valeur-pseudo est spécifiée, la valeur réelle n'est pas écrite. Utiliser l'option `values: true` ou `no_values: false` pour afficher la vraie valeur entre parenthèses.
 
 ### Définir la valeur “actuelle” dans l'expectation {#define_actual_value}
 
@@ -187,7 +188,7 @@ On peut placer en troisième argument de la méthode `expect` (ou en second lors
 
 ```js
 
-expect(true, 'C’est vrai', {no_values: true}).to.be.true
+expect(true, 'C’est vrai', {no_values: false}).to.be.true
 
 expect(true, {no_values: true}).to.be.false
 
@@ -213,7 +214,7 @@ On peut trouver les options suivantes :
 
 * `strict` (défaut : `false`). Si true, l'expectation se fait en mode strict. Le comportement dépend de la méthode de comparaison (cf. le [Mode strict]).
 * `template` (défaut : `undefined`). Permet d'utiliser des messages tout à fait personnalisés, en cas de succès comme en cas d'échec. Pour voir le détail : [Utiliser un template de message de retour](#template_message_retour).
-* `no_values` (défaut : `false`). Lorsqu'une [valeur-pseudo] est fournie, la valeur réelle est précisée ensuite entre parenthèses. Par exemple : `le nombre d’œufs (12) est égal à une douzaine`. On peut ne pas préciser cette valeur en mettant `no_values` à true, ce qui produira le message `le nombre d’œufs est égal à une douzaine`.
+* `no_values` (défaut : `false`). Lorsqu'une [valeur-pseudo] est fournie, la valeur réelle peut être précisée ensuite entre parenthèses. Par défaut, dès qu'il y a une valeur-pseudo, la valeur réelle n'est pas précisée. On peut forcer son inscription à l'aide de l'option `values` (mise à true) ou `no_values` (mis à false). Par exemple : `le nombre d’œufs est égal à une douzaine`. On peut préciser cette valeur en mettant `no_values` à false ou `values` à true, ce qui produira le message `le nombre d’œufs (12) est égal à une douzaine (12)`.
 * `not_a_test` (ou `NaT`) (défaut : `false`). Utilisée intensivement pour tester PTests lui-même, cette option permet de ne pas produire de succès ou de failure dans la feuille de test, mais de récupérer simplement le résultat. Noter qu'on peut aussi utiliser `NaT`.
 * `only_on_fail` (défaut : `false`). N'écrit le résultat de l'expectation que si elle échoue.
 
