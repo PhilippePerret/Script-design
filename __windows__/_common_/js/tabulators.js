@@ -99,15 +99,10 @@ class Tabulator
     window.onkeyup = (evt) => {
       if ( ! Projet.mode_edition )
       {
-        let offset_key = this.LETTERS.indexOf(evt.key)
-        // console.log(`La clé '${evt.key}' dans le onkeyup général est ${offset_key}`)
-        if ( offset_key > -1 && offset_key < nombre_tabulators )
+        let keyIndex = this.LETTERS.indexOf(evt.key)
+        if ( keyIndex > -1 && keyIndex < nombre_tabulators )
         {
-          // <= La touche a été trouvée mais est inférieure au nombre de
-          //    tabulateur
-          // => Elle peut déclencher un tabulateur
-          // console.log(`Le tabulator a été trouvé : ${this._list[offset_key].id}, on focusse dessus.`)
-          this._list[offset_key].tabulator.focus()
+          this._list[keyIndex].tabulator.focus()
           return DOM.stopEvent(evt)
         }
       }
@@ -240,7 +235,7 @@ class Tabulator
           // this.setCurrentButton(bouton, withCapsLock)
           let curBut = this.current_buttons[0]
             , offcur = Tabulator.LETTERS.indexOf(curBut.key)
-          if ( offcur > 1 )
+          if ( offcur > 0 )
           {
             let autbut = this.buttons[Tabulator.LETTERS[offcur-1]]
             this.setCurrentButton(autbut, false)
