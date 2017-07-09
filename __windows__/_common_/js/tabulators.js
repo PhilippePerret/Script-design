@@ -293,6 +293,10 @@ class Tabulator
         this.tabulator.blur()
         return DOM.stopEvent(evt)
 
+      case 'Escape': // pour quitter le tabulator
+        this.hasBeenRan = false
+        this.tabulator.blur()
+        return DOM.stopEvent(evt)
       default:
         let keymin = evt.key.toLowerCase()
         let withCapsLock = keymin != evt.key
@@ -369,9 +373,12 @@ class Tabulator
   **/
   memorizeInitState ()
   {
-    // console.log('-> Tabulator#memorizeInitState')
+    console.log('-> Tabulator#memorizeInitState')
     let my = this
-    this.actifs_init = function(){return my.current_buttons}()
+    // this.actifs_init = function(){return my.current_buttons}()
+    this.actifs_init = Object(my.current_buttons)
+    console.log('this.actifs_init',this.actifs_init)
+    console.log('<- Tabulator#memorizeInitState')
   }
   /**
   * Si on blure du tabulator sans jouer la touche Enter, on doit revenir à
@@ -381,10 +388,19 @@ class Tabulator
   {
     // console.log('-> Tabulator#resetInitState')
     let my = this
-    this.current_buttons = function(){return my.actifs_init}()
+    // this.current_buttons = function(){return my.actifs_init}()
+    this.current_buttons = Object(my.actifs_init)
+    // Il faut remettre tous les boutons actifs et désactiver tous les
+    // autres. Processus : on désactive tous les boutons puis on remet
+    // ceux qui étaient sélectionnés.
+    let bouton
+      , i = 0
+    while (bouton = this.getButton(Tabulator.LETTERS[i++]))
+    { bouton.actif = false }
     if(this.current_buttons){
       this.current_buttons.forEach( bouton => bouton.actif = true)
     }
+    // console.log('<- Tabulator#resetInitState')
   }
 
   /**
@@ -422,6 +438,10 @@ class Tabulator
   addButton (tabbutton)
   {
     this.buttons[tabbutton.key] = tabbutton
+  }
+  getButton (key)
+  {
+    return this.buttons[key]
   }
 }
 
