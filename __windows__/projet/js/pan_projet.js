@@ -24,6 +24,9 @@ define(
         // savoir si des actualisations se font "par derrière" et donc ne doivent
         // pas être reflétées dans le panneau.
         this.actif  = false
+        // Mis à true quand les données du panneau ont été chargées (qu'elles
+        // existent ou non)
+        this.loaded = false
       }
 
       /* --- Public --- */
@@ -174,6 +177,7 @@ define(
       **/
       load ()
       {
+        // console.log("-> PanProjet#load")
         let my = this
         my.data = my.store.data
         for( let prop in my.data ) {
@@ -183,7 +187,7 @@ define(
         // Attention, ici, on ne peut pas faire `this.parags`, car cette méthode
         // relève les parags dans l'interface (pour enregistrement) et, pour le
         // moment, il n'y en a pas.
-        if ( this._hparags ) { this.displayParags() }
+        if ( this.data.parags ) { this.displayParags() }
         this.loaded = true
       }
       /**
@@ -286,7 +290,7 @@ define(
       displayParags ()
       {
         this.container.innerHTML = ''
-        this._hparags.forEach( hparag => Projet.current_panneau.addParag( new Parag( hparag ) ) )
+        this.data.parags.forEach( hparag => Projet.current_panneau.addParag( new Parag( hparag ) ) )
       }
 
       /**

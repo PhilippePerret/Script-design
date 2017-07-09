@@ -3,17 +3,28 @@
 [map]: #tabulator_map
 [`Map`]: #tabulator_map
 
+## Introduction {#introduction}
+
 Les `tabulators` sont un système de gestion de l'interface inédit qui fonctionne à l'image d'un menu : quand on focus sur le tabulator, il s'ouvre (ou pas) pour montrer ses outils. Chaque outil, ou menu, est associé à une lettre, dans l'ordre de la rangée intermédiaire du clavier (q, s, f, g, h, j, etc.) puis dans l'ordre de la rangée supérieure (a, z, e, r, etc.).
 
-On clique sur la lettre associée pour activer l'outil.
+Le côté inédit, c'est que ce sont toujours les mêmes touches qui sont utilisés.
 
-Un des grands avantage de ce système est qu'on peut facilement (touche `MAJ` ou `CAPS LOCK`) choisir plusieurs outils/commandes/menus et lancer l'opération en enchainant ces outils/commandes/menus.
+### Utilisation des tabulators {#utilisation_tabulators}
+
+* Dans un premier temps, on clique sur une des lettres 'q', 's', 'd', etc. pour activer les tabulators de la page (les lettres fonctionnent dans l'ordre de l'implémentation, pas dans l'ordre de visibilité — les deux peuvent cependant concorder, il suffit de mettre le code du Tabulator à la bonne place dans le code).
+* Quand le tabulator est focussé, il s'ouvre, et il suffit alors d'utiliser les mêmes touches pour activer les outils/menus/commandes.
+
+### Plusieurs outils en même temps
+
+L'autre grande originalité, c'est qu'on peut activer plusieurs menus/outils en même temps (un petit numéro apparait, qui indique l'ordre où les menus vont être joués). Cela permet par exemple d'enchainer plusieurs commandes sans avoir à rejouer les menus.
+
 
 ## TODO LIST
 
 * Proposer plusieurs class CSS de tabulator pour gérer les aspects.
+* Faire un générateur de Tabulator où il suffira de donner les données pour qu'il construise le code HTML du tabulator.
 
-## Implémentation {#tabulator_implemtation}
+## Implémentation {#tabulator_implementation}
 
 * **Créer le code HTML des tabulators**. On commence pour créer le code dans la page, à l'aide de balises `tabulator` et de `button`(s) :
 

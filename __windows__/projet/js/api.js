@@ -90,6 +90,7 @@ class Projet
 
   /**
   * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
+  * Par défaut, c'est le panneau des données générales du projet.
   **/
   static get current_panneau () {
     if ( undefined === this._current_panneau){this._current_panneau = this.panneaux['data']}
@@ -100,6 +101,7 @@ class Projet
   * Propriété définissant les panneaux du projet, c'est-à-dire les instances
   * de {PanProjet} correspondant à chaque panneau ('data','scenier', 'synopsis',
   * etc.)
+  * On récupère un panneau par Projet.panneaux['<id panneau>']
   **/
   static get panneaux () {
     if ( undefined === this._panneaux )

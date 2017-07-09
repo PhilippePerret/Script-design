@@ -1,6 +1,4 @@
-* Escape doit faire sortir du tabulator ouvert
-
-* Documenter la facçon d'activer les Tabulators avec les touches
+* Charger la page à l'activation (si loaded est false)
 
 * Quand on édite un champ, placer le curseur à la fin plutôt qu'au début
 

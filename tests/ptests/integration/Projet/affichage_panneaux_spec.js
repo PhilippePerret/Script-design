@@ -1,7 +1,7 @@
 /*
   Test de l'affichage des panneaux à l'aide du tabulator "boutons-panneaux"
 */
-
+let fs = require('fs')
 PTests.expose_dom_methods()
 
 let otabulator, tabulator
@@ -35,9 +35,33 @@ function checkPanneau()
       if (titre){
         expect(`section#panneau-${id}`).to.have_tag('div',{id:`panneau-${id}-title`, text: titre})
       }
+      // === On vérifie que tous les paragraphes soient bien affichés ===
+
+      // On prend l'instance PanProjet du panneau
+      let ipanneau = Projet.panneaux[id]
+      expect(ipanneau.loaded,'ipanneau.loaded').to.be.true
+      // Si le store du panneau existe, on teste le chargement correct de ses
+      // données.
+      let pstore = ipanneau.store._file_path
+
+      if (fs.existsSync(pstore)){
+        let data_panneau = require(pstore)
+        // console.log("DATA DU PSTORE:", data_panneau)
+        // On fait la liste des enfants
+        let children = []
+        data_panneau.parags.forEach( (p) => {
+          children.push(['div', {id: `p-${p.id}`, class:'p', 'data-id': String(p.id) } ])
+          children.push(['div', {class: 'p-contents', id:`p-${p.id}-contents`, text: p.contents}])
+        })
+        expect(`section#panneau-${id}`).to
+          .have_tag('div',{id:`panneau-${id}-contents`, children: children})
+      }
+
+      // === ON PASSE AU PANNEAU SUIVANT ===
       checkPanneau()
     })
-    .else( () => {
+    .else( (err) => {
+      console.log("else car erreur", err)
       expect(`section#panneau-${id}`).asNode.to.exist
     })
 
@@ -91,7 +115,7 @@ describe("Affichage des panneaux",[
         })
         .then( ()=>{
           // Le tabulateur est prêt, on peut tester la validité de tous les
-          // panneau.
+          // panneau les uns après les autres.
           checkPanneau()
         })
     })
