@@ -60,7 +60,7 @@ class Parag
   // Met le paragraphe +iparag+ en paragraphe courant
   static setCurrent (iparag)
   {
-    if (this.current) { this.unsetCurrent(this.current) }
+    if ( this.current ) { this.unsetCurrent(this.current) }
     this._current = iparag
     // TODO Ci-dessous, il faudra remplacer ce "true" par la valeur
     // de la touche majuscule pressée (si MAJ est pressée, la valeur doit
@@ -78,7 +78,7 @@ class Parag
   static unsetCurrent(iparag)
   {
     if(undefined === iparag){iparag = this.current}
-    iparag.unsetCurrent()
+    if ( iparag ) { iparag.unsetCurrent() }
   }
 
   static addSelect (iparag)

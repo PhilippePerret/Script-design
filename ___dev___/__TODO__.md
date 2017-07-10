@@ -1,3 +1,4 @@
+* Il faut fermer tous les waitimers quand une erreur s'est produite
 
 * Quand on édite un champ, placer le curseur à la fin plutôt qu'au début
 

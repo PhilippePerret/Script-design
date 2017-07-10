@@ -102,7 +102,6 @@ class Parags
   static get firstParag () {
     if(this.zeroParags){return null}
     let firstK = Object.keys(this.items)[0]
-    console.log(`firstK = `, firstK)
     return this.items[firstK]
   }
   static get lastParag () {

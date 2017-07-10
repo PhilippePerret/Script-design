@@ -8,13 +8,13 @@ let otabulator, tabulator
 
 
 let panneaux = [
-    {key: 's', id: 'personnages', titre: "Personnages"}
-  , {key: 'f', id: 'scenier',     titre: "Scénier"}
-  , {key: 'd', id: 'synopsis',    titre: "Synopsis"}
-  , {key: 'g', id: 'notes',       titre: "Notes"}
-  , {key: 'h', id: 'treatment',   titre: "Traitement"}
-  , {key: 'j', id: 'manuscrit',   titre: "Manuscrit"}
-  , {key: 'q', id: 'data',        titre: null /* dépend du projet */}
+        {key: 'd', id: 'synopsis',    titre: "Synopsis"}
+  // , {key: 's', id: 'personnages', titre: "Personnages"}
+  // , {key: 'f', id: 'scenier',     titre: "Scénier"}
+  // , {key: 'g', id: 'notes',       titre: "Notes"}
+  // , {key: 'h', id: 'treatment',   titre: "Traitement"}
+  // , {key: 'j', id: 'manuscrit',   titre: "Manuscrit"}
+  // , {key: 'q', id: 'data',        titre: null /* dépend du projet */}
 ]
 
 function checkPanneau()
@@ -29,7 +29,7 @@ function checkPanneau()
   EV.focusIn(otabulator)
   KB.press(key, {target: otabulator})
   KB.press('Enter', {target: otabulator})
-  waitForVisible(`section#panneau-${id}`, {timeout: 5, wait: 0})
+  waitForVisible(`section#panneau-${id}`, {timeout: 5, wait: 1})
     .then( () => {
       expect(`section#panneau-${id}`).asNode.to.exist
       if (titre){
@@ -39,9 +39,7 @@ function checkPanneau()
 
       // On prend l'instance PanProjet du panneau
       let ipanneau = Projet.panneaux[id]
-      console.log("--- EXPECTATION PANNEAU loaded ---")
       expect(ipanneau.loaded,'ipanneau.loaded').to.be.true
-      console.log("--- /EXPECTATION PANNEAU loaded ---")
       // Si le store du panneau existe, on teste le chargement correct de ses
       // données.
       let pstore = ipanneau.store._file_path
@@ -59,11 +57,29 @@ function checkPanneau()
           })
           expect(`section#panneau-${id}`).to
             .have_tag('div',{id:`panneau-${id}-contents`, children: children})
+
+          // On essaie de sélectionner les paragraphes avec les flèches
+          KB.press('ArrowDown')
+          console.log("J'attends sur la visibilité de div.p.selected")
+          waitForVisible('div.p.selected', {wait: 1, timeout: 10})
+            .then( () => {
+              // expect('div.p.selected').asNode.to.exist
+
+              // === ON PASSE AU PANNEAU SUIVANT ===
+              // Noter qu'on peut y passer aussi ci-dessous
+              checkPanneau()
+
+            })
+            .else( () => {
+
+            })
         }
+      } else {
+        // === ON PASSE AU PANNEAU SUIVANT ===
+        // Noter qu'on peut y passer aussi ci-dessus
+        checkPanneau()
       }
 
-      // === ON PASSE AU PANNEAU SUIVANT ===
-      checkPanneau()
     })
     .else( (err) => {
       console.log("else car erreur", err)
@@ -90,31 +106,31 @@ class PTestsPage
 }
 let page = new PTestsPage()
 
-
-describe("Données du tabulator #boutons-panneaux",[
-  , context("à l'ouverture",[
-    , it("les items sont définis", ()=>{
-      waitForTrue(()=>{return Tabulator.ready})
-        .else( () => {
-          throw new PTestsError('Le tabulator n’a pas pu être préparé.')
-        })
-        .then(() => {
-          otabulator  = DOM.get('tabulator#boutons-panneaux')
-          tabulator   = Tabulator.instanceFrom(otabulator)
-          page.js('Tabulator._items').
-            then( (result) => {
-              console.log('TABULATOR._ITEMS', result)
-            })
-        })
-    })
-  ])
-])
+//
+// describe("Données du tabulator #boutons-panneaux",[
+//   , context("à l'ouverture",[
+//     , it("les items sont définis", ()=>{
+//       waitForTrue(()=>{return Tabulator.ready})
+//         .else( () => {
+//           throw new PTestsError('Le tabulator n’a pas pu être préparé.')
+//         })
+//         .then(() => {
+//           otabulator  = DOM.get('tabulator#boutons-panneaux')
+//           tabulator   = Tabulator.instanceFrom(otabulator)
+//           page.js('Tabulator._items').
+//             then( (result) => {
+//               console.log('TABULATOR._ITEMS', result)
+//             })
+//         })
+//     })
+//   ])
+// ])
 
 describe("Affichage des panneaux",[
   , describe("le tabulator #boutons-panneaux", [
     , it("répond au focus", ()=>{
       expect('tabulator#boutons-panneaux').asNode.to.exist
-      waitForTrue( ()=>{return Tabulator.ready}, {timeout:10, wait: 2} )
+      waitForTrue( ()=>{return Tabulator.ready}, {timeout:10, wait: 4} )
         .else( () => {
           console.log("Le tabulator N'est PAS ready, je dois renoncer")
         })
