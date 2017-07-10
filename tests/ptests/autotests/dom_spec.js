@@ -9,13 +9,13 @@
 
 // let PTestsDomFacilities = require_module('./lib/utils/PTests/dom')
 let path = require('path')
-let PTestsDOMFacilities = require(path.join(C.LIB_UTILS_FOLDER,'PTests','dom'))
+let PTestsDOM = require(path.join(C.LIB_UTILS_FOLDER,'PTests','dom'))
 let DOM = require(path.join(C.LIB_UTILS_FOLDER,'dom_class'))
 
 let act, exp, res
 
 function resfor(a, e, o){
-  return PTestsDOMFacilities.actualTagContainsExpect(a, e, o)
+  return PTestsDOM.actualTagContainsExpect(a, e, o)
 }
 
 PTests.options.one_line_describe = false
