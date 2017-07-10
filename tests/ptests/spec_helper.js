@@ -3,6 +3,7 @@
   *
 *** --------------------------------------------------------------------- */
 let path = require('path')
+global.C = require('../../lib/constants')
 
 // Pour écrire la description des tests sur une seule ligne.
 PTests.options.one_line_describe = true
@@ -19,16 +20,17 @@ PTests.options.one_line_describe = true
 // PTests.options.test_file = path.join('autotests','module_require_spec.js')
 // PTests.options.test_file = path.join('autotests','option_no_values_spec.js')
 // PTests.options.test_file = path.join('autotests','file_spec.js')
+PTests.options.test_file = path.join('autotests','dom_spec.js')
 // PTests.options.test_file = path.join('autotests','have_tag_spec.js')
 
 // PTests.options.test_file = path.join('unit','store_spec.js')
-PTests.options.test_file = path.join('unit','Parags','relatives_spec.js')
+// PTests.options.test_file = path.join('unit','Parags','relatives_spec.js')
 // PTests.options.test_file = path.join('page_projet','essai_spec.js')
 
 // Le dossier de tests à faire
 // Ce doit être le chemin relatif (sans './') depuis le dossier ./tests/ptests/
 // PTests.options.test_folder = 'autotests'
-PTests.options.test_folder = 'unit/Parags'
+// PTests.options.test_folder = 'unit/Parags'
 
 // beforeSuite(function(){
 //   // À faire avant tous les tests
