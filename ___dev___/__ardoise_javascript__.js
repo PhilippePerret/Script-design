@@ -1,7 +1,7 @@
 let res
 
-let t = 'bonjour (la liste)'
+let t = /recherche/i
 
-res = t.search(//)
+res = t.constructor.name
 
 console.log(res)
