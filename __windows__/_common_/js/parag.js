@@ -44,17 +44,19 @@ class Parag
 
   /**
   * Méthode pour tout déselectionner (obtenue principalement en cliquant
-  * en dehors des paragraphes).
+  * en dehors des paragraphes ou chaque fois qu'on désactive un panneau).
   * Cela supprimer aussi l'élément courant
   **/
   static deselectAll ()
   {
+    console.log('-> deselectAll')
     if ( this.current ) { this.unsetCurrent() }
     if ( this._selecteds )
     {
       this._selecteds.forEach( iparag => iparag.setDeselected.bind(iparag)() )
       this._selecteds = []
     }
+    console.log('<- deselectAll')
   }
 
   // Met le paragraphe +iparag+ en paragraphe courant
@@ -217,9 +219,9 @@ class Parag
   **/
   onChangeContents ()
   {
-    console.log('-> onChangeContents')
+    // console.log('-> onChangeContents')
     this.contents = this.newContents
-    console.log('On met le contents à ', this.contents)
+    // console.log('On met le contents à ', this.contents)
     this.data.contents = this.contents
     // pour forcer l'actualisation du contenu mis en forme
     delete this._formated_contents
@@ -307,7 +309,10 @@ class Parag
   // tout déselectionner, pour ne pas utiliser la méthode Parag.supSelect
   setDeselected ()
   {
+    console.log(`-> setDeselected du paragraphe #${this.id}`)
+    console.log("Classe du paragraphe avant la déselection : ", String(DOM.get(`p-${this.id}`).className))
     DOM.removeClass(this.mainDiv, 'selected')
+    console.log("Classe du paragraphe APRÈS la déselection : ", String(DOM.get(`p-${this.id}`).className))
     this.selected = false
     if ( this.relatifsExergued ) { this.unexergueRelatifs() }
     return this

@@ -105,6 +105,10 @@ define(
         this.actif = true
       }
       desactivate () {
+        // Avant de désactiver le panneau, on déselectionne les sélections
+        // et la marque de paragraphe courant.
+        Parag.deselectAll()
+        Parag.unsetCurrent()
         DOM.removeClass(`panneau-${this.id}`,'actif')
         this.actif = false
       }

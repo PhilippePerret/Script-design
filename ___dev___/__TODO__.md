@@ -1,4 +1,6 @@
-* Il faut fermer tous les waitimers quand une erreur s'est produite
+* Quand on active un panneau, il faut relever tous ses paragraphes.
+  En fait, le mieux, ce serait d'avoir une propriété `parags` du panneau, qui
+  soit une instance de Parags et permette de gérer les paragraphes du panneau
 
 * Quand on édite un champ, placer le curseur à la fin plutôt qu'au début
 

@@ -8,13 +8,15 @@ let otabulator, tabulator
 
 
 let panneaux = [
-        {key: 'd', id: 'synopsis',    titre: "Synopsis"}
-  // , {key: 's', id: 'personnages', titre: "Personnages"}
-  // , {key: 'f', id: 'scenier',     titre: "Scénier"}
-  // , {key: 'g', id: 'notes',       titre: "Notes"}
-  // , {key: 'h', id: 'treatment',   titre: "Traitement"}
-  // , {key: 'j', id: 'manuscrit',   titre: "Manuscrit"}
-  // , {key: 'q', id: 'data',        titre: null /* dépend du projet */}
+        // {key: 'd', id: 'synopsis',    titre: "Synopsis"}
+    // {key: 'q', id: 'data',        titre: null /* dépend du projet */}
+    {key: 's', id: 'personnages', titre: "Personnages"}
+  , {key: 'd', id: 'synopsis',    titre: "Synopsis"}
+  , {key: 'f', id: 'scenier',     titre: "Scénier"}
+  , {key: 'g', id: 'notes',       titre: "Notes"}
+  , {key: 'h', id: 'treatment',   titre: "Traitement"}
+  , {key: 'j', id: 'manuscrit',   titre: "Manuscrit"}
+  , {key: 'q', id: 'data',        titre: null /* dépend du projet */}
 ]
 
 function checkPanneau()
@@ -59,18 +61,16 @@ function checkPanneau()
             .have_tag('div',{id:`panneau-${id}-contents`, children: children})
 
           // On essaie de sélectionner les paragraphes avec les flèches
+          // Aucun paragraphe ne doit être sélectionné
+          expect('div.p.selected').asNode.not.to.exist
           KB.press('ArrowDown')
-          console.log("J'attends sur la visibilité de div.p.selected")
           waitForVisible('div.p.selected', {wait: 1, timeout: 10})
             .then( () => {
-              // expect('div.p.selected').asNode.to.exist
+              expect('div.p.selected').asNode.to.exist
 
               // === ON PASSE AU PANNEAU SUIVANT ===
               // Noter qu'on peut y passer aussi ci-dessous
               checkPanneau()
-
-            })
-            .else( () => {
 
             })
         }
