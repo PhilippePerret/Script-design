@@ -5,6 +5,17 @@
 let path = require('path')
 global.C = require('../../lib/constants')
 
+// Pour repérer les retours console dans des feuilles de tests volumineuses,
+// on peut encadrer le test par :
+//
+//    console.log(DELIMITER_START)
+//    ... ici le test ...
+//    console.log(DELIMITER_END)
+//
+// … pour le repérer
+global.DELIMITER_START = "\n\n\n------------ MARK IN --------------\n\n\n"
+global.DELIMITER_END   = "\n\n\n------------ /MARK OUT --------------\n\n\n"
+
 // Pour écrire la description des tests sur une seule ligne.
 PTests.options.one_line_describe = true
 
@@ -20,7 +31,8 @@ PTests.options.one_line_describe = true
 // PTests.options.test_file = path.join('autotests','module_require_spec.js')
 // PTests.options.test_file = path.join('autotests','option_no_values_spec.js')
 // PTests.options.test_file = path.join('autotests','file_spec.js')
-PTests.options.test_file = path.join('autotests','dom_spec.js')
+// PTests.options.test_file = path.join('autotests','dom_spec.js')
+PTests.options.test_file = path.join('autotests','dom_children_spec.js')
 // PTests.options.test_file = path.join('autotests','have_tag_spec.js')
 
 // PTests.options.test_file = path.join('unit','store_spec.js')
