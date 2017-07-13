@@ -121,7 +121,11 @@ class Parags
   }
 
   /**
-  *
+  * Méthode qui reçoit l'argument envoyé aux principales fonctions et
+  * qui retourne un Array d'instances Parags qui seront traités.
+  * @param  {Array}  argp Une liste soit d'instances {Parag} soit d'ID
+  *         {Parag}  Une instance seule
+  *      ou {Number} L'ID du parag à traiter.
   **/
   realArgs ( argp )
   {
@@ -142,6 +146,8 @@ class Parags
 
   /**
   * @return {ParagsSelection} l'instance qui gère la ou les sélections
+  *
+  * Cf. plus bas la définition de la classe
   **/
   get selection ()
   {
@@ -156,11 +162,13 @@ class Parags
    * ----------------------------------------
    * @param {Parag|Number|Array} iparag Soit l'instance du parag soit son ID,
    *  soit une liste de l'un ou l'autre.
+   * C'est un raccourci pour this.selection.add, mais qui traite en plus
+   * une liste d'instances {Parag} ou d'ID de parags
    */
   select ( argp )
   {
     argp = this.realArgs(argp)
-    argp.forEach( (p) => { this.selection.add(p) } )
+    argp.forEach( p => this.selection.add(p) )
   }
   /**
    * Désélectionne le ou les parags en argument
@@ -171,17 +179,164 @@ class Parags
   deselect (argp)
   {
     argp = this.realArgs(argp)
-    argp.forEach( (p) => { this.selection.remove(p) } )
+    argp.forEach( p => this.selection.remove(p) )
   }
 
   /**
-  * Désélectionne tous les parags sélectionnés
+  * Désélectionne tous les parags sélectionnés dans le panneau courant ou
+  * le panneau qui possède le parags.
   **/
   deselectAll ()
   {
     if(0 == this.selection.count){return}
     this.deselect(this.selection.items)
   }
+
+  /**
+  * @return {HTMLArray}
+  **/
+  get domElements ()
+  {
+    return this.panneau.container.getElementsByClassName('p')
+  }
+
+  /**
+  * @return {Parag} Le premier parag du panneau
+  **/
+  get first () {
+    return this.count
+      ? this.instanceFromElement(this.domElements[0])
+      : null
+  }
+  /**
+  * @return {Parag} Le dernier parag du panneau
+  **/
+  get last () {
+    return this.count
+      ? this.instanceFromElement(this.domElements[this.domElements.length-1])
+      : null
+  }
+
+
+  moveBefore ( parag, before )
+  {
+    if ( 'number' == typeof parag  ) { parag  = this.get(parag)  }
+    if ( 'number' == typeof before ) { before = this.get(before) }
+
+    parag  && (parag  = parag.mainDiv)
+    before && (before = before.mainDiv)
+
+    this.panneau.container.insertBefore(parag, before)
+  }
+
+
+
+  /**
+  * Selectionne le paragraphe précédent ou suivant
+  *
+  * @param {KeyUpEvent} evt Suivant la touche du clavier, le comporterment
+  * peut être différent :
+  *       MAJ     On se déplace de 10 parags en 10 parags
+  *       ALT     On doit déplacer le paragraphe au-dessus ou en dessous
+  **/
+  selectPrevious ( evt)
+  {
+    if(!evt){evt={}}
+    let pa = this.getPrevious( evt.shiftKey ? 5 : 1 )
+    pa && this.select(pa)
+  }
+
+  /**
+  * Sélectionne le paragraphe suivant (ou 5 paragraphes plus bas)
+  **/
+  selectNext (evt)
+  {
+    if(!evt){evt={}}
+    let pa = this.getNext( evt.shiftKey ? 5 : 1 )
+    pa && this.select(pa)
+  }
+
+  /**
+  * @return {Parag} Le paragraphe qui précède le paragraphe courant.
+  * @param {Number} to Définit à combien on doit prendre le précédent (1 par
+  *                    défaut)
+  **/
+  getPrevious (to)
+  {
+    // Quand il n'y a pas de paragraphe dans ce pan du projet, on ne
+    // peut que retourner null
+    if ( 0 == this.count ) { return null }
+
+    // S'il n'y a pas de paragraphe courant, on renvoie le dernier
+    // paragraphe.
+    if ( ! this.selection.current ) { return this.last }
+
+    // Sinon (s'il y a un paragraphe courant et que ce n'est pas le
+    // premier, on le renvoie. Si c'est le premier, on renvoie le même
+    if(undefined === to) { to = 1 }
+    let   i = 0
+        , other
+        , o = this.selection.current.mainDiv
+    for(; i < to ; ++i ) {
+      o = o.previousSibling
+      if ( o ) { other = o }
+      else { break }
+    }
+    return other
+            ? this.items[Number(other.getAttribute('data-id'))]
+            : this.selection.current
+  }
+
+  /**
+  * @return {Parag} Le paragraphe qui précède de +to+ le paragraphe
+  * courant. Retourne NULL s'il n'y a aucun paragraphe ou le premier paragraphe
+  * s'il n'y a aucun paragraphe courant.
+  **/
+  getNext (to)
+  {
+    if ( 0 == this.count ) { return null }
+    // S'il n'y a pas de paragraphe courant, on doit sélectionner le premier
+    if ( ! this.selection.current ) { return this.first }
+
+    if ( undefined === to ) { to = 1 }
+    let   i = 0
+        , other
+        , o = this.selection.current.mainDiv
+
+    for (; i < to ; ++i ) {
+      o = o.nextSibling
+      if ( o ) { other = o }
+      else { break }
+    }
+
+    return other
+            ? this.instanceFromElement(other)
+            : this.last
+  }
+
+  /**
+  * Remonte le parag courant
+  **/
+  moveCurrentUp (evt)
+  {
+    if(!evt){evt={}}
+    let pa = this.getPrevious(evt.shiftKey ? 5 : 1)
+    pa && this.moveBefore(this.selection.current, pa)
+  }
+
+  /**
+  * Descend le parag courant
+  **/
+  moveCurrentDown (evt)
+  {
+    if(!evt){evt={}}
+    let pa = this.getNext(evt.shiftKey ? 5 : 1)
+    pa && this.moveAfter(this.selection.current, next)
+  }
+
+
+
+
   /**
   * Retire le paragraphe +iparag+ de la liste des items et du panneau
   * @param {Parag} iparag Instance du parag à retirer
@@ -196,7 +351,6 @@ class Parags
     let my = this
     argp.forEach( (iparag) => {
       if ( undefined == iparag ){
-        console.log("iparag est indéfini avec les arguments : ",argp)
         return
       }
       iparag.selected && my.selection.remove( iparag )
@@ -229,7 +383,7 @@ class Parags
     else {
       argp = this.realArgs(argp)
     }
-    argp.forEach( p => p.modified = false )
+    argp.forEach( (p) => { p.modified = false } )
   }
 
   get as_data ()
@@ -243,22 +397,22 @@ class Parags
   }
 
   /**
-  * Liste des paragraphes.
+  * Liste des paragraphes
+  * ---------------------
   * Noter qu'ils sont pris dans le document, mais que ça pourrait aussi
   * se prendre dans les données. L'avante de les prendre dans le document
   * c'est que les paragraphes sont dans le bon ordre.
   **/
   get items ()
   {
+
     if ( undefined === this._items ) {
       let arr = []
         , ps  = this.panneau.container.getElementsByClassName('p')
         , nb  = this._count = ps.length
         , i   = 0
 
-      for(; i < nb ; ++i ){
-        arr.push( this.instanceFromElement(ps[i]) )
-      }
+      for(; i < nb ; ++i ){ arr.push( this.instanceFromElement(ps[i]) ) }
       this._items = arr
     }
     return this._items
@@ -353,15 +507,15 @@ class Parags
     return newP
   }
 
-  /**
-  * @param {HTMLElement} odom L'objet DOM du parag dans le panneau
-  * @return {Parag} L'instance Parag correspondante.
-  * TODO Rendre cette méthode OBSOLETE en utilisatn celle du panneau
-  **/
-  static instanceFromElement( odom )
-  {
-    return Parags.items[Number(odom.getAttribute('data-id'))]
-  }
+  // /**
+  // * @param {HTMLElement} odom L'objet DOM du parag dans le panneau
+  // * @return {Parag} L'instance Parag correspondante.
+  // * TODO Rendre cette méthode OBSOLETE en utilisatn celle du panneau
+  // **/
+  // static instanceFromElement( odom )
+  // {
+  //   return Parags.items[Number(odom.getAttribute('data-id'))]
+  // }
 
   /** ---------------------------------------------------------------------
     *
@@ -411,173 +565,87 @@ class Parags
     return this.items[parag_id]
   }
 
-  static get items () {
-    if(undefined===this._items){this._items = {}}
-    return this._items
-  }
-  static addItem (iparag)
-  {
-    if(undefined===this._items){
-      this._items         = {}
-      this._nombre_items  = 0
-    }
-    this._items[iparag.id] = iparag
-    this._nombre_items ++
-  }
-  static get length () { return this._nombre_items }
-  static get zeroParags () { return this.length === 0 }
-
-  static get firstParag () {
-    if(this.zeroParags){return null}
-    let firstK = Object.keys(this.items)[0]
-    return this.items[firstK]
-  }
-  static get lastParag () {
-    if(this.zeroParags){return null}
-    let lastK = Object.keys(this.items)[this.length-1]
-    console.log(`lastK = `, lastK)
-    return this.items[lastK]
-  }
-
-  /**
-  * Selectionne le paragraphe précédent ou suivant
-  *
-  * @param {KeyUpEvent} evt Suivant la touche du clavier, le comporterment
-  * peut être différent :
-  *       MAJ     On se déplace de 10 parags en 10 parags
-  *       ALT     On doit déplacer le paragraphe au-dessus ou en dessous
-  **/
-  static selectPrevious (evt)
-  {
-    let
-        to    = evt.shiftKey ? 5 : 1
-      , prev  = this.getPrevious(to)
-
-    if ( ! prev ) { return }
-    Parag.setCurrent(prev)
-  }
-  /**
-  * Remonte le parag courant
-  **/
-  static moveCurrentUp (evt)
-  {
-    let
-        to    = evt.shiftKey ? 5 : 1
-      , prev  = this.getPrevious(to)
-
-    if ( ! prev ) { return }
-    Parag.current.moveBefore(prev)
-  }
-
-  /**
-  * Sélectionne le paragraphe suivant (ou 5 paragraphes plus bas)
-  **/
-  static selectNext (evt)
-  {
-    let
-        to    = evt.shiftKey ? 5 : 1
-      , next  = this.getNext(to)
-
-    if ( ! next ) { return }
-    Parag.setCurrent(next)
-  }
-  /**
-  * Descend le parag courant
-  **/
-  static moveCurrentDown (evt)
-  {
-    let
-        to    = evt.shiftKey ? 5 : 1
-      , next  = this.getNext(to)
-
-    if ( ! next ) { return }
-    Parag.current.moveAfter(next)
-  }
-
-
-  /**
-  * @return {Parag} Le paragraphe qui précède le paragraphe courant.
-  * @param {Number} to Définit à combien on doit prendre le précédent (1 par
-  *                    défaut)
-  **/
-  static getPrevious (to)
-  {
-    // Quand il n'y a pas de paragraphe dans ce pan du projet, on ne
-    // peut que retourner null
-    if ( this.zeroParags )
-    {
-      return null
-    }
-
-    // S'il n'y a pas de paragraphe courant, on renvoie le dernier
-    // paragraphe.
-    if( ! Parag.current)
-    {
-      return this.lastParag
-    }
-
-    // Sinon (s'il y a un paragraphe courant et que ce n'est pas le
-    // premier, on le renvoie. Si c'est le premier, on renvoie le même
-    if(undefined === to) { to = 1 }
-    let
-          i = 0
-        , other
-        , o = Parag.current.mainDiv
-    for(; i < to ; ++i )
-    {
-      o = o.previousSibling
-      if ( o ) { other = o }
-      else { break }
-    }
-    if ( other )
-    {
-      return this.items[Number(other.getAttribute('data-id'))]
-    }
-    else
-    {
-      return Parag.current
-    }
-  }
-
-  /**
-  * @return {Parag} Le paragraphe qui précède de +to+ le paragraphe
-  * courant. Retourne NULL s'il n'y a aucun paragraphe ou le premier paragraphe
-  * s'il n'y a aucun paragraphe courant.
-  **/
-  static getNext (to)
-  {
-    if ( this.zeroParags )
-    {
-      return null
-    }
-    // S'il n'y a pas de paragraphe courant, on doit sélectionner le premier
-    if( ! Parag.current)
-    {
-      return this.firstParag
-    }
-
-    if ( undefined === to ) { to = 1 }
-    let
-          i = 0
-        , other
-        , o = Parag.current.mainDiv
-
-    for (; i < to ; ++i )
-    {
-      o = o.nextSibling
-      if ( o ) { other = o }
-      else { break }
-    }
-
-    if ( other )
-    {
-      return this.instanceFromElement(other)
-    }
-    else
-    {
-      return this.lastParag
-    }
-  }
+  // static get items () {
+  //   if(undefined===this._items){this._items = {}}
+  //   return this._items
+  // }
+  // static addItem (iparag)
+  // {
+  //   if(undefined===this._items){
+  //     this._items         = {}
+  //     this._nombre_items  = 0
+  //   }
+  //   this._items[iparag.id] = iparag
+  //   this._nombre_items ++
+  // }
+  // static get length ()      { return this._nombre_items }
+  // static get zeroParags ()  { return this.length === 0  }
+  //
+  // static get firstParag () {
+  //   if(this.zeroParags){return null}
+  //   let firstK = Object.keys(this.items)[0]
+  //   return this.items[firstK]
+  // }
+  // static get lastParag () {
+  //   if(this.zeroParags){return null}
+  //   let lastK = Object.keys(this.items)[this.length-1]
+  //   return this.items[lastK]
+  // }
+  //
+  // /**
+  // * Selectionne le paragraphe précédent ou suivant
+  // *
+  // * @param {KeyUpEvent} evt Suivant la touche du clavier, le comporterment
+  // * peut être différent :
+  // *       MAJ     On se déplace de 10 parags en 10 parags
+  // *       ALT     On doit déplacer le paragraphe au-dessus ou en dessous
+  // **/
+  // static selectPrevious (evt)
+  // {
+  //   let
+  //       to    = evt.shiftKey ? 5 : 1
+  //     , prev  = this.getPrevious(to)
+  //
+  //   if ( ! prev ) { return }
+  //   Parag.setCurrent(prev)
+  // }
+  // /**
+  // * Remonte le parag courant
+  // **/
+  // static moveCurrentUp (evt)
+  // {
+  //   let
+  //       to    = evt.shiftKey ? 5 : 1
+  //     , prev  = this.getPrevious(to)
+  //
+  //   if ( ! prev ) { return }
+  //   Parag.current.moveBefore(prev)
+  // }
+  //
+  // /**
+  // * Sélectionne le paragraphe suivant (ou 5 paragraphes plus bas)
+  // **/
+  // static selectNext (evt)
+  // {
+  //   let
+  //       to    = evt.shiftKey ? 5 : 1
+  //     , next  = this.getNext(to)
+  //
+  //   if ( ! next ) { return }
+  //   Parag.setCurrent(next)
+  // }
+  // /**
+  // * Descend le parag courant
+  // **/
+  // static moveCurrentDown (evt)
+  // {
+  //   let
+  //       to    = evt.shiftKey ? 5 : 1
+  //     , next  = this.getNext(to)
+  //
+  //   if ( ! next ) { return }
+  //   Parag.current.moveAfter(next)
+  // }
 
 }
 
