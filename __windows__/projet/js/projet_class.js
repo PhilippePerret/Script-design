@@ -14,17 +14,11 @@ let
 
 moment.locale('fr')
 
-define([
-    C.LOG_MODULE_PATH
-  , C.DOM_MODULE_PATH     // => DOM
-  , C.SELECT_MODULE_PATH  // => Select
-], function(
-    log
-  , DOM
-  , Select
-){
+// log, DOM et Select sont utiles
 
-
+  //   C.LOG_MODULE_PATH
+  // , C.DOM_MODULE_PATH     // => DOM
+  // , C.SELECT_MODULE_PATH  // => Select
 
 /** ---------------------------------------------------------------------
   *
@@ -333,5 +327,4 @@ class Projet
 
 }// fin class Projet
 
-return Projet
-})// /fin define
+module.exports = Projet
