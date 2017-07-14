@@ -206,6 +206,60 @@ class Tabulator
 
   get maxSelected () { return this.Map.maxSelected }
 
+  /**
+   * Gestion de la touche entrée sur un Tabulator
+   * Note : elle a été isolée car elle peut être appelée aussi lorsque l'on
+   * clique deux fois sur une touche qui correspond à un menu/commande/action.
+   */
+  onEnter (evt)
+  {
+    let method
+      , my = this
+
+    // S'il y a une méthode de traitement propre, on l'utilise
+    // Sinon, on utilise les méthodes définies pour chaque lettre.
+    // La méthode de substition peut être utile, par exemple, pour les
+    // panneau qui passent en mode double panneau si deux panneaux sont
+    // choisis.
+    if ( 'function' === typeof my.Map.enter_method ) {
+
+      my.Map.enter_method.call(Projet, this.current_buttons.map(b =>{return b.data}))
+
+    } else {
+
+      // Si une méthode Before-All est définie
+      if ( 'function' === typeof my.Map.beforeAll ){
+        my.Map.beforeAll.call()
+      }
+
+      my.current_buttons.forEach( (bouton) => {
+
+        // Si une méthode Before-Each est définie
+        if ( 'function' === typeof my.Map.beforeEach ){
+          my.Map.beforeEach.call()
+        }
+
+        // === Exécution de la méthode de data ou de lettre ===
+        method = my.Map[bouton.data]
+        if ( 'function' == typeof method ) { method.call() }
+        else { throw new Error(`Aucune méthode d'action n'est définie pour ${bouton.data} (lettre ${bouton.key})`)}
+
+        // Si une méthode After-Each est définie
+        if ( 'function' === typeof my.Map.afterEach ){
+          my.Map.afterEach.call()
+        }
+
+      })
+
+      // Si une méthode After-All est définie
+      if ( 'function' === typeof my.Map.afterAll ){
+        my.Map.afterAll.call()
+      }
+    }
+    this.hasBeenRan = true
+    this.tabulator.blur()
+  }
+
   onKeyUp (evt)
   {
     // console.log(`-> Tabulator#onKeyUp (de tabulator#${this.id} - touche '${evt.key}')`)
@@ -242,49 +296,8 @@ class Tabulator
         }
         break
       case 'Enter':
-        let method
-        // S'il y a une méthode de traitement propre, on l'utilise
-        // Sinon, on utilise les méthodes définies pour chaque lettre.
-        // La méthode de substition peut être utile, par exemple, pour les
-        // panneau qui passent en mode double panneau si deux panneaux sont
-        // choisis.
-        if ( 'function' === typeof my.Map.enter_method ) {
 
-          my.Map.enter_method.call(Projet, this.current_buttons.map(b =>{return b.data}))
-
-        } else {
-
-          // Si une méthode Before-All est définie
-          if ( 'function' === typeof my.Map.beforeAll ){
-            my.Map.beforeAll.call()
-          }
-
-          my.current_buttons.forEach( (bouton) => {
-
-            // Si une méthode Before-Each est définie
-            if ( 'function' === typeof my.Map.beforeEach ){
-              my.Map.beforeEach.call()
-            }
-
-            // === Exécution de la méthode de data ou de lettre ===
-            method = my.Map[bouton.data]
-            if ( 'function' == typeof method ) { method.call() }
-            else { throw new Error(`Aucune méthode d'action n'est définie pour ${bouton.data} (lettre ${bouton.key})`)}
-
-            // Si une méthode After-Each est définie
-            if ( 'function' === typeof my.Map.afterEach ){
-              my.Map.afterEach.call()
-            }
-
-          })
-
-          // Si une méthode After-All est définie
-          if ( 'function' === typeof my.Map.afterAll ){
-            my.Map.afterAll.call()
-          }
-        }
-        this.hasBeenRan = true
-        this.tabulator.blur()
+        this.onEnter(evt)
         return DOM.stopEvent(evt)
 
       case 'Escape': // pour quitter le tabulator
@@ -292,14 +305,25 @@ class Tabulator
         this.tabulator.blur()
         return DOM.stopEvent(evt)
       default:
+
+        // console.log(evt)
         let keymin = evt.key.toLowerCase()
         let withCapsLock = keymin != evt.key
+        let double_stroke = this.last_time_record
+                            && ( this.last_time_record.key == keymin )
+                            && ( evt.timeStamp - this.last_time_record.time < 400 )
+
         if ( undefined !== this.buttons[keymin] )
         {
           let bouton = this.buttons[keymin]
           bouton.downed = false
           this.setCurrentButton(bouton, withCapsLock)
+          if (double_stroke) {
+            this.onEnter(evt)
+            return DOM.stopEvent(evt)
+          }
         }
+        this.last_time_record = { key: keymin, time: evt.timeStamp }
     }
   }
 
