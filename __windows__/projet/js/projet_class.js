@@ -68,7 +68,7 @@ class Projet
   {
     // On place un listener d'event click sur le body, pour tout déselectionner
     document.body.addEventListener('click', (evt) => {
-      Parag.deselectAll()
+      Projet.current_panneau.deselectAll()
       // alert("Click sur le body hors des paragraphes.")
     })
   }

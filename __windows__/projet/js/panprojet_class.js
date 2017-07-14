@@ -139,12 +139,13 @@ class PanProjet
     *   Raccourcis
     *
   *** --------------------------------------------------------------------- */
+  deselectAll     ()  { return this.parags.deselectAll()        }
   selectNext      (e) { return this.parags.selectNext(e)        }
   selectPrevious  (e) { return this.parags.selectPrevious(e)    }
   moveCurrentUp   (e) { return this.parags.moveCurrentUp(e)     }
   moveCurrentDown (e) { return this.parags.moveCurrentDown(e)   }
   hasCurrent      (e) { return this.parags.hasCurrent()         }
-  
+
   /** ---------------------------------------------------------------------
     *
     *   Méthodes préférences
