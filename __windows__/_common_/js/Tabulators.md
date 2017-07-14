@@ -18,6 +18,10 @@ Le côté inédit, c'est que ce sont toujours les mêmes touches qui sont utilis
 
 L'autre grande originalité, c'est qu'on peut activer plusieurs menus/outils en même temps (un petit numéro apparait, qui indique l'ordre où les menus vont être joués). Cela permet par exemple d'enchainer plusieurs commandes sans avoir à rejouer les menus.
 
+### Double-stroke
+
+La troisième originalité consiste dans le fait que la touche entrée, pour choisir le menu ou la commande, peut être obtenu en double-pressant la touche correspondante. Par exemple, si l'on peut ouvrir la fenêtre en choisissant la touche `s` puis en cliquant sur la touche `Enter`, alors il suffit de presser deux fois la touche `s` pour obtenir le même résultat.
+
 
 ## TODO LIST
 
