@@ -8,10 +8,13 @@
   *   Despite its name, a <Parag> can own several real paragraphs.
   *
 *** --------------------------------------------------------------------- */
-let moment    = require('moment')
+let path        = require('path')
+  , moment      = require('moment')
+  // , requirejs   = require('requirejs')
+  , Kramdown    = require(path.join(C.LIB_UTILS_FOLDER,'kramdown_class.js'))
 
-let Kramdown
-requirejs([path.join(C.LIB_UTILS_FOLDER,'kramdown.js')], (K)=>{Kramdown=K})
+// let Kramdown
+// requirejs([path.join(C.LIB_UTILS_FOLDER,'kramdown.js')], (K)=>{Kramdown=K})
 
 class Parag
 {
@@ -42,94 +45,14 @@ class Parag
     return Number(this._lastID)
   }
 
-  /**
-  * Méthode pour tout déselectionner (obtenue principalement en cliquant
-  * en dehors des paragraphes ou chaque fois qu'on désactive un panneau).
-  * Cela supprimer aussi l'élément courant
-  **/
-  static deselectAll ()
-  {
-    console.log('-> deselectAll')
-    if ( this.current ) { this.unsetCurrent() }
-    if ( this._selecteds )
-    {
-      this._selecteds.forEach( iparag => iparag.setDeselected.bind(iparag)() )
-      this._selecteds = []
-    }
-    console.log('<- deselectAll')
-  }
-
-  // Met le paragraphe +iparag+ en paragraphe courant
-  static setCurrent (iparag)
-  {
-    if ( this.current ) { this.unsetCurrent(this.current) }
-    this._current = iparag
-    // TODO Ci-dessous, il faudra remplacer ce "true" par la valeur
-    // de la touche majuscule pressée (si MAJ est pressée, la valeur doit
-    // être true c'est-à-dire qu'on ne doit pas déselectionner les paragraphes
-    // sélectionnés)
-    if ( true /* on regardera si la touche majuscule est pressée */ )
-    {
-      this.selecteds.forEach( p => p.deselect.bind(p)() )
-      this._selecteds = []
-    }
-    this.current.select().setCurrent()
-  }
-
-  // Sort le paragraphe +iparag+ du courant
-  static unsetCurrent(iparag)
-  {
-    if(undefined === iparag){iparag = this.current}
-    if ( iparag ) { iparag.unsetCurrent() }
-  }
-
-  static addSelect (iparag)
-  {
-    if(undefined===this._selecteds){this._selecteds=[]}
-    this._selecteds.push(iparag)
-  }
-  static supSelect (iparag)
-  {
-    if(this.selecteds.length==1)
-    {
-      this._selecteds = []
-    }
-    else
-    {
-      let nb = this.selecteds.length
-        , i  = 0
-      for(; i < nb ; ++i)
-      {
-        if ( this.selecteds[i].id == iparag.id ){
-          this._selecteds.splice(i,1)
-          break
-        }
-      }
-    }
-  }
-  /**
-  * @return {Parag} Le paragraphe courant.
-  *
-  * Noter qu'il peut y avoir plus paragraphe sélectionnés mais qu'il n'y
-  * a toujours qu'un seul courant.
-  *
-  **/
-  static get current () { return this._current }
-  /**
-  * @return {Array} la liste des instances {Parag}(s) sélectionnées,
-  * lorsque la touche majuscule est pressée.
-  **/
-  static get selecteds ()
-  {
-    if(undefined === this._selecteds){this._selecteds = []}
-    return this._selecteds
-  }
 
   /** ---------------------------------------------------------------------
     *
     *   INSTANCE Parag
     *
   *** --------------------------------------------------------------------- */
+
+
   constructor (data)
   {
     this.id   = data.id // doit toujours exister
@@ -141,7 +64,6 @@ class Parag
     }
     this.selected = false // à true quand il est sélectionné
     this.current  = false // à true quand c'est le paragraphe courant
-    Parags.addItem(this)
   }
 
   /** ---------------------------------------------------------------------
@@ -207,9 +129,29 @@ class Parag
   get data_relatives ()
     { return Projet.current.relatives.data.relatives[String(this.id)] }
 
+
+  get next ()
+  {
+    {
+      if (this.mainDiv.nextSibling){
+        return this.panneau.parags.instanceFromElement(this.mainDiv.nextSibling)
+      }
+    }
+  }
+  /**
+  * @return {Parag} le paragraphe qui précède le paragraphe courant
+  *                 ou nul s'il n'y en a pas
+  **/
+  get previous ()
+  {
+    if (this.mainDiv.previousSibling){
+      return this.panneau.parags.instanceFromElement(this.mainDiv.previousSibling)
+    }
+  }
+
+
   edit ()
   {
-    Parag.setCurrent(this)
     this.doEdit.bind(this)()
   }
 
@@ -272,7 +214,14 @@ class Parag
   **/
   get mainDiv ()
   {
-    if (undefined === this._main_div){this._main_div = this.build()}
+    let o
+    if ( ! this._main_div ){
+      if (o = this.container.querySelector(`div#p-${this.id}`)) {
+        this._main_div = o
+      } else {
+        this._main_div = this.build()
+      }
+    }
     return this._main_div
   }
 
@@ -293,30 +242,22 @@ class Parag
   **/
   select ()
   {
-    if ( this.selected ) { return this }
+    // console.log(`-> Parag.select #${this.id}`)
     DOM.addClass(this.mainDiv,'selected')
-    Parag.addSelect(this)
     this.selected = true
+    // console.log(`<- Parag.select #${this.id}`)
     return this
   }
   deselect ()
   {
-    if ( ! this.selected ) { return this }
-    Parag.supSelect(this)
-    return this.setDeselected()
-  }
-  // Méthode de déselection qui peut être appelée quane on doit
-  // tout déselectionner, pour ne pas utiliser la méthode Parag.supSelect
-  setDeselected ()
-  {
-    console.log(`-> setDeselected du paragraphe #${this.id}`)
-    console.log("Classe du paragraphe avant la déselection : ", String(DOM.get(`p-${this.id}`).className))
-    DOM.removeClass(this.mainDiv, 'selected')
-    console.log("Classe du paragraphe APRÈS la déselection : ", String(DOM.get(`p-${this.id}`).className))
-    this.selected = false
+    // console.log(`-> Parag.deselect #${this.id}`)
     if ( this.relatifsExergued ) { this.unexergueRelatifs() }
+    DOM.removeClass(this.mainDiv, 'selected')
+    this.selected = false
+    // console.log(`<- Parag.deselect #${this.id}`)
     return this
   }
+
 
   exergue (as_referent)
   {
@@ -341,14 +282,12 @@ class Parag
   **/
   setCurrent ()
   {
-    if ( this.current ) { return this }
     DOM.addClass(this.mainDiv,'current')
     this.current = true
     return this
   }
   unsetCurrent ()
   {
-    if ( ! this.current ) { return this }
     DOM.removeClass(this.mainDiv,'current')
     this.current = false
     return this

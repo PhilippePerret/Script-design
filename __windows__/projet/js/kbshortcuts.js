@@ -38,14 +38,14 @@ define(
           // les capter avant pour les faire agir.
           if ( evt.metaKey )
           {
-            Parags.moveCurrentDown(evt)
+            Projet.current_panneau.moveCurrentDown(evt)
             return DOM.stopEvent(evt)
           }
           break
         case 'ArrowUp':
           if ( evt.metaKey )
           {
-            Parags.moveCurrentUp(evt)
+            Projet.current_panneau.moveCurrentUp(evt)
             return DOM.stopEvent(evt)
           }
           break
@@ -93,18 +93,18 @@ define(
           {
             return Parags.setSelectedsAsRelatives()
           }
-          else if ( Parag.current )
+          else if ( Projet.current_panneau.hasCurrent() )
           {
-            Parag.current.edit()
+            Projet.current_panneau.editCurrent()
           }
           break
 
         case 'ArrowUp':
-          Parags.selectPrevious(evt)
+          Projet.current_panneau.selectPrevious(evt)
           return DOM.stopEvent(evt)
 
         case 'ArrowDown':
-          Parags.selectNext(evt)
+          Projet.current_panneau.selectNext(evt)
           return DOM.stopEvent(evt)
 
         case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
@@ -112,21 +112,6 @@ define(
         case 'o':
           alert("La fenêtre des outils n'est pas encore implémentée")
           break
-        // // Activation des panneaux
-        // OBSOLÈTE : MAINTENANT GÉRÉ PAR UN TABULATOR
-        // case 'M':
-        //   return Projet.loadPanneau('manuscrit', evt)
-        // case 'N':
-        //   return Projet.loadPanneau('notes', evt)
-        // case 'P':
-        //   return Projet.loadPanneau('personnages')
-        // case 'S':
-        //   return Projet.loadPanneau('scenier')
-        // case 'T':
-        //   return Projet.loadPanneau('treatment')
-        // case 'Y':
-        //   return Projet.loadPanneau('synopsis')
-
         default:
           // Pour voir la touche :
           // console.log(evt.key)

@@ -11,9 +11,9 @@ const
 const
     PROJET_FOLDER     = path.join(C.VIEWS_FOLDER,'projet')
   , PROJET_JS_FOLDER  = path.join(PROJET_FOLDER,'js')
-  , PROJET_API_PATH   = path.join(PROJET_JS_FOLDER,'api.js')
+  , PROJET_API_PATH   = path.join(PROJET_JS_FOLDER,'projet.js')
   , PROJET_KBS_PATH   = path.join(PROJET_JS_FOLDER,'kbshortcuts.js')
-  , PROJET_PAN_PATH   = path.join(PROJET_JS_FOLDER, 'pan_projet.js')
+  , PROJET_PAN_PATH   = path.join(PROJET_JS_FOLDER, 'panprojet.js')
   , PROJET_RELS_PATH  = path.join(PROJET_JS_FOLDER, 'relatives.js')
 
 requirejs(
@@ -114,8 +114,8 @@ requirejs(
 
 
         // ---------- TESTS D'INTÉGRATIONS ----------
-        // PTEST_IT = false
-        PTEST_IT = true
+        PTEST_IT = false
+        // PTEST_IT = true
 
         if ( PTEST_IT )
         {
