@@ -148,7 +148,8 @@ describe("La propriété #parags du panneau",[
     [
       'reset', 'add', 'remove', 'select', 'deselect', 'deselectAll', 'setUnmodified',
       'moveBefore', 'selectPrevious', 'selectNext', 'getPrevious', 'getNext',
-      'moveCurrentUp', 'moveCurrentDown'
+      'moveCurrentUp', 'moveCurrentDown',
+      'hasCurrent', 'editCurrent'
     ].forEach( (m) => {
       expect(panneau.parags).asInstanceOf(Parags).to.respond_to(m)
     })
@@ -568,12 +569,32 @@ describe("Parags#last",[
 describe("Méthode Parags#getPrevious",[
   , context("avec un paragraphe avant",[
     , it("retourne le paragraphe précédent", ()=>{
-      pending()
+      resetAll()
+      panneau.parags.add([parag1, parag2, parag4, parag5, parag10, parag12])
+      panneau.parags.select(parag4)
+      expect(panneau.parags.getPrevious().id,'parags.getPrevious().id').to.equal(2)
+      panneau.parags.select(parag10)
+      expect(panneau.parags.getPrevious().id, 'parags.getPrevious().id').to.equal(5)
     })
   ])
   , context("sans paragraphe avant",[
     , it("retourne null", ()=>{
-      pending()
+      panneau.parags.select(parag1)
+      expect(panneau.parags.getPrevious(),'parags.getPrevious()').to.strictly.equal(null)
+    })
+  ])
+  , context("avec la touche MAJ appuyée et assez de paragraphes",[
+    , it("retourne le 5e parag avant", ()=>{
+      resetAll()
+      panneau.parags.add([parag1, parag2, parag4, parag5, parag10, parag12])
+      panneau.parags.select(parag12)
+      expect(panneau.parags.getPrevious(5).id, 'parags.getPrevious().id').to.equal(1)
+    })
+  ])
+  , context("avec MAJ mais pas assez de parag",[
+    , it("retourne le premier parag", ()=>{
+      panneau.parags.select(parag4)
+      expect(panneau.parags.getPrevious(5).id, 'parags.getPrevious().id').to.equal(1)
     })
   ])
 ])
@@ -583,12 +604,32 @@ describe("Méthode Parags#getPrevious",[
 describe("Méthode Parags#getNext",[
   , context("avec un paragraphe après",[
     , it("retourne le paragraphe suivant", ()=>{
-      pending()
+      resetAll()
+      panneau.parags.add([parag1, parag2, parag4, parag5, parag10, parag12])
+      panneau.parags.select(parag1)
+      expect(panneau.parags.getNext().id,'parags.getNext().id').to.equal(2)
+      panneau.parags.select(parag10)
+      expect(panneau.parags.getNext().id, 'parags.getNext().id').to.equal(12)
     })
   ])
-  , context("sans un paragraphe après",[
+  , context("sans paragraphe suivant",[
     , it("retourne null", ()=>{
-      pending()
+      panneau.parags.select(parag12)
+      expect(panneau.parags.getNext(),'parags.getNext().id').to.strictly.equal(null)
+    })
+  ])
+  , context("avec la touche MAJ appuyée et assez de paragraphes",[
+    , it("retourne le 5e parag après", ()=>{
+      resetAll()
+      panneau.parags.add([parag1, parag2, parag4, parag5, parag10, parag12])
+      panneau.parags.select(parag1)
+      expect(panneau.parags.getNext(5).id, 'parags.getNext().id').to.equal(12)
+    })
+  ])
+  , context("avec MAJ mais pas assez de parag",[
+    , it("retourne le premier parag", ()=>{
+      panneau.parags.select(parag5)
+      expect(panneau.parags.getNext(5).id, 'parags.getNext().id').to.equal(12)
     })
   ])
 ])
@@ -736,21 +777,25 @@ describe("Méthode Parags#moveCurrentUp",[
 describe("Méthode Parags#moveCurrentDown",[
   , context("avec un paragraphe après",[
     , it("déplace le paragraphe courant après", ()=>{
+      console.log(DELIMITER_START)
       resetAll()
       panneau.parags.add([parag12, parag10, parag5, parag4])
       panneau.parags.select(parag10)
       expect(panneau.container,'panneau.container').to.have_tag('div',{class:'selected',id:'p-10'})
-      expect(getListeOfIds()).equal([12,10,5,4])
+      expect(getListeOfIds(),'la liste des parags').equal([12,10,5,4])
       // ========> TEST <=========
       panneau.parags.moveCurrentDown()
       // ========= VÉRIFICATION =========
       expect(panneau.container,'panneau.container').to.have_tag('div',{class:'selected',id:'p-10'})
-      expect(getListeOfIds()).equal([12,5,10,4])
+      console.log("(2) getListeOfIds() = ",getListeOfIds())
+      expect(getListeOfIds(),'la liste des parags').equal([12,5,10,4])
       // ========> TEST <=========
       panneau.parags.moveCurrentDown()
       // ========= VÉRIFICATION =========
       expect(panneau.container,'panneau.container').to.have_tag('div',{class:'selected',id:'p-10'})
-      expect(getListeOfIds()).equal([12,5,4,10])
+      console.log("getListeOfIds() = ",getListeOfIds())
+      expect(getListeOfIds(),'la liste des parags').equal([12,5,4,10])
+      console.log(DELIMITER_END)
     })
   ])
   , context("sans paragraphe après",[
@@ -759,7 +804,7 @@ describe("Méthode Parags#moveCurrentDown",[
       panneau.parags.moveCurrentDown()
       // ========= VÉRIFICATION =========
       expect(panneau.container,'panneau.container').to.have_tag('div',{class:'selected',id:'p-10'})
-      expect(getListeOfIds()).equal([12,5,4,10])
+      expect(getListeOfIds(),'la liste des parags').equal([12,5,4,10])
     })
   ])
 ])
@@ -769,6 +814,7 @@ describe("Méthode Parags#moveCurrentDown",[
   *     SELECTION
   *
 *** --------------------------------------------------------------------- */
+
 // --- #selection ---
 
 describe("La sélection #selection",[
@@ -877,6 +923,23 @@ describe("La sélection #selection",[
 
 ])
 
+// --- PanProjet#hasCurrent ---
+
+describe("Méthode PanProjet#hasCurrent",[
+  , context("avec une sélection courant",[
+    , it("retourne true", ()=>{
+      panneau.parags.select(panneau.parags.first)
+      expect(panneau.parags.hasCurrent(),'parags.hasCurrent()').to.equal(true)
+    })
+  ])
+  , context("sans sélection courante",[
+    , it("retourne false", ()=>{
+      panneau.parags.deselectAll()
+      expect(panneau.parags.hasCurrent(),'parags.hasCurrent()').to.equal(false)
+    })
+  ])
+])
+
 // --- @selection#add ---
 
 describe("Sélection de parags selection#add",[
@@ -930,6 +993,34 @@ describe("Sélection de parags selection#add",[
     })
   ])
 
+])
+
+// --- Parags#editCurrent ---
+describe("Parags#editCurrent",[
+  , context("avec une sélection",[
+    , it("édite le paragraphe courant", ()=>{
+      resetAll()
+      panneau.parags.add([parag1, parag3, parag6])
+      panneau.parags.select(parag3)
+      expect(panneau.container).to.have_tag('div',{id:'p-3',class:['p','selected','current']}, {only_on_fail:true})
+      expect(panneau.container).to.not.have_tag('div',{id:'p-3-contents', contenteditable:'true'}, {only_on_fail:true})
+      // ======> TEST <========
+      panneau.parags.editCurrent()
+      // ====== VÉRIFICATIONS ======
+      expect(panneau.container).to.have_tag('div',{id:'p-3-contents', contenteditable:'true'})
+    })
+  ])
+  , context("sans sélection",[
+    , it("ne met aucun paragraphe en édition", ()=>{
+      resetAll()
+      panneau.parags.add([parag1, parag3, parag6])
+      // ======> TEST <========
+      panneau.parags.editCurrent()
+      // ====== VÉRIFICATIONS ======
+      puts(panneau.container.inspect())
+      expect(panneau.container,'panneau.container').not.to.have_tag('div',{class:'p-contents', contenteditable:'true'})
+    })
+  ])
 ])
 
 // --- Parags#select -----

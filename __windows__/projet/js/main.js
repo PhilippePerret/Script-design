@@ -114,8 +114,8 @@ requirejs(
 
 
         // ---------- TESTS D'INTÉGRATIONS ----------
-        // PTEST_IT = false
-        PTEST_IT = true
+        PTEST_IT = false
+        // PTEST_IT = true
 
         if ( PTEST_IT )
         {

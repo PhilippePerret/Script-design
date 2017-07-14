@@ -1,3 +1,5 @@
+* Quand on double clique sur une touche de menu (tabulator), ça équivaut à un Enter
+
 * Quand on active un panneau, il faut relever tous ses paragraphes.
   En fait, le mieux, ce serait d'avoir une propriété `parags` du panneau, qui
   soit une instance de Parags et permette de gérer les paragraphes du panneau

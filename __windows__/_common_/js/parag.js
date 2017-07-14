@@ -64,7 +64,6 @@ class Parag
     }
     this.selected = false // à true quand il est sélectionné
     this.current  = false // à true quand c'est le paragraphe courant
-    // Parags.addItem(this) // C'ÉTAIT ÇA, AVANT
   }
 
   /** ---------------------------------------------------------------------
@@ -243,19 +242,19 @@ class Parag
   **/
   select ()
   {
-    console.log(`-> Parag.select #${this.id}`)
+    // console.log(`-> Parag.select #${this.id}`)
     DOM.addClass(this.mainDiv,'selected')
     this.selected = true
-    console.log(`<- Parag.select #${this.id}`)
+    // console.log(`<- Parag.select #${this.id}`)
     return this
   }
   deselect ()
   {
-    console.log(`-> Parag.deselect #${this.id}`)
+    // console.log(`-> Parag.deselect #${this.id}`)
     if ( this.relatifsExergued ) { this.unexergueRelatifs() }
     DOM.removeClass(this.mainDiv, 'selected')
     this.selected = false
-    console.log(`<- Parag.deselect #${this.id}`)
+    // console.log(`<- Parag.deselect #${this.id}`)
     return this
   }
 

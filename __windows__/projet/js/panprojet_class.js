@@ -57,7 +57,7 @@ class PanProjet
   **/
   get projet ()
   {
-    if ( undefined === this._projet ) { this._projet = Projet.current }
+    !this._projet && (this._projet = Projet.current)
     return this._projet
   }
 
@@ -82,8 +82,7 @@ class PanProjet
   desactivate () {
     // Avant de désactiver le panneau, on déselectionne les sélections
     // et la marque de paragraphe courant.
-    Parag.deselectAll()
-    Parag.unsetCurrent()
+    this.parags.selection.reset()
     DOM.removeClass(`panneau-${this.id}`,'actif')
     this.actif = false
   }
@@ -135,6 +134,17 @@ class PanProjet
     DOM.removeClass(this.section, `modedblright`)
   }
 
+  /** ---------------------------------------------------------------------
+    *
+    *   Raccourcis
+    *
+  *** --------------------------------------------------------------------- */
+  selectNext      (e) { return this.parags.selectNext(e)        }
+  selectPrevious  (e) { return this.parags.selectPrevious(e)    }
+  moveCurrentUp   (e) { return this.parags.moveCurrentUp(e)     }
+  moveCurrentDown (e) { return this.parags.moveCurrentDown(e)   }
+  hasCurrent      (e) { return this.parags.hasCurrent()         }
+  
   /** ---------------------------------------------------------------------
     *
     *   Méthodes préférences
@@ -251,61 +261,6 @@ class PanProjet
     return this.parags.as_data
   }
 
-
-
-
-  // /**
-  // * OBSOLETE
-  // * Méthode qui après la sauvegarde marque toutes les paragraphes
-  // * comme non modifiés
-  // **/
-  // setAllParagsUnmodified ()
-  // {
-  //   this.parags.forEach( p => p.modified = false )
-  // }
-
-
-  // /**
-  // * OBSOLETE
-  // * @return {Array} Une liste des Parags tels qu'il faut les enregistrer
-  // * dans le fichier JSON de données
-  // **/
-  // get parags_as_data ()
-  // {
-  //   return this.parags.map( p => p.as_data )
-  // }
-
-  // /**
-  // * OBSTOLETE
-  // * @return {Array} of {Parag} La liste des Parags tels qu'ils se présentend
-  // * dans le container de ce tableau.
-  // * Noter que la liste est actualisée chaque fois qu'on appelle la méthode.
-  // **/
-  // get parags ()
-  // {
-  //   let
-  //         arr = []
-  //       , ps = this.container.getElementsByClassName('p')
-  //       , nb = ps.length
-  //       , i  = 0
-  //
-  //   for(; i < nb ; ++i ){
-  //     arr.push( Parags.get(Number(ps[i].getAttribute('data-id'))) )
-  //   }
-  //   return arr
-  // }
-
-  // /**
-  // * OBSOLETE
-  // * Méthode appelée au chargement du panneau (`load`) qui permet d'écrire les
-  // * paragraphes.
-  // **/
-  // set parags ( hparags )
-  // {
-  //   this._hparags = hparags
-  // }
-
-
   /**
   * Méthode appelée après le load, permettant d'afficher les paragraphes
   * courants.
@@ -328,6 +283,7 @@ class PanProjet
     }
     return this._store
   }
+
   /**
   * @return {String} Le path du fichier JSON contenant les données du panneau
   **/
