@@ -1,13 +1,11 @@
+* Mise en place du système d'annuation (class Cancels)
+
 * Comment déselectionner tous les paragraphes pour faire un ajout à la fin ?
 * Faut-il faire l'ajout dans les paragraphes visibles plutôt qu'à la fin lorsqu'il n'y a pas de sélections mais qu'il y a beaucoup de paragraphes ?
 * On ajoute le paragraphe après la sélection courante.
   QUESTION : faut-il le demander ?
 
 * Destruction du paragraphe courant
-
-* Quand on active un panneau, il faut relever tous ses paragraphes.
-  En fait, le mieux, ce serait d'avoir une propriété `parags` du panneau, qui
-  soit une instance de Parags et permette de gérer les paragraphes du panneau
 
 * Quand on édite un champ, placer le curseur à la fin plutôt qu'au début
 

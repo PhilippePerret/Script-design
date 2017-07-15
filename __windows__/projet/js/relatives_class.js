@@ -41,7 +41,7 @@ class Relatives
 
   get data ()
   {
-    if ( undefined === this._data ) { this._data = this.store.data }
+    his._data || ( this._data = this.store.data )
     return this._data
   }
 
@@ -307,6 +307,77 @@ class Relatives
     console.log("\n==== RELATIVES est devenue : ", JSON.stringify(this.data))
     return Parags.get(ref_id)
   }
+
+  /**
+  * Dissocie les deux paragraphes fournis en argument
+  * @param {Parag} pid1 Le premier paragraphe
+  *       ou {Number} Identifiant du premier paragraphe
+  * @param {Parag} pid2 Le seconde paragraphe
+  *       ou {Number} Identifiant du second paragraphe
+  **/
+  dissociate (pid1, pid2)
+  {
+    if ( 'number' != typeof pid1 ) { pid1 = pid1.id }
+    if ( 'number' != typeof pid2 ) { pid2 = pid2.id }
+
+    let dp1     = this.data.relatives[String(pid1)]
+    let dp2     = this.data.relatives[String(pid2)]
+    let t1      = dp1.t
+    let t2      = dp2.t
+    let relpan1 = dp1['r'][t2]
+    let relpan2 = dp2['r'][t1]
+    let ind1    = relpan2.indexOf(pid1)
+    let ind2    = relpan1.indexOf(pid2)
+    if ( ind1 > -1 )
+    {
+      relpan2 = relpan2.splice(ind1, 1)
+      this.data.relatives[String(pid2)]['r'][t1] = relpan2
+    }
+    if ( ind2 > -1 )
+    {
+      relpan1 = relpan1.splice(ind2, 1)
+      this.data.relatives[String(pid1)]['r'][t2] = relpan1
+    }
+    this.save()
+  }
+  /**
+  * Méthode qui supprime toutes les associations de relatives qui peuvent
+  * exister avec +iparag+
+  *
+  * @param {Parag}    iparag    Le paragraphe qu'il faut dissocier.
+  * @param {Boolean}  removing  True lorsqu'il faut dissocier parce que c'est
+  *                             une destruction. On ne recrée par la donnée.
+  **/
+  dissociateWithAll (iparag, removing)
+  {
+    // Donnée relatives sur paragraphe
+    let drels = this.data.relatives[String(iparag.id)]
+    // lpan pour 'lettre panneau', la lettre représentant un tableau
+    for(let lpan in drels.r) {
+      drels['r'][lpan].forEach( (rel_id) => {
+        // La liste des ids du panneau de iparag avec lesquels le relatif (qui
+        // peut être le référent, mais qui est appelé relatif ici) est associé.
+        let l = this.data.relatives[String(rel_id)]['r'][drels.t]
+        let ind
+        if ( (ind = l.indexOf(iparag.id)) > -1 ){
+          l = l.splice(ind,1)
+        }
+        this.data.relatives[String(rel_id)]['r'][drels.t] = l
+      })
+    }
+    // On initialise tout pour iparag
+    if ( removing )
+    {
+      delete this.data.relatives[String(iparag.id)]
+    }
+    else
+    {
+      this.data.relatives[String(iparag.id)]['r'] = {}
+    }
+
+    this.save()
+    
+  }// dissociateWithAll
 
 } // class Relatives
 

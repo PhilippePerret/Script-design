@@ -83,12 +83,15 @@ Cela crée automatiquement une donnée `relative` :
 
 ```js
 
+// Forme syntaxique :
+
 {
   "relatives":{
     "<id du parag>":{"t":"<panneau une lettre>","r":{}}
   }
 }
 
+// Par exemple :
 {
   "relatives":{
     "1":{"t":"y","r":{}} // "y" pour "synopsis"
@@ -98,6 +101,8 @@ Cela crée automatiquement une donnée `relative` :
 ```
 
 La donnée est créée mais aucune relation (`r`) n'est affectée.
+
+Noter que l'identifiant du paragraphe est un `String`, pas un `Number` (tout simplement parce que la conversion en JSON transforme les clés numériques en clé string).
 
 Noter que `"t"` signifie `type` et peut avoir comme valeur la lettre correspondant au panneau dans `Projet::DATA_PANNEAUX`. `"r"` signifie “relatives”.
 

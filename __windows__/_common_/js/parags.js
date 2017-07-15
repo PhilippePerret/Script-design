@@ -415,23 +415,40 @@ class Parags
   {
     argp = this.realArgs(argp)
     let my = this
+      , i
     argp.forEach( (iparag) => {
       if ( undefined == iparag ){
         return
       }
+      i = Number(iparag.index)
+
       iparag.selected && my.selection.remove( iparag )
 
       // Supprimer du container
       my.panneau.container.removeChild(iparag.mainDiv)
 
       // Supprimer de la liste des items et du dictionnaire des Parags
-      my._items.splice(iparag.index, 1)
-          //  Ci-dessus, ça ne marchera pas s'il a été déplacé. Ou alors,
-          //  il faudrait utiliser une marque 'deleted' et ne tenir compte que
-          //  des paragraphes non deleted et passer les autres.
-      my._dict[iparag.id] = undefined
+      my._items .splice(i, 1)
+      my._ids   .splice(i, 1)
+      delete my._dict[iparag.id]
       my._count --
     })// fin de boucle sur tous les paragraphes donnés en argument
+  }
+
+  /**
+  * Détruit la sélection courante
+  **/
+  removeCurrent ()
+  {
+    this.selection.current && this.remove(this.selection.current)
+  }
+
+  /**
+  * Méthode pour annuler la destruction
+  **/
+  unRemove ()
+  {
+    // TODO à implémenter
   }
 
   /**
