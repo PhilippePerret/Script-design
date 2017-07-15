@@ -23,9 +23,20 @@ class Relatives
       , "t" : Projet.PANNEAUX_DATA[iparag.panneau_id].oneLetter
       , "r" : {}
     }
+    // On réinitialise ses données relatives
+    this.resetParag(iparag)
     // Note : on enregistrera les relatives que lorsqu'on sauvera
     // les paragraphes. On note simplement ici que relatives a été modifié
     this.modified = true
+  }
+
+  resetParag( iparag )
+  {
+    if ( iparag )
+    {
+      delete iparag._data_relatives
+      delete iparag._relatifs
+    }
   }
 
   /** ---------------------------------------------------------------------
@@ -155,7 +166,12 @@ class Relatives
           //        En revanche, si P1 est associé à plus d'une note, on signale
           //        une impossibilité
           let data_other = my.data.relatives[String(other_id)]
-            , lpan_other = data_other['t']
+
+          if ( ! data_other )
+          {
+            throw new Error(`Le paragraphe #${other_id} n'a pas de données relatives… Dans ${JSON.stringify(my.data.relatives)}`)
+          }
+          let lpan_other = data_other['t']
             , rels_other = data_other['r']
           if ( undefined !== rels_other[ref_pan_letter] )
           {
@@ -182,21 +198,31 @@ class Relatives
     }
     catch(erreur)
     {
-      alert(erreur.message)
+      // alert(erreur.message)
+      console.log(erreur)
       return true
     }
   }
 
   /**
   * @return true si le parag +pid1+ et associé au parag +pid2+
-  * @param {Number} pid1 Identifiant du premier paragraphe
-  * @param {Number} pid2 Identifiant du second paragraphe
+  *
+  * @param {Number} pid1 Identifiant du premier paragraphe ou {Parag}
+  * @param {Number} pid2 Identifiant du second paragraphe ou {Parag}
   **/
   areRelatifs (pid1, pid2)
   {
+    pid1.constructor.name == 'Parag' && ( pid1 = pid1.id )
+    pid2.constructor.name == 'Parag' && ( pid2 = pid2.id )
+
+    console.log('[pid1, pid2]', [pid1, pid2])
+    console.log('this.data.relatives',this.data.relatives)
+
     let data_p1   = this.data.relatives[String(pid1)]
       , data_p2   = this.data.relatives[String(pid2)]
-      , lpan_p1   = data_p1['t']
+
+    if ( !data_p1 || !data_p2 ) { return false }
+    let lpan_p1   = data_p1['t']
       , lpan_p2   = data_p2['t']
       , relpan_p1 = data_p1['r'][lpan_p2]
       , relpan_p2 = data_p2['r'][lpan_p1]
@@ -234,7 +260,7 @@ class Relatives
   {
     let hrelates, referent
 
-    console.log("\n==== RELATIVES avant l'association : ", JSON.stringify(this.data))
+    // console.log("\n==== RELATIVES avant l'association : ", JSON.stringify(this.data))
 
     // Avant de vérifier que les données sont valides,
     // On regroupe les paragraphes par panprojet (synopsis, scenier, etc.)
@@ -248,16 +274,16 @@ class Relatives
     // en règle générale, puisqu'on associe par deux tableaux, il ne peut y en
     // avoir que deux.
     hrelates = this.associate_groupByPanneau(parags)
-    console.log(`==== hrelates: ${JSON.stringify(hrelates)}`)
+    // console.log(`==== hrelates: ${JSON.stringify(hrelates)}`)
 
     // On récupère le référent, c'est-à-dire le parag qu'on doit associer
     // aux autres, entendu qu'on ne peut pas associer plusieurs parag à
     // plusieurs autres. Un parag peut être associé à plusieurs parag,
     // mais toujours un référent à la fois.
     referent = this.associate_getReferent( hrelates )
-    console.log(`referent = ${JSON.stringify(referent)}`)
+    // console.log(`referent = ${JSON.stringify(referent)}`)
     if ( ! referent ) { return false }
-    console.log("==== hrelates après retrait du référent: ", JSON.stringify(hrelates))
+    // console.log("==== hrelates après retrait du référent: ", JSON.stringify(hrelates))
 
     // On doit procéder à un contrôle pour voir si l'association peut se
     // faire.
@@ -276,7 +302,7 @@ class Relatives
     for ( pan in hrelates )
     {
       pan_letter = Projet.PANNEAUX_DATA[pan].oneLetter
-      console.log(`Traitement du panneau ${pan} (${pan_letter})`)
+      // console.log(`Traitement du panneau ${pan} (${pan_letter})`)
 
       if (undefined === ref_relatives['r'][pan_letter])
       {
@@ -304,8 +330,10 @@ class Relatives
     // On remet dans les données les relatives du référent
     this.data.relatives[String(ref_id)] = ref_relatives
 
-    console.log("\n==== RELATIVES est devenue : ", JSON.stringify(this.data))
-    return Parags.get(Number(ref_id))
+    // console.log("\n==== RELATIVES est devenue : ", JSON.stringify(this.data))
+    let iparag = Parags.get(Number(ref_id))
+    this.resetParag(iparag)
+    return iparag
   }
 
   /**
@@ -338,6 +366,10 @@ class Relatives
       relpan1 = relpan1.splice(ind2, 1)
       this.data.relatives[String(pid1)]['r'][t2] = relpan1
     }
+
+    this.resetParag(Parags.get(Number(pid1)))
+    this.resetParag(Parags.get(Number(pid2)))
+
     this.save()
   }
   /**
@@ -374,6 +406,7 @@ class Relatives
     {
       this.data.relatives[String(iparag.id)]['r'] = {}
     }
+    this.resetParag(iparag)
 
     this.save()
 

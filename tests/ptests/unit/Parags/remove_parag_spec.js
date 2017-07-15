@@ -19,6 +19,16 @@ describe("Destruction d'un paragraphe",[
       , it("détruit le paragraphe spécifié dans le DOM", ()=>{
         resetAll()
         panneau.parags.add([parag2, parag10, parag4, parag6])
+        // Associations
+        parag1  .panneau_id = 'notes'
+        parag12 .panneau_id = 'manuscrit'
+        projet.relatives.addParag(parag1)
+        projet.relatives.addParag(parag12)
+        projet.relatives.associate([parag10, parag1, parag12])
+
+        // ===== PRÉ-VÉRIFICATIONS ======
+        expect(projet.relatives.areRelatifs(parag10, parag1),'areRelatifs(parag10, parag1)').to.equal(true, oof)
+        expect(projet.relatives.areRelatifs(parag10, parag12),'areRelatifs(parag10, parag12)').to.equal(true, oof)
         expect(panneau.parags._ids).to.equal([2,10,4,6], oof)
         expect(panneau.container,'panneau.container').to.have_tag('div',{id:'p-10'},oof)
         expect(panneau.parags._items.length).to.equal(4)
@@ -43,8 +53,8 @@ describe("Destruction d'un paragraphe",[
         expect(panneau.parags._dict[10],'panneau.parags._dict[10]').to.equal(undefined)
       })
       , it("retire le paragraphe des relations qu'il entretient", ()=>{
-        console.log(projet.relatives)
-        pending()
+        expect(projet.relatives.areRelatifs(parag10, parag1),'areRelatifs(parag10, parag1)').to.equal(false)
+        expect(projet.relatives.areRelatifs(parag10, parag12),'areRelatifs(parag10, parag12)').to.equal(false)
       })
     ])
     , describe("#removeCurrent",[
@@ -68,6 +78,16 @@ describe("Destruction d'un paragraphe",[
         , it("détruit le paragraphe courant dans le DOM", ()=>{
           resetAll()
           panneau.parags.add([parag2, parag10, parag4, parag6])
+          // Associations
+          parag1  .panneau_id = 'notes'
+          parag12 .panneau_id = 'manuscrit'
+          projet.relatives.addParag(parag1)
+          projet.relatives.addParag(parag12)
+          projet.relatives.associate([parag10, parag1, parag12])
+
+          // PRÉ-VÉRIFICATION
+          expect(projet.relatives.areRelatifs(parag10, parag1),'areRelatifs(parag10, parag1)').to.equal(true, oof)
+          expect(projet.relatives.areRelatifs(parag10, parag12),'areRelatifs(parag10, parag12)').to.equal(true, oof)
           expect(panneau.parags._ids).to.equal([2,10,4,6], oof)
           panneau.parags.select(parag10)
           expect(panneau.parags.selection.current.id).to.equal(10,oof)
@@ -86,14 +106,27 @@ describe("Destruction d'un paragraphe",[
           expect(panneau.parags._items[1].id, 'parags._items[1].id').to.equal(4)
         })
         , it("retire le paragraphe courant des relations qu'il entretient", ()=>{
-          pending()
+          expect(projet.relatives.areRelatifs(parag10, parag1),'areRelatifs(parag10, parag1)').to.equal(false)
+          expect(projet.relatives.areRelatifs(parag10, parag12),'areRelatifs(parag10, parag12)').to.equal(false)
         })
       ])
     ])
   ])
   , context("avec un paragraphe inexistant",[
     , it("ne fait rien", ()=>{
-
+      resetAll()
+      panneau.parags.add([parag2, parag10, parag4, parag6])
+      expect(panneau.container,'panneau.container').to.have_tag('div',{class:'p', count:4}, oof)
+      // ========> TEST <========
+      panneau.parags.remove(parag1)
+      // ======= VÉRIFICATION =========
+      opts = {
+        templates:{
+            'success' : 'Le panneau contient toujours le même nombre de paragraphes'
+          , 'failure' : 'Le panneau devrait contenir le même nombre de paragraphes…'
+        }
+      }
+      expect(panneau.container).to.have_tag('div',{class:'p', count:4}, opts)
     })
   ])
 ])
@@ -106,13 +139,6 @@ describe("Annulation de la destruction d'un paragraphe",[
       resetAll()
       panneau.parags.add([parag2, parag12, parag4, parag6])
 
-      parag1  .panneau_id = 'notes'
-      parag11 .panneau_id = 'manuscrit'
-
-      projet.relatives.associate([parag4, parag1, parag10])
-      console.log(parag4.relatifs)
-      console.log(parag1.relatifs)
-      console.log(parag10.relatifs)
     })
     , it("remet le paragraphe en place dans le DOM", ()=>{
       pending()

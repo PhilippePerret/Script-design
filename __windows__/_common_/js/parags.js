@@ -424,8 +424,10 @@ class Parags
       if ( undefined == iparag ) { return }
       i = Number(iparag.index)
 
-      // On dissocie avec ses relatifs
-      my.projet.relatives.dissociateWithAll( iparag )
+      if ( i < 0 ) { return }
+
+      // On dissocie avec ses relatifs avant de le détruire
+      my.projet.relatives.dissociateWithAll( iparag, true )
 
       iparag.selected && my.selection.remove( iparag )
 
@@ -667,7 +669,7 @@ class Parags
   }
 
   static items () { return this._items }
-  
+
   /**
   * Retourne l'instance Parag du paragraphe d'identifiant +parag_id+
   *
