@@ -83,6 +83,9 @@ class PanProjet
     // et la marque de paragraphe courant.
     this.parags.selection.reset()
     DOM.removeClass(`panneau-${this.id}`,'actif')
+    // On supprime aussi l'annulation possible
+    delete Projet.current.cancelableMethod
+    // Puis on marque que le panneau n'est plus actif.
     this.actif = false
   }
 
@@ -144,6 +147,7 @@ class PanProjet
   moveCurrentUp   (e) { return this.parags.moveCurrentUp(e)     }
   moveCurrentDown (e) { return this.parags.moveCurrentDown(e)   }
   hasCurrent      (e) { return this.parags.hasCurrent()         }
+  removeCurrent   ()  { return this.parags.removeCurrent()      }
 
   /** ---------------------------------------------------------------------
     *

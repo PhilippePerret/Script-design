@@ -59,6 +59,16 @@ define(
             }
             return DOM.stopEvent(evt)
           }
+
+        case 'z':
+          if ( evt.metaKey ) // CMD Z
+          {
+            if ( 'function' === typeof Projet.current.cancelableMethod )
+            {
+              Projet.current.cancelableMethod.call()
+              delete Projet.current.cancelableMethod
+            }
+          }
       }
     }
     /**
@@ -106,7 +116,9 @@ define(
         case 'ArrowDown':
           Projet.current_panneau.selectNext(evt)
           return DOM.stopEvent(evt)
-
+        case 'Backspace':
+          Projet.current_panneau.removeCurrent()
+          return DOM.stopEvent(evt)
         case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
           return Parags.create()
         case 'o':
@@ -114,7 +126,7 @@ define(
           break
         default:
           // Pour voir la touche :
-          // console.log(evt.key)
+          console.log(evt.key)
       }
       return 'poursuivre' // pour dire de poursuivre le test keyUp
     }// /fin de onkeyup

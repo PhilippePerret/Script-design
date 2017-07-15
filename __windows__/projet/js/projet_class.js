@@ -64,6 +64,17 @@ class Projet
   get mode_edition () { return !!this._mode_edition }
   set mode_edition (v){ this._mode_edition = !!v }
 
+  /**
+  * La méthode d'annulation courante du projet.
+  *
+  * C'est la méthode qui sera interrogée par la combinaison CMD+Z pour
+  * savoir si une cancellisation doit être exécutée.
+  * Pour le moment, elle n'est implémentée que pour la suppression de
+  * paragraphes.
+  **/
+  get cancelableMethod () { return this._cancelableMethod }
+  set cancelableMethod (v){ this._cancelableMethod = v    }
+
   static UIprepare ()
   {
     // On place un listener d'event click sur le body, pour tout déselectionner

@@ -48,6 +48,7 @@ class Relatives
   {
     this.data.updated_at = moment().format()
     this.store.set( this.data )
+    this.modified = false
   }
 
   get data ()
@@ -227,7 +228,7 @@ class Relatives
       , relpan_p1 = data_p1['r'][lpan_p2]
       , relpan_p2 = data_p2['r'][lpan_p1]
 
-      return (relpan_p1 && relpan_p1.indexOf(pid2) > -1) || (relpan_p2 && relpan_p2.indexOf(pid1) > -1)
+    return (relpan_p1 && relpan_p1.indexOf(pid2) > -1) || (relpan_p2 && relpan_p2.indexOf(pid1) > -1)
   }
 
   /**
@@ -261,7 +262,6 @@ class Relatives
     let hrelates, referent
 
     // console.log("\n==== RELATIVES avant l'association : ", JSON.stringify(this.data))
-
     // Avant de vérifier que les données sont valides,
     // On regroupe les paragraphes par panprojet (synopsis, scenier, etc.)
     // On doit obtenir un Hash qui ressemble à celui qui doit être enregistré :
@@ -316,7 +316,6 @@ class Relatives
 
         // Ajout du référent dans le relatif
         other_relatives = my.data.relatives[String(pid)]
-        // console.log('other_relatives:', other_relatives)
         if (undefined === other_relatives['r'][ref_pan_letter])
         {
           other_relatives['r'][ref_pan_letter] = []
@@ -333,6 +332,7 @@ class Relatives
     // console.log("\n==== RELATIVES est devenue : ", JSON.stringify(this.data))
     let iparag = Parags.get(Number(ref_id))
     this.resetParag(iparag)
+    this.modified = true
     return iparag
   }
 
@@ -370,7 +370,7 @@ class Relatives
     this.resetParag(Parags.get(Number(pid1)))
     this.resetParag(Parags.get(Number(pid2)))
 
-    this.save()
+    this.modified = true
   }
 
   /**
@@ -439,7 +439,7 @@ class Relatives
     }
     this.resetParag(iparag)
 
-    this.save()
+    this.modified = true
 
     return cancelisable
 

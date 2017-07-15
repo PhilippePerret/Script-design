@@ -475,6 +475,8 @@ class Parags
 
     })// fin de boucle sur tous les paragraphes donnés en argument
 
+    // On indique que la méthode d'annulation sera celle-ci
+    this.projet.cancelableMethod = this.unRemoveLast.bind(this)
   }
 
   /**
