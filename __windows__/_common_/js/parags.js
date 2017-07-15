@@ -73,6 +73,8 @@ class Parags
   * @param {Object} options
   *                     edit      Si true, le paragraphe est aussitôt mis en
   *                               édition.
+  *                     before    {Parag} Au besoin, le parag avant lequel
+  *                               créer le nouveau.
   *
   * Note : on observe aussi ce paragraphe.
   **/
@@ -96,7 +98,8 @@ class Parags
       // On ajoute la div du paragraphe dans le panneau HTML
       if (options.before)
       {
-        my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv.nextSibling)
+        console.log("Ajout du paragraphe avant le paragraphes",options.before.id)
+        my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv)
       }
       else
       {
@@ -109,7 +112,7 @@ class Parags
       if ( undefined === my._dict[iparag.id] ) {
         if (options.before)
         {
-          let index_before = options.before.index
+          let index_before = options.before.index - 1
           my._items .splice(index_before, 0, iparag)
           my._ids   .splice(index_before, 0, iparag.id)
         }
@@ -515,7 +518,6 @@ class Parags
   **/
   static create ()
   {
-    console.log("Valeur du _lastID avant la création:", Parag._lastID)
     // On crée le paragraphe est on l'affiche
     let newP = this.new({current:true, edited: true})
     // On l'ajoute à la liste des relatives qui tient à jour la relation entre
@@ -532,11 +534,11 @@ class Parags
   static new (options)
   {
     let newP = new Parag({id:Parag.newID(),contents:''})
-    console.log("ID du nouveau parag:", newP.id)
     if (Projet.current_panneau.parags.hasCurrent()) {
       if (!options){options = {}}
       options.before = Projet.current_panneau.parags.selection.current.next
     }
+    // console.log('options:',options)
     Projet.current_panneau.parags.add(newP, options)
     return newP
   }

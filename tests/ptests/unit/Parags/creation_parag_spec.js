@@ -42,14 +42,28 @@ describe("Création d'un nouveau paragraphe",[
       expect(panneau.container).to.not.have_tag('div',{id:'p-20'}, {only_on_fail:true})
       panneau.parags.select(parag2)
       expect(panneau.container).to.have_tag('div',{id:'p-2', class:['p','selected']}, {only_on_fail:true})
+      expect(panneau.parags.count,'panneau.parags.count').to.equal(5)
       // =======> TESTS <==========
       Parags.create()
       // ===== VÉRIFICATION =======
       // puts(panneau.container.inspect())
       expect(panneau.container).to.have_tag('div',{id:'p-20'})
       expect(panneau.container).to.have_tag('div',{id:'p-20-contents', 'contenteditable':'true'})
-      puts(`parag2.next.id: ${parag2.next.id}`)
       expect(parag2.next.id,'parag2.next.id').to.equal(20)
+    })
+    , it("il y a bien une instance créée pour ce parag", ()=>{
+      parag20 = panneau.parags._dict[20]
+      expect(parag20.id).to.equal(20)
+      expect(parag20).to.be.classOf('parag')
+    })
+    , it("le paragraphe est créé à la bonne place dans _items", ()=>{
+      expect(panneau.parags._items[2].id).to.equal(20)
+    })
+    , it("le parag est créé à la bonne place dans _ids", ()=>{
+      expect(panneau.parags._ids[2]).to.equal(20)
+    })
+    , it("le nombre de parags du panneau a augmenté d'un", ()=>{
+      expect(panneau.parags.count,'panneau.parags.count').to.equal(6)
     })
   ])
 ])

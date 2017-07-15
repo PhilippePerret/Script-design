@@ -57,7 +57,6 @@ class Parag
   constructor (data)
   {
     this.id   = data.id // doit toujours exister
-    console.log("Parag.id =", this.id)
     this.data = data
     this.dispatch(data)
     if ( this.id > Parag._lastID ) { Parag._lastID = this.id }

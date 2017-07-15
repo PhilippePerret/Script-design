@@ -1,3 +1,5 @@
+* Comment déselectionner tous les paragraphes pour faire un ajout à la fin ?
+* Faut-il faire l'ajout dans les paragraphes visibles plutôt qu'à la fin lorsqu'il n'y a pas de sélections mais qu'il y a beaucoup de paragraphes ?
 * On ajoute le paragraphe après la sélection courante.
   QUESTION : faut-il le demander ?
 
