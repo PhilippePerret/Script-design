@@ -109,17 +109,17 @@ class PanProjet
     *   Méthodes interface
     *
   *** --------------------------------------------------------------------- */
-  get modified () { return this._modified }
+  get modified () { return this._modified || false }
   set modified (v)
   {
     this._modified = !!v
-    this.light.innerHTML = this._modified ? '🔴' : '🔵'
+    // Noter que dans les tests unitaires the.light se sera pas défini,
+    // par défaut.
+    this.section && ( this.light.innerHTML = this._modified ? '🔴' : '🔵' )
+    this.projet.modified = true
   }
   get light () {
-    if ( ! this._light )
-    {
-      this._light = this.section.getElementsByClassName('statelight')[0]
-    }
+    this._light || (this._light = this.section.getElementsByClassName('statelight')[0])
     return this._light
   }
 

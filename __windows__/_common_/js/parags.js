@@ -244,6 +244,8 @@ class Parags
   * il ne faut pas l'utiliser directement. Utiliser plutôt des méthodes comme
   * moveCurrentUp ou moveCurrentDown.
   *
+  * Note : cette méthode marque toujours le panneau (et donc le projet)
+  * modifié.
   **/
   moveBefore ( parag, before )
   {
@@ -254,6 +256,9 @@ class Parags
     before && (before = before.mainDiv)
 
     this.panneau.container.insertBefore(parag, before)
+
+    this.panneau.modified = true
+
   }
 
 
@@ -346,12 +351,19 @@ class Parags
     let current_index = Number(this.selection.current.index)
     if(!evt){evt={}}
     let pa = this.getPrevious(evt.shiftKey ? 5 : 1)
-    this.moveBefore(this.selection.current, pa)
     // On déplace dans les listes
-    this._items.splice(current_index, 1)
-    this._items.splice(current_index - 1, 0, this.selection.current)
-    this._ids.splice(current_index, 1)
-    this._ids.splice(current_index - 1, 0, this.selection.current.id)
+    this._items .splice(current_index, 1)
+    this._ids   .splice(current_index, 1)
+    // this._items.splice(current_index - 1, 0, this.selection.current)
+    // this._ids.splice(current_index - 1, 0, this.selection.current.id)
+    this._items .splice(pa.index, 0, this.selection.current)
+    this._ids   .splice(pa.index, 0, this.selection.current.id)
+
+    // NOTE 0001
+    // Note : puisqu'on utilise `pa.index` ci-dessus pour positionner l'élément
+    // déplacé, et que `.index` se sert du DOM pour renvoyer l'index, il faut
+    // déplacer le paragraphe seulement après, sinon pa.index sera faux.
+    this.moveBefore(this.selection.current, pa)
   }
 
   /**
@@ -369,12 +381,17 @@ class Parags
     let current_index = Number(this.selection.current.index)
     if(!evt){evt={}}
     let pa = this.getNext(evt.shiftKey ? 5 : 1)
-    this.moveBefore(this.selection.current, pa.next)
+
     // On déplace dans les listes
-    this._items.splice(current_index, 1)
-    this._ids.splice(current_index, 1)
-    this._items.splice(current_index + 1, 0, this.selection.current)
-    this._ids.splice(current_index + 1, 0, this.selection.current.id)
+    this._items .splice(current_index, 1)
+    this._ids   .splice(current_index, 1)
+    this._items .splice(pa.index, 0, this.selection.current)
+    this._ids   .splice(pa.index, 0, this.selection.current.id)
+
+    // CF. NOTE 0001 CI-DESSUS (bien qu'ici ça pose moins de problème
+    // puisque l'ajout se fait après)
+    this.moveBefore(this.selection.current, pa.next)
+
   }
 
 

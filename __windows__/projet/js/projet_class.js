@@ -191,6 +191,8 @@ class Projet
     this.id = projet_id
   }
 
+  get modified () { return this._modified || false }
+  set modified (v){ this._modified = v             }
 
   /* --- publiques --- */
   afficherStatistiques ()

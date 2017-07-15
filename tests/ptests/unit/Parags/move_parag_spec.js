@@ -14,6 +14,8 @@ describe("Déplacement d'un paragraphe existant avec Parags#moveCurrentUp",[
     , context("s'il y a des paragraphes au-dessus",[
       , it("il se déplace en haut avec la touche UP", ()=>{
         resetAll()
+        expect(panneau.modified,'panneau.modified',{values:true}).to.equal(false,oof)
+        expect(Projet.current.modified,'Projet.current.modified',{values:true}).to.equal(false,oof)
         panneau.parags.add([parag1,parag2,parag3,parag4,parag5,parag6,parag7])
         expect(panneau.parags.count).to.equal(7, oof)
         panneau.parags.select(parag3)
@@ -31,6 +33,10 @@ describe("Déplacement d'un paragraphe existant avec Parags#moveCurrentUp",[
         expect(panneau.parags._ids[2],'le nouveau 3e élément dans _ids').to.equal(2)
         expect(panneau.parags._items[1].id,'le nouveau 2e élément dans _items').to.equal(3)
         expect(panneau.parags._ids[1],'le nouveau 2e élément dans _ids').to.equal(3)
+      })
+      , it("marque le projet et le panneau modifiés", ()=>{
+        expect(panneau.modified,'panneau.modified').to.equal(true)
+        expect(Projet.current.modified,'Projet.current.modified').to.equal(true)
       })
     ])
     , context("si c'est le premier paragraphe",[
@@ -51,6 +57,8 @@ describe("Déplacement d'un paragraphe existant avec Parags#moveCurrentUp",[
     , context("s'il y a des paragraphes après le sélectionné",[
       , it("il se déplace en bas avec la touche DOWN avec Parags#moveCurrentDown", ()=>{
         resetAll()
+        expect(panneau.modified,'panneau.modified',{values:true}).to.equal(false,oof)
+        expect(Projet.current.modified,'Projet.current.modified',{values:true}).to.equal(false,oof)
         panneau.parags.add([parag1,parag2,parag3,parag4,parag5,parag6,parag7])
         expect(panneau.parags.count).to.equal(7, oof)
         panneau.parags.select(parag5)
@@ -68,6 +76,8 @@ describe("Déplacement d'un paragraphe existant avec Parags#moveCurrentUp",[
       })
       , it("se déplace plusieurs fois si l'on clique plusieurs fois", ()=>{
         resetAll()
+        expect(panneau.modified,'panneau.modified',{values:true}).to.equal(false,oof)
+        expect(Projet.current.modified,'Projet.current.modified',{values:true}).to.equal(false,oof)
         panneau.parags.add([parag1,parag2,parag3,parag4,parag5,parag6,parag7])
         panneau.parags.select(parag2)
         // ====> TEST <=====
@@ -79,6 +89,10 @@ describe("Déplacement d'un paragraphe existant avec Parags#moveCurrentUp",[
         expect(parag2.index,'parag2.index après le déplacement').to.equal(4)
         expect(panneau.parags._ids,'parags._ids après déplacement').to.equal([1,3,4,5,2,6,7])
         expect(panneau.parags._items[4].id,'parags._items[4].id').to.equal(2)
+      })
+      , it("marque le projet et le panneau modifiés", ()=>{
+        expect(panneau.modified,'panneau.modified').to.equal(true)
+        expect(Projet.current.modified,'Projet.current.modified').to.equal(true)
       })
     ])
     , context("si c'est le dernier paragraphe",[
@@ -95,25 +109,63 @@ describe("Déplacement d'un paragraphe existant avec Parags#moveCurrentUp",[
       })
     ])
   ])
+
+  // De 5 en 5
   , describe("de 5 parags en 5 parags",[
     , context("avec suffisamment de paragraphes au-dessus",[
       , it("il se déplace 5 au-dessus avec la touche UP", ()=>{
-        pending()
+        resetAll()
+        panneau.parags.add([parag1,parag2,parag3,parag4,parag5,parag6,parag7])
+        panneau.parags.select(parag6)
+        expect(parag6.index).to.equal(5,oof)
+        // ====> TEST <=====
+        panneau.parags.moveCurrentUp({shiftKey:true})
+        // ========= VÉRIFICATIONS =========
+        expect(parag6.index,'parag6.index après déplacement').to.equal(0)
+        expect(panneau.parags._ids,'parags._ids après déplacement').to.equal([6,1,2,3,4,5,7])
+        expect(panneau.parags._items[0].id,'parags._items[0].id').to.equal(6)
+      })
+      , it("marque le projet et le panneau modifiés", ()=>{
+        expect(panneau.modified,'panneau.modified').to.equal(true)
+        expect(Projet.current.modified,'Projet.current.modified').to.equal(true)
       })
     ])
     , context("avec pas suffisamment de paragragrphes au-dessus",[
-      , it("il arrive au début s'il n'y a pas assez de paragragphes", ()=>{
-        pending()
+      , it("il arrive au début s'il n'y a pas assez de paragraphes", ()=>{
+        expect(panneau.parags._ids,'parags._ids AVANT déplacement').to.equal([6,1,2,3,4,5,7],oof)
+        panneau.parags.select(parag2)
+        expect(parag2.index).to.equal(2,oof)
+        // ====> TEST <=====
+        panneau.parags.moveCurrentUp({shiftKey:true})
+        // ========= VÉRIFICATIONS =========
+        expect(parag2.index,'parag2.index après déplacement').to.equal(0)
+        expect(panneau.parags._ids,'parags._ids après déplacement').to.equal([2,6,1,3,4,5,7])
+        expect(panneau.parags._items[0].id,'parags._items[0].id').to.equal(2)
       })
     ])
     , context("avec suffisamment de paragragphes en dessous",[
       , it("il se déplace 5 en dessous avec la touche DOWN", ()=>{
-        pending()
+        expect(panneau.parags._ids,'parags._ids AVANT déplacement').to.equal([2,6,1,3,4,5,7],oof)
+        panneau.parags.select(parag2)
+        expect(panneau.parags.selection.current.id).to.equal(2,oof)
+        expect(parag2.index).to.equal(0,oof)
+        // ======> TEST <===========
+        panneau.parags.moveCurrentDown({shiftKey: true})
+        // ===== VÉRIFICATIONS =======
+        expect(panneau.parags._ids,'parags._ids après déplacement').to.equal([6,1,3,4,5,2,7])
+        expect(parag2.index,'l’index de la sélection après le déplacement').to.equal(5)
       })
     ])
     , context("avec un nombre insuffisant de paragraphes",[
       , it("il se déplace tout en bas", ()=>{
-        pending()
+        expect(panneau.parags._ids,'parags._ids AVANT déplacement').to.equal([6,1,3,4,5,2,7],oof)
+        panneau.parags.select(parag5)
+        expect(parag5.index).to.equal(4,oof)
+        // ======> TEST <===========
+        panneau.parags.moveCurrentDown({shiftKey: true})
+        // ===== VÉRIFICATIONS =======
+        expect(panneau.parags._ids,'parags._ids après déplacement').to.equal([6,1,3,4,2,7,5])
+        expect(parag5.index,'l’index de la sélection après le déplacement').to.equal(6)
       })
     ])
   ])

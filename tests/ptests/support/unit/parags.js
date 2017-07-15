@@ -152,6 +152,9 @@ global.resetAll = function ()
   Projet.panneaux[PANNEAU_ID] = panneau
   Projet._current_panneau = panneau
 
+  projet._modified  = false
+  panneau._modified = false
+
   panneau.container.innerHTML = ''
   panneau.parags.reset()
   panneau.parags.selection.reset()
