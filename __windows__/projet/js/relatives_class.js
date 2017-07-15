@@ -215,8 +215,8 @@ class Relatives
     pid1.constructor.name == 'Parag' && ( pid1 = pid1.id )
     pid2.constructor.name == 'Parag' && ( pid2 = pid2.id )
 
-    console.log('[pid1, pid2]', [pid1, pid2])
-    console.log('this.data.relatives',this.data.relatives)
+    // console.log('[pid1, pid2]', [pid1, pid2])
+    // console.log('this.data.relatives',this.data.relatives)
 
     let data_p1   = this.data.relatives[String(pid1)]
       , data_p2   = this.data.relatives[String(pid2)]
@@ -316,7 +316,7 @@ class Relatives
 
         // Ajout du référent dans le relatif
         other_relatives = my.data.relatives[String(pid)]
-        console.log('other_relatives:', other_relatives)
+        // console.log('other_relatives:', other_relatives)
         if (undefined === other_relatives['r'][ref_pan_letter])
         {
           other_relatives['r'][ref_pan_letter] = []
@@ -372,6 +372,31 @@ class Relatives
 
     this.save()
   }
+
+  /**
+  * Quand on annule la suppression, on remet les associations enregistrées
+  * par la méthode `dissociateWithAll` ci-dessous.
+  **/
+  deCancellisable (hcancel)
+  {
+    let mainData = hcancel['main']
+    delete hcancel['main']
+    this.data.relatives[String(mainData.id)] = JSON.parse(mainData.data)
+    this.resetParag(Parags.get(Number(mainData.id)))
+    for ( let rel_id in hcancel )
+    {
+      let drel = hcancel[rel_id]
+      if( undefined === this.data.relatives[String(rel_id)] ){
+        this.data.relatives[String(rel_id)] = {}
+      }
+      if ( undefined === this.data.relatives[String(rel_id)]['r'] ) {
+        this.data.relatives[String(rel_id)]['r'] = {}
+      }
+      this.data.relatives[String(rel_id)]['r'][drel.t] = JSON.parse(drel.r)
+      this.resetParag(Parags.get(Number(rel_id)))
+    }
+  }
+
   /**
   * Méthode qui supprime toutes les associations de relatives qui peuvent
   * exister avec +iparag+
@@ -379,17 +404,23 @@ class Relatives
   * @param {Parag}    iparag    Le paragraphe qu'il faut dissocier.
   * @param {Boolean}  removing  True lorsqu'il faut dissocier parce que c'est
   *                             une destruction. On ne recrée par la donnée.
+  *
+  * @return {Object} La donnée de cancellisation.
+  *
   **/
   dissociateWithAll (iparag, removing)
   {
+    let cancelisable = {}
     // Donnée relatives sur paragraphe
     let drels = this.data.relatives[String(iparag.id)]
+    cancelisable['main'] = { id:String(iparag.id), data:JSON.stringify(drels)}
     // lpan pour 'lettre panneau', la lettre représentant un tableau
     for(let lpan in drels.r) {
       drels['r'][lpan].forEach( (rel_id) => {
         // La liste des ids du panneau de iparag avec lesquels le relatif (qui
         // peut être le référent, mais qui est appelé relatif ici) est associé.
         let l = this.data.relatives[String(rel_id)]['r'][drels.t]
+        cancelisable[rel_id] = {t:drels.t,r:JSON.stringify(l)}
         let ind
         if ( (ind = l.indexOf(iparag.id)) > -1 ){
           l = l.splice(ind,1)
@@ -409,6 +440,8 @@ class Relatives
     this.resetParag(iparag)
 
     this.save()
+
+    return cancelisable
 
   }// dissociateWithAll
 

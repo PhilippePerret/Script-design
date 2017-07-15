@@ -1,3 +1,5 @@
+* Quand on change de panneau, on annule les annulations
+
 * Mise en place du système d'annuation (class Cancels)
 
 * Comment déselectionner tous les paragraphes pour faire un ajout à la fin ?

@@ -420,25 +420,58 @@ class Parags
     argp = this.realArgs(argp)
     let my = this
       , i
+      , cancelF
+
+    // Pour conserver les fonctions d'annulation
+    this.cancelFunctions = []
+
+    // On construit la méthode d'annulation
+    let goodOnes = []
     argp.forEach( (iparag) => {
       if ( undefined == iparag ) { return }
       i = Number(iparag.index)
-
       if ( i < 0 ) { return }
+      iparag.indexProv = i
+      goodOnes.push(iparag)
+    })
 
+    // Pour l'annulation
+    let old_items = new Array(...my._items)
+      , old_ids   = new Array(...my._ids)
+      , old_count = 0 + Number(my._count)
+      , old_relatifs
+
+    goodOnes.forEach( (iparag) => {
+      i = iparag.indexProv
       // On dissocie avec ses relatifs avant de le détruire
-      my.projet.relatives.dissociateWithAll( iparag, true )
+      old_relatifs = iparag.data_relatives
+      let canc = my.projet.relatives.dissociateWithAll( iparag, true )
 
       iparag.selected && my.selection.remove( iparag )
 
       // Supprimer du container
+      let nextO = iparag.mainDiv.nextSibling
       my.panneau.container.removeChild(iparag.mainDiv)
+
+      // Pour annulation
+      cancelF = () => {
+        let me = my
+        me._items = old_items
+        me._ids   = old_ids
+        me._count = old_count
+        me.panneau.container.insertBefore(iparag.mainDiv, nextO)
+        me._dict[iparag.id] = iparag
+        iparag.data_relatives = old_relatifs
+        me.projet.relatives.deCancellisable(canc)
+      }
 
       // Supprimer de la liste des items et du dictionnaire des Parags
       my._items .splice(i, 1)
       my._ids   .splice(i, 1)
       delete my._dict[iparag.id]
       my._count --
+
+      this.cancelFunctions.push(cancelF)
 
     })// fin de boucle sur tous les paragraphes donnés en argument
 
@@ -455,9 +488,11 @@ class Parags
   /**
   * Méthode pour annuler la destruction
   **/
-  unRemove ()
+  unRemoveLast ()
   {
-    // TODO à implémenter
+    console.log('-> unRemoveLast')
+    this.cancelFunctions && this.cancelFunctions.forEach( f => f.call() )
+    console.log('<- unRemoveLast')
   }
 
   /**

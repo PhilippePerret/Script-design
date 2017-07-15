@@ -135,7 +135,10 @@ class Parag
   get data_relatives ()
     { return Projet.current.relatives.data.relatives[String(this.id)] }
 
-
+  set data_relatives (v) {
+    Projet.current.relatives.data.relatives[String(this.id)] = v
+    // TODO Il faut aussi régler les associés
+  }
   /**
   * Retourne l'index du paragraphe dans le panneau
   **/

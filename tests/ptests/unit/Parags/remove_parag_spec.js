@@ -13,7 +13,7 @@ describe("Destruction d'un paragraphe",[
     , it("connait les méthodes #remove, #removeCurrent et #unRemove", ()=>{
       expect(typeof panneau.parags.remove,'typeof panneau.parags.remove').to.equal('function')
       expect(typeof panneau.parags.removeCurrent,'typeof panneau.parags.removeCurrent').to.equal('function')
-      expect(typeof panneau.parags.unRemove,'typeof panneau.parags.unRemove').to.equal('function')
+      expect(typeof panneau.parags.unRemoveLast,'typeof panneau.parags.unRemoveLast').to.equal('function')
     })
     , describe("#remove",[
       , it("détruit le paragraphe spécifié dans le DOM", ()=>{
@@ -138,19 +138,38 @@ describe("Annulation de la destruction d'un paragraphe",[
       // préparation avec vérification.
       resetAll()
       panneau.parags.add([parag2, parag12, parag4, parag6])
-
+      // Associations
+      parag1  .panneau_id = 'notes'
+      parag10 .panneau_id = 'manuscrit'
+      projet.relatives.addParag(parag1)
+      projet.relatives.addParag(parag10)
+      projet.relatives.associate([parag12, parag1, parag10])
+      // PRÉ-VÉRIFICATION
+      expect(panneau.container,'panneau.container').to.have_tag('div',{class:'p',count:4}, oof)
+      expect(panneau.parags._ids).to.equal([2,12,4,6], oof)
+      // PRÉ-ACTION
+      panneau.parags.remove(parag12)
+      // VÉRIFICATION
+      expect(panneau.container,'panneau.container').to.have_tag('div',{class:'p',count:3}, oof)
+      expect(panneau.parags._ids).to.equal([2,4,6], oof)
+      expect(projet.relatives.areRelatifs(parag12, parag1),'areRelatifs(parag12, parag1)').to.equal(false, oof)
+      expect(projet.relatives.areRelatifs(parag12, parag10),'areRelatifs(parag12, parag12)').to.equal(false, oof)
+      expect(panneau.parags._items[1].id).to.equal(4,oof)
+      // ===> TEST <===
+      panneau.parags.unRemoveLast()
     })
     , it("remet le paragraphe en place dans le DOM", ()=>{
-      pending()
+      expect(panneau.container,'panneau.container').to.have_tag('div',{class:'p',count:4})
     })
     , it("remet le paragraphe dans parags._ids", ()=>{
-      pending()
+      expect(panneau.parags._ids).to.equal([2,12,4,6])
     })
     , it("remet le paragraphe dans parags._items", ()=>{
-      pending()
+      expect(panneau.parags._items[1].id).to.equal(12)
     })
     , it("remet les relations avec les autres paragraphes", ()=>{
-      pending()
+      expect(projet.relatives.areRelatifs(parag12, parag1),'areRelatifs(parag12, parag1)').to.equal(true)
+      expect(projet.relatives.areRelatifs(parag12, parag10),'areRelatifs(parag12, parag10)').to.equal(true)
     })
   ])
 ])
