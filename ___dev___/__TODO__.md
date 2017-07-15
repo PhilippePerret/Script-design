@@ -1,4 +1,7 @@
-* Quand on double clique sur une touche de menu (tabulator), ça équivaut à un Enter
+* On ajoute le paragraphe après la sélection courante.
+  QUESTION : faut-il le demander ?
+
+* Destruction du paragraphe courant
 
 * Quand on active un panneau, il faut relever tous ses paragraphes.
   En fait, le mieux, ce serait d'avoir une propriété `parags` du panneau, qui

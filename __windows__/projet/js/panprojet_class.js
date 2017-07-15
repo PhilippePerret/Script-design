@@ -11,8 +11,16 @@ let moment = require('moment')
 
 class PanProjet
 {
+  // Pour donner un identifiant unique au panneau
+  static newID () {
+    if ( !this._newid ) { this._newid = 0 }
+    this._newid ++
+    return this._newid
+  }
+
   constructor (name)
   {
+    this.__ID   = PanProjet.newID()
     this.id     = name
     this.name   = name // p.e. 'data', ou 'scenier'
     // Mis à true quand le panneau est le panneau courant. Sert notamment à
@@ -59,15 +67,6 @@ class PanProjet
   {
     !this._projet && (this._projet = Projet.current)
     return this._projet
-  }
-
-  /**
-  * Raccourci pour Parags#add, pour ajouter un paragraphe dans le
-  * panneau.
-  **/
-  addParag (iparag, options)
-  {
-    this.parags.add(iparag, options)
   }
 
   /**
@@ -249,18 +248,12 @@ class PanProjet
   * Marque tous les paragraphes comme non modifiés.
   * Cette méthode sert après l'enregistrement du panneau.
   **/
-  setAllParagsUnmodified ()
-  {
-    this.parags.setUnmodified('all')
-  }
+  setAllParagsUnmodified () { this.parags.setUnmodified('all') }
 
   /**
   * @return {Array} les données du paragraphe du panneau.
   **/
-  get parags_as_data ()
-  {
-    return this.parags.as_data
-  }
+  get parags_as_data () { return this.parags.as_data }
 
   /**
   * Méthode appelée après le load, permettant d'afficher les paragraphes
@@ -269,7 +262,7 @@ class PanProjet
   displayParags ()
   {
     this.container.innerHTML = ''
-    this.data.parags.forEach( hparag => Projet.current_panneau.addParag( new Parag( hparag ) ) )
+    this.data.parags.forEach( hparag => Projet.current_panneau.parags.add( new Parag( hparag ) ) )
   }
 
   /**

@@ -48,6 +48,7 @@ class Parags
     this.selection.count    && this.deselectAll()
     this._items = []
     this._dict  = {}
+    this._ids   = []
     this._count = 0
     this.panneau.container.innerHTML = ''
   }
@@ -80,6 +81,8 @@ class Parags
     options || ( options = {} )
     options.edited && ( options.selected = true )
 
+    // console.log("options dans add:", options)
+
     // if ( ! Array.isArray(argp) ) { argp = [argp] }
     Array.isArray(argp) || ( argp = [argp] )
 
@@ -91,21 +94,32 @@ class Parags
 
       // console.log(`Ajout du paragraphe #${iparag.id}`)
       // On ajoute la div du paragraphe dans le panneau HTML
-      my.panneau.container.appendChild(iparag.mainDiv)
-      // TODO insertBefore (si options.before)
+      if (options.before)
+      {
+        my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv.nextSibling)
+      }
+      else
+      {
+        my.panneau.container.appendChild(iparag.mainDiv)
+      }
 
       // On ajoute le paragraphe à la liste des paragraphes du panneau
       // si c'est utile. Au chargement du panneau, tous les parags sont
       // ajoutés à _dict et _items
       if ( undefined === my._dict[iparag.id] ) {
-        my._items.push(iparag)
+        if (options.before)
+        {
+          let index_before = options.before.index
+          my._items .splice(index_before, 0, iparag)
+          my._ids   .splice(index_before, 0, iparag.id)
+        }
+        else
+        {
+          my._items.push(iparag)
+          my._ids.push(iparag.id)
+        }
         my._dict[iparag.id] = iparag
-        // TODO splice (si options.before)
       }
-      // On définit l'index
-      // Rappel : ça ne sert pas vraiment, mais c'est au cas où, et pour
-      // les tests.
-      iparag.index = Number(my._count)
 
       // On augmente le nombre de paragraphe du panneau
       my._count ++
@@ -161,7 +175,7 @@ class Parags
   **/
   hasCurrent ()
   {
-    console.log("this.selection.current : ", this.selection.current)
+    // console.log("this.selection.current : ", this.selection.current)
     return this.selection.current != null
   }
   /**
@@ -449,21 +463,23 @@ class Parags
     if ( pars[0] && pars[0].constructor.name == 'Parag'){
       // Les éléments de pars sont déjà des instances {Parag}
       this._items = pars.map( ipar => {
-        ipar.index = index ++
         return ipar
       } )
     } else {
       // Les éléments de pars sont des tables
       this._items = pars.map( hpars => {
         inst = new Parag(hpars)
-        inst.index = index ++
         return inst
       } )
     }
     this._count = this._items.length
     // On renseigne le dictionnaire
     my._dict = {}
-    this._items.forEach( (p) => { my._dict[p.id] = p } )
+    my._ids  = []
+    this._items.forEach( (p) => {
+      my._dict[p.id] = p
+      my._ids.push(p.id)
+    } )
   }
 
   /**
@@ -499,6 +515,7 @@ class Parags
   **/
   static create ()
   {
+    console.log("Valeur du _lastID avant la création:", Parag._lastID)
     // On crée le paragraphe est on l'affiche
     let newP = this.new({current:true, edited: true})
     // On l'ajoute à la liste des relatives qui tient à jour la relation entre
@@ -515,7 +532,12 @@ class Parags
   static new (options)
   {
     let newP = new Parag({id:Parag.newID(),contents:''})
-    Projet.current_panneau.addParag(newP, options)
+    console.log("ID du nouveau parag:", newP.id)
+    if (Projet.current_panneau.parags.hasCurrent()) {
+      if (!options){options = {}}
+      options.before = Projet.current_panneau.parags.selection.current.next
+    }
+    Projet.current_panneau.parags.add(newP, options)
     return newP
   }
 

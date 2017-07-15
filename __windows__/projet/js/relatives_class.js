@@ -55,10 +55,7 @@ class Relatives
 
   get store ()
   {
-    if (undefined === this._store)
-    {
-      this._store = new Store(this.relative_path, this.defaultData)
-    }
+    this._store || (this._store = new Store(this.relative_path, this.defaultData))
     return this._store
   }
   get relative_path ()
