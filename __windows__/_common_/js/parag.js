@@ -31,6 +31,7 @@ class Parag
   **/
   static newID ()
   {
+    console.log("-> Parag.newID", this._lastID)
     if (undefined === this._lastID) {
       this._lastID = Projet.current.data_generales.last_parag_id || -1
     }
@@ -129,6 +130,14 @@ class Parag
   get data_relatives ()
     { return Projet.current.relatives.data.relatives[String(this.id)] }
 
+
+  /**
+  * Retourne l'index du paragraphe dans le panneau
+  **/
+  get index ()
+  {
+    return Array.prototype.indexOf.call(this.panneau.container.childNodes, this.mainDiv)
+  }
 
   get next ()
   {
@@ -293,24 +302,24 @@ class Parag
     return this
   }
 
-  /**
-  * Déplace le parag après le parag +iparag+
-  * @param {Parag} iparag Instance de paragraphe
-  **/
-  moveAfter (iparag)
-  {
-    this.container.insertBefore(this.mainDiv, iparag.mainDiv.nextSibling)
-    this.panneau.modified = true
-  }
-  /**
-  * Déplace le parag avant le parag +iparag+
-  * @param {Parag} iparag Instance de paragraphe
-  **/
-  moveBefore (iparag)
-  {
-    this.container.insertBefore(this.mainDiv, iparag.mainDiv)
-    this.panneau.modified = true
-  }
+  // /**
+  // * Déplace le parag après le parag +iparag+
+  // * @param {Parag} iparag Instance de paragraphe
+  // **/
+  // moveAfter (iparag)
+  // {
+  //   this.container.insertBefore(this.mainDiv, iparag.mainDiv.nextSibling)
+  //   this.panneau.modified = true
+  // }
+  // /**
+  // * Déplace le parag avant le parag +iparag+
+  // * @param {Parag} iparag Instance de paragraphe
+  // **/
+  // moveBefore (iparag)
+  // {
+  //   this.container.insertBefore(this.mainDiv, iparag.mainDiv)
+  //   this.panneau.modified = true
+  // }
 
   /**
   * Build Dom element for parag

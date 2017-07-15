@@ -11,8 +11,16 @@ let moment = require('moment')
 
 class PanProjet
 {
+  // Pour donner un identifiant unique au panneau
+  static newID () {
+    if ( !this._newid ) { this._newid = 0 }
+    this._newid ++
+    return this._newid
+  }
+
   constructor (name)
   {
+    this.__ID   = PanProjet.newID()
     this.id     = name
     this.name   = name // p.e. 'data', ou 'scenier'
     // Mis à true quand le panneau est le panneau courant. Sert notamment à
@@ -62,15 +70,6 @@ class PanProjet
   }
 
   /**
-  * Raccourci pour Parags#add, pour ajouter un paragraphe dans le
-  * panneau.
-  **/
-  addParag (iparag, options)
-  {
-    this.parags.add(iparag, options)
-  }
-
-  /**
   * Pour activer/désactiver le panneau, c'est-à-dire le mettre en panneau
   * courant, affiché dans l'interface.
   **/
@@ -110,17 +109,17 @@ class PanProjet
     *   Méthodes interface
     *
   *** --------------------------------------------------------------------- */
-  get modified () { return this._modified }
+  get modified () { return this._modified || false }
   set modified (v)
   {
     this._modified = !!v
-    this.light.innerHTML = this._modified ? '🔴' : '🔵'
+    // Noter que dans les tests unitaires the.light se sera pas défini,
+    // par défaut.
+    this.section && ( this.light.innerHTML = this._modified ? '🔴' : '🔵' )
+    this.projet.modified = true
   }
   get light () {
-    if ( ! this._light )
-    {
-      this._light = this.section.getElementsByClassName('statelight')[0]
-    }
+    this._light || (this._light = this.section.getElementsByClassName('statelight')[0])
     return this._light
   }
 
@@ -249,18 +248,12 @@ class PanProjet
   * Marque tous les paragraphes comme non modifiés.
   * Cette méthode sert après l'enregistrement du panneau.
   **/
-  setAllParagsUnmodified ()
-  {
-    this.parags.setUnmodified('all')
-  }
+  setAllParagsUnmodified () { this.parags.setUnmodified('all') }
 
   /**
   * @return {Array} les données du paragraphe du panneau.
   **/
-  get parags_as_data ()
-  {
-    return this.parags.as_data
-  }
+  get parags_as_data () { return this.parags.as_data }
 
   /**
   * Méthode appelée après le load, permettant d'afficher les paragraphes
@@ -269,7 +262,7 @@ class PanProjet
   displayParags ()
   {
     this.container.innerHTML = ''
-    this.data.parags.forEach( hparag => Projet.current_panneau.addParag( new Parag( hparag ) ) )
+    this.data.parags.forEach( hparag => Projet.current_panneau.parags.add( new Parag( hparag ) ) )
   }
 
   /**

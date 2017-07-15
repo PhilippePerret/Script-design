@@ -10,7 +10,6 @@ let
   , moment  = require('moment')
   , Parag   = require_module(path.join('.','__windows__','_common_','js','Parag.js'))
 
-
 global.Projet     = require_module(path.join('.','__windows__','projet','js','projet_class.js'))
 global.PanProjet  = require_module(path.join('.','__windows__','projet','js','panprojet_class.js'))
 global.Parags     = require_module(path.join('.','__windows__','_common_','js','Parags.js'))
@@ -81,7 +80,7 @@ function createParag( params )
   return new Parag(params)
 }
 
-function init10Parags ()
+function init20Parags ()
 {
   let listeParags = []
   for(var pid = 0 ; pid < 20 ; ++ pid){
@@ -124,7 +123,7 @@ function resetAll ()
   panneau.container.innerHTML = ''
   panneau.parags.reset()
   panneau.parags.selection.reset()
-  init10Parags()
+  init20Parags()
 }
 
 

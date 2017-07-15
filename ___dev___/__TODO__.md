@@ -1,4 +1,9 @@
-* Quand on double clique sur une touche de menu (tabulator), ça équivaut à un Enter
+* Comment déselectionner tous les paragraphes pour faire un ajout à la fin ?
+* Faut-il faire l'ajout dans les paragraphes visibles plutôt qu'à la fin lorsqu'il n'y a pas de sélections mais qu'il y a beaucoup de paragraphes ?
+* On ajoute le paragraphe après la sélection courante.
+  QUESTION : faut-il le demander ?
+
+* Destruction du paragraphe courant
 
 * Quand on active un panneau, il faut relever tous ses paragraphes.
   En fait, le mieux, ce serait d'avoir une propriété `parags` du panneau, qui

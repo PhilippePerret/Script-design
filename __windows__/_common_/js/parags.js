@@ -48,6 +48,7 @@ class Parags
     this.selection.count    && this.deselectAll()
     this._items = []
     this._dict  = {}
+    this._ids   = []
     this._count = 0
     this.panneau.container.innerHTML = ''
   }
@@ -72,6 +73,8 @@ class Parags
   * @param {Object} options
   *                     edit      Si true, le paragraphe est aussitôt mis en
   *                               édition.
+  *                     before    {Parag} Au besoin, le parag avant lequel
+  *                               créer le nouveau.
   *
   * Note : on observe aussi ce paragraphe.
   **/
@@ -79,6 +82,8 @@ class Parags
   {
     options || ( options = {} )
     options.edited && ( options.selected = true )
+
+    // console.log("options dans add:", options)
 
     // if ( ! Array.isArray(argp) ) { argp = [argp] }
     Array.isArray(argp) || ( argp = [argp] )
@@ -91,21 +96,33 @@ class Parags
 
       // console.log(`Ajout du paragraphe #${iparag.id}`)
       // On ajoute la div du paragraphe dans le panneau HTML
-      my.panneau.container.appendChild(iparag.mainDiv)
-      // TODO insertBefore (si options.before)
+      if (options.before)
+      {
+        console.log("Ajout du paragraphe avant le paragraphes",options.before.id)
+        my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv)
+      }
+      else
+      {
+        my.panneau.container.appendChild(iparag.mainDiv)
+      }
 
       // On ajoute le paragraphe à la liste des paragraphes du panneau
       // si c'est utile. Au chargement du panneau, tous les parags sont
       // ajoutés à _dict et _items
       if ( undefined === my._dict[iparag.id] ) {
-        my._items.push(iparag)
+        if (options.before)
+        {
+          let index_before = options.before.index - 1
+          my._items .splice(index_before, 0, iparag)
+          my._ids   .splice(index_before, 0, iparag.id)
+        }
+        else
+        {
+          my._items.push(iparag)
+          my._ids.push(iparag.id)
+        }
         my._dict[iparag.id] = iparag
-        // TODO splice (si options.before)
       }
-      // On définit l'index
-      // Rappel : ça ne sert pas vraiment, mais c'est au cas où, et pour
-      // les tests.
-      iparag.index = Number(my._count)
 
       // On augmente le nombre de paragraphe du panneau
       my._count ++
@@ -161,7 +178,7 @@ class Parags
   **/
   hasCurrent ()
   {
-    console.log("this.selection.current : ", this.selection.current)
+    // console.log("this.selection.current : ", this.selection.current)
     return this.selection.current != null
   }
   /**
@@ -219,7 +236,17 @@ class Parags
       : null
   }
 
-
+  /**
+  * Méthode principale qui déplace le paragraphe en tant qu'élément
+  * DOM dans le panneau.
+  *
+  * Noter que cette méthode ne déplace pas l'item dant _items et _ids donc
+  * il ne faut pas l'utiliser directement. Utiliser plutôt des méthodes comme
+  * moveCurrentUp ou moveCurrentDown.
+  *
+  * Note : cette méthode marque toujours le panneau (et donc le projet)
+  * modifié.
+  **/
   moveBefore ( parag, before )
   {
     if ( 'number' == typeof parag  ) { parag  = this.get(parag)  }
@@ -229,6 +256,9 @@ class Parags
     before && (before = before.mainDiv)
 
     this.panneau.container.insertBefore(parag, before)
+
+    this.panneau.modified = true
+
   }
 
 
@@ -318,9 +348,22 @@ class Parags
     ){
       return false
     }
+    let current_index = Number(this.selection.current.index)
     if(!evt){evt={}}
     let pa = this.getPrevious(evt.shiftKey ? 5 : 1)
-    pa && this.moveBefore(this.selection.current, pa)
+    // On déplace dans les listes
+    this._items .splice(current_index, 1)
+    this._ids   .splice(current_index, 1)
+    // this._items.splice(current_index - 1, 0, this.selection.current)
+    // this._ids.splice(current_index - 1, 0, this.selection.current.id)
+    this._items .splice(pa.index, 0, this.selection.current)
+    this._ids   .splice(pa.index, 0, this.selection.current.id)
+
+    // NOTE 0001
+    // Note : puisqu'on utilise `pa.index` ci-dessus pour positionner l'élément
+    // déplacé, et que `.index` se sert du DOM pour renvoyer l'index, il faut
+    // déplacer le paragraphe seulement après, sinon pa.index sera faux.
+    this.moveBefore(this.selection.current, pa)
   }
 
   /**
@@ -331,13 +374,24 @@ class Parags
     if(
           this.count == 0
       ||  !this.selection.current
-      || this.selection.current.id == this.last.id
+      ||  this.selection.current.id == this.last.id
     ){
       return false
     }
+    let current_index = Number(this.selection.current.index)
     if(!evt){evt={}}
     let pa = this.getNext(evt.shiftKey ? 5 : 1)
-    pa && this.moveBefore(this.selection.current, pa.next)
+
+    // On déplace dans les listes
+    this._items .splice(current_index, 1)
+    this._ids   .splice(current_index, 1)
+    this._items .splice(pa.index, 0, this.selection.current)
+    this._ids   .splice(pa.index, 0, this.selection.current.id)
+
+    // CF. NOTE 0001 CI-DESSUS (bien qu'ici ça pose moins de problème
+    // puisque l'ajout se fait après)
+    this.moveBefore(this.selection.current, pa.next)
+
   }
 
 
@@ -449,21 +503,23 @@ class Parags
     if ( pars[0] && pars[0].constructor.name == 'Parag'){
       // Les éléments de pars sont déjà des instances {Parag}
       this._items = pars.map( ipar => {
-        ipar.index = index ++
         return ipar
       } )
     } else {
       // Les éléments de pars sont des tables
       this._items = pars.map( hpars => {
         inst = new Parag(hpars)
-        inst.index = index ++
         return inst
       } )
     }
     this._count = this._items.length
     // On renseigne le dictionnaire
     my._dict = {}
-    this._items.forEach( (p) => { my._dict[p.id] = p } )
+    my._ids  = []
+    this._items.forEach( (p) => {
+      my._dict[p.id] = p
+      my._ids.push(p.id)
+    } )
   }
 
   /**
@@ -515,7 +571,12 @@ class Parags
   static new (options)
   {
     let newP = new Parag({id:Parag.newID(),contents:''})
-    Projet.current_panneau.addParag(newP, options)
+    if (Projet.current_panneau.parags.hasCurrent()) {
+      if (!options){options = {}}
+      options.before = Projet.current_panneau.parags.selection.current.next
+    }
+    // console.log('options:',options)
+    Projet.current_panneau.parags.add(newP, options)
     return newP
   }
 
