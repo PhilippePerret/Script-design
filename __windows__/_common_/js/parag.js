@@ -31,7 +31,7 @@ class Parag
   **/
   static newID ()
   {
-    console.log("-> Parag.newID", this._lastID)
+    // console.log("-> Parag.newID", this._lastID)
     if (undefined === this._lastID) {
       this._lastID = Projet.current.data_generales.last_parag_id || -1
     }
@@ -65,6 +65,11 @@ class Parag
     }
     this.selected = false // à true quand il est sélectionné
     this.current  = false // à true quand c'est le paragraphe courant
+
+    // Dans tous les cas, on ajoute l'instance à Parags.items afin de pouvoir
+    // toujours récupérer un paragraphe, quel que soit son panneau, avec la
+    // méthode `Parags.get(<id>)`
+    Parags.add(this)
   }
 
   /** ---------------------------------------------------------------------
@@ -115,11 +120,11 @@ class Parag
         // est référent est dans la liste as_referent dans le cas contraire
         if ( is_referent )
         {
-          pan_arr.forEach( pid => arr.as_relatifs.push(Parags.get(pid)))
+          pan_arr.forEach( pid => arr.as_relatifs.push(Parags.get(Number(pid))))
         }
         else
         {
-          arr.as_referent.push(Parags.get(pan_arr[0]))
+          arr.as_referent.push(Parags.get(Number(pan_arr[0])))
         }
       }
       this._relatifs = arr

@@ -26,6 +26,7 @@ class Parags
   constructor ( panprojet )
   {
     this.panneau = panprojet
+    this.projet  = panprojet.projet
   }
 
   /**
@@ -122,6 +123,9 @@ class Parags
           my._ids.push(iparag.id)
         }
         my._dict[iparag.id] = iparag
+
+        // Il faut aussi ajouter une donnée relative pour ce paragraphe
+        my.projet.relatives.addParag(iparag)
       }
 
       // On augmente le nombre de paragraphe du panneau
@@ -417,10 +421,11 @@ class Parags
     let my = this
       , i
     argp.forEach( (iparag) => {
-      if ( undefined == iparag ){
-        return
-      }
+      if ( undefined == iparag ) { return }
       i = Number(iparag.index)
+
+      // On dissocie avec ses relatifs
+      my.projet.relatives.dissociateWithAll( iparag )
 
       iparag.selected && my.selection.remove( iparag )
 
@@ -432,7 +437,9 @@ class Parags
       my._ids   .splice(i, 1)
       delete my._dict[iparag.id]
       my._count --
+
     })// fin de boucle sur tous les paragraphes donnés en argument
+
   }
 
   /**
@@ -647,13 +654,29 @@ class Parags
   *** --------------------------------------------------------------------- */
 
   /**
-  * @return {Parag} Le parag d'identifiant +parag_id+ ou null s'il n'existe pas
-  * @param {Number} parag_id Identifiant du parag à retourner
+  * Pour ajouter le paragraphe, quel que soit son panneau, à la liste de
+  * paragraphes courants, pour pouvoir toujours le récupérer par Parags.get
+  *
+  * @param  {Parag} iparag L'instance du paragraphe.
+  *
   **/
-  static get ( parag_id )
+  static add (iparag)
   {
-    return this.items[parag_id]
+    this._items || ( this._items = {} )
+    this._items[iparag.id] = iparag
   }
+
+  static items () { return this._items }
+  
+  /**
+  * Retourne l'instance Parag du paragraphe d'identifiant +parag_id+
+  *
+  * @param {Number} parag_id Identifiant du parag à retourner
+  *
+  * @return {Parag} Le parag d'identifiant +parag_id+ ou null s'il n'existe pas
+  **/
+  static get ( parag_id ) { return this.items[parag_id] }
+
 }
 
 

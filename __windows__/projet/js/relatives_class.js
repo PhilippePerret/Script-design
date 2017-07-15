@@ -41,7 +41,7 @@ class Relatives
 
   get data ()
   {
-    his._data || ( this._data = this.store.data )
+    this._data || ( this._data = this.store.data )
     return this._data
   }
 
@@ -305,7 +305,7 @@ class Relatives
     this.data.relatives[String(ref_id)] = ref_relatives
 
     console.log("\n==== RELATIVES est devenue : ", JSON.stringify(this.data))
-    return Parags.get(ref_id)
+    return Parags.get(Number(ref_id))
   }
 
   /**
@@ -376,7 +376,7 @@ class Relatives
     }
 
     this.save()
-    
+
   }// dissociateWithAll
 
 } // class Relatives

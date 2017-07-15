@@ -271,8 +271,7 @@ class Projet
   **/
   get relatives ()
   {
-    if ( undefined === this._relatives )
-    { this._relatives = new Relatives(this) }
+    this._relatives || ( this._relatives = new Relatives(this) )
     return this._relatives
   }
 

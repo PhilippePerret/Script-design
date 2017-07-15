@@ -103,6 +103,16 @@ describe("Annulation de la destruction d'un paragraphe",[
     , it("préparation", ()=>{
       // Note : ne pas mettre d'expectation à jouer ici, c'est juste la
       // préparation avec vérification.
+      resetAll()
+      panneau.parags.add([parag2, parag12, parag4, parag6])
+
+      parag1  .panneau_id = 'notes'
+      parag11 .panneau_id = 'manuscrit'
+
+      projet.relatives.associate([parag4, parag1, parag10])
+      console.log(parag4.relatifs)
+      console.log(parag1.relatifs)
+      console.log(parag10.relatifs)
     })
     , it("remet le paragraphe en place dans le DOM", ()=>{
       pending()
