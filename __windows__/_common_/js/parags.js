@@ -236,7 +236,15 @@ class Parags
       : null
   }
 
-
+  /**
+  * Méthode principale qui déplace le paragraphe en tant qu'élément
+  * DOM dans le panneau.
+  *
+  * Noter que cette méthode ne déplace pas l'item dant _items et _ids donc
+  * il ne faut pas l'utiliser directement. Utiliser plutôt des méthodes comme
+  * moveCurrentUp ou moveCurrentDown.
+  *
+  **/
   moveBefore ( parag, before )
   {
     if ( 'number' == typeof parag  ) { parag  = this.get(parag)  }
@@ -335,9 +343,15 @@ class Parags
     ){
       return false
     }
+    let current_index = Number(this.selection.current.index)
     if(!evt){evt={}}
     let pa = this.getPrevious(evt.shiftKey ? 5 : 1)
-    pa && this.moveBefore(this.selection.current, pa)
+    this.moveBefore(this.selection.current, pa)
+    // On déplace dans les listes
+    this._items.splice(current_index, 1)
+    this._items.splice(current_index - 1, 0, this.selection.current)
+    this._ids.splice(current_index, 1)
+    this._ids.splice(current_index - 1, 0, this.selection.current.id)
   }
 
   /**
@@ -348,13 +362,19 @@ class Parags
     if(
           this.count == 0
       ||  !this.selection.current
-      || this.selection.current.id == this.last.id
+      ||  this.selection.current.id == this.last.id
     ){
       return false
     }
+    let current_index = Number(this.selection.current.index)
     if(!evt){evt={}}
     let pa = this.getNext(evt.shiftKey ? 5 : 1)
-    pa && this.moveBefore(this.selection.current, pa.next)
+    this.moveBefore(this.selection.current, pa.next)
+    // On déplace dans les listes
+    this._items.splice(current_index, 1)
+    this._ids.splice(current_index, 1)
+    this._items.splice(current_index + 1, 0, this.selection.current)
+    this._ids.splice(current_index + 1, 0, this.selection.current.id)
   }
 
 
