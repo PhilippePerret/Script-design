@@ -287,6 +287,38 @@ class Projet
     return this._relatives
   }
 
+  // ----------------- OPTIONS ---------------------
+
+  /**
+  * Raccourci servant au tabulator (car on ne peut pas utiliser `projet.options`
+  * dans le départ)
+  **/
+  define_options ( arg ) { this.options.define( arg ) }
+
+  get options ()
+  {
+    this._options || ( this._options = new ProjetOptions(this) )
+    return this._options
+  }
+  option ( prop, value )
+  {
+    if ( 'string' == typeof prop )
+    {
+      if ( undefined === value ) { return this.options.get(prop) }
+      else {
+        let h = {} ; h[prop] = value ; this.options.set(h)
+      }
+    }
+    else if ( 'object' == typeof prop )
+    {
+      this.options.set(prop)
+    }
+    else
+    {
+      throw new Error('Mauvais argument pour projet#option')
+    }
+  }
+
   /**
   * Méthode qui enregistre et affiche le titre. Si @new_title est défini, elle
   * enregistre le nouveau titre. Sinon, elle l'affiche (dans la barre de titre et

@@ -44,6 +44,7 @@ PTests.options.one_line_describe = true
 // Note : il suffit de choisir un test pour désactiver le 'test_folder' plus
 // bas.
 // PTests.options.test_file = path.join('unit','store_spec.js')
+PTests.options.test_file = path.join('unit','Projet','options_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','relatives_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','pan_parags_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','creation_parag_spec.js')

@@ -1,6 +1,8 @@
-* Rendre l'aide plus apparente dans le panneau projet (ligne du bas)
+* Poursuivre l'implémentation des options
 
-* Document la ligne du bas avec le nombre de paragraphes, etc. et des aides/suggestions de raccourcis.
+* Travailler le pied de page
+  - Rendre l'aide plus apparente dans le panneau projet (ligne du bas)
+  - Document la ligne du bas avec le nombre de paragraphes, etc. et des aides/suggestions de raccourcis.
 
 * Faut-il faire l'ajout dans les paragraphes visibles plutôt qu'à la fin lorsqu'il n'y a pas de sélections mais qu'il y a beaucoup de paragraphes ?
 

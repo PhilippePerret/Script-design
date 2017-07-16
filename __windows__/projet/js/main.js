@@ -30,6 +30,7 @@ requirejs(
     , path.join(C.COMMON_JS_FOLDER,'tabulators_define.js')
     , PROJET_PAN_PATH
     , PROJET_RELS_PATH
+    , path.join(PROJET_JS_FOLDER, 'options.js')
   ]
 , function(
     log
@@ -44,6 +45,7 @@ requirejs(
   , Tabulator
   , PanProjet
   , Relatives
+  , ProjOpts
 ){
 
   global.log        = log
@@ -55,6 +57,7 @@ requirejs(
   global.Relatives  = Relatives
   global.Store      = Store
   global.Tabulator  = Tabulator
+  global.ProjetOptions = ProjOpts
 
   // On donne l'app à Store, pour qu'il sache où chercher les fichiers.
   Store._app = app
@@ -103,6 +106,9 @@ requirejs(
               , 'print'       : currentpan.print.bind(currentpan)
               , 'stats'       : Projet.current.afficherStatistiques.bind(Projet.current)
               , 'cutreturn'   : currentpan.cutParagByReturn.bind(currentpan)
+            }
+            , 'options-projet':{
+              enter_method: Projet.current.define_options.bind(Projet.current)
             }
           }
           // Prépation des tabulateurs
