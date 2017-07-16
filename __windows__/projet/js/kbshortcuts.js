@@ -111,12 +111,14 @@ define(
           }
           break
 
+        case 'I':
         case 'i':
         case 'ArrowUp':
           curpan.selectPrevious.bind(curpan)(evt)
           return DOM.stopEvent(evt)
 
         case 'k':
+        case 'K':
         case 'ArrowDown':
           curpan.selectNext.bind(curpan)(evt)
           return DOM.stopEvent(evt)
