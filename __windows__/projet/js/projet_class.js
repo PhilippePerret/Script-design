@@ -99,7 +99,7 @@ class Projet
   * Par défaut, c'est le panneau des données générales du projet.
   **/
   static get current_panneau () {
-    if ( undefined === this._current_panneau){this._current_panneau = this.panneaux['data']}
+    this._current_panneau || ( this._current_panneau = this.panneaux['data'] )
     return this._current_panneau
   }
 
