@@ -9,7 +9,22 @@
 | Activer le panneau Traitement | MAJ + t | |
 | ------
 | Créer un nouveau paragraphe   | n | |
-
+| --------
+| Sélectionner un paragraphe    | Flèche bas | |
+|                               | k          | |
+| Sélectionner paragraphe après | Flèche bas | |
+|                               | k           | |
+| Sélectionner paragraphe avant | Flèche haut | |
+|                               | i           | |
+| Sélection 5e paragraph après  | MAJ + Fl. bas | |
+|                               | MAJ + k     | |
+| Sélection 5e paragraph avant  | MAJ + Fl. haut | |
+|                               | MAJ + i     | |
+| --- | --- | --- |
+| Déplacer paragraphe vers bas  | CMD + Fl.bas  | |
+|                               | CMD + k       | |
+| Déplacer paragraphe vers haut | CMD + Fl.haut | |
+|                               | CMD + i       | |
 
 ### Introduction {#projet_introduction}
 

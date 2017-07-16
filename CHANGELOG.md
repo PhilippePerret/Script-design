@@ -1,8 +1,12 @@
+# 0.1.9
+
+  * Implémentation des touches 'i' et 'k' pour remplacer les flèches haut/bas.
+  
 # 0.1.8
 
   * Possibilité d'activer un menu/commande Tabulator simplement en répétant la touche.
   * Déplacements et insertions des paragraphes tout à fait opérationnels.
-  
+
 # 0.1.7
 
   * Implémentation complète des `Tabulators` (et leur système de raccourci-clavier intelligents).

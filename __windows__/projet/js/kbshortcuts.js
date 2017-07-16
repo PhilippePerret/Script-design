@@ -32,6 +32,7 @@ define(
       // console.log('<- onkeydown')
       switch (evt.key)
       {
+        case 'k':
         case 'ArrowDown':
           // Les flèches avec la touche CMD, sur Mac, sont captés avant le
           // onkeyup, donc sont inutilisables telles quelles. Il faut donc
@@ -42,6 +43,7 @@ define(
             return DOM.stopEvent(evt)
           }
           break
+        case 'i':
         case 'ArrowUp':
           if ( evt.metaKey )
           {
@@ -109,10 +111,12 @@ define(
           }
           break
 
+        case 'i':
         case 'ArrowUp':
           Projet.current_panneau.selectPrevious(evt)
           return DOM.stopEvent(evt)
 
+        case 'k':
         case 'ArrowDown':
           Projet.current_panneau.selectNext(evt)
           return DOM.stopEvent(evt)
