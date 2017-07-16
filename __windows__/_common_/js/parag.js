@@ -310,25 +310,6 @@ class Parag
     return this
   }
 
-  // /**
-  // * Déplace le parag après le parag +iparag+
-  // * @param {Parag} iparag Instance de paragraphe
-  // **/
-  // moveAfter (iparag)
-  // {
-  //   this.container.insertBefore(this.mainDiv, iparag.mainDiv.nextSibling)
-  //   this.panneau.modified = true
-  // }
-  // /**
-  // * Déplace le parag avant le parag +iparag+
-  // * @param {Parag} iparag Instance de paragraphe
-  // **/
-  // moveBefore (iparag)
-  // {
-  //   this.container.insertBefore(this.mainDiv, iparag.mainDiv)
-  //   this.panneau.modified = true
-  // }
-
   /**
   * Build Dom element for parag
   *
@@ -351,12 +332,12 @@ class Parag
 
   observe_div (div)
   {
-    if(undefined===div){div = this.mainDiv}
+    div || (div = this.mainDiv)
     div.addEventListener('click', this.onClick.bind(this))
   }
   observe_contents (divCont)
   {
-    if(undefined === divCont){ divCont = this.divContents }
+    divCont || (divCont = this.divContents)
     divCont.addEventListener('click', this.doEdit.bind(this))
     divCont.addEventListener('blur',  this.undoEdit.bind(this))
   }
@@ -496,21 +477,17 @@ class Parag
     this.divContents.contentEditable = 'true'
     this.divContents.innerHTML = this.contents.replace(/\n/g,'<br>')
     this.divContents.focus()
-    Projet.mode_edition = true
+    Projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
     this.actualContents = String(this.contents)
   }
   // Sortir le champ contents du mode édition (et enregistrer
   // la nouvelle donnée si nécessaire)
   undoEdit (evt)
   {
-    if ( this.contentsHasChanged() )
-    {
-      this.onChangeContents.bind(this)()
-    }
+    this.contentsHasChanged() && this.onChangeContents.bind(this)()
     this.divContents.contentEditable = 'false'
-    // Il faut toujours remettre le contenu car le code original est en
-    // kramdown avec des variables.
     this.divContents.innerHTML = this.formatedContents
+    this.panneau.select(this) // on le remet toujours en courant
     Projet.mode_edition = false
   }
 

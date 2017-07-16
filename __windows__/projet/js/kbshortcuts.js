@@ -83,45 +83,48 @@ define(
     **/
     static onkeyup (evt)
     {
-      // Les touches ci-dessous sont considérées même si l'on est en
-      // mode édition, dans un champ de texte.
-      switch ( evt.key )
-      {
+      let curpan = Projet.current_panneau
 
-      }
+      // console.log("[kbshortcuts] Projet.mode_edition = ",Projet.mode_edition)
+      // console.log('[kbshortcuts] selection courante', curpan.parags.selection.current)
       // On ne passe à la suite que si l'on n'est plus en mode Édition
       if ( Projet.mode_edition ){ return 'poursuivre' }
-
       switch ( evt.key )
       {
 
         // case 'D':
         //   return Projet.loadPanneau('data')
+        case 'e':
+          // <=> Enter
+          curpan.hasCurrent() && curpan.editCurrent.bind(curpan)()
+          return true
         case 'Enter':
           // Suivant le mode, on fait quelque chose de différent
           // Si un paragraphe est sélectionné, ou courant, et qu'on est en
           // mode non édition, on édite le paragraphe en question
-          if ( Projet.mode_double_panneaux )
+          switch (true)
           {
-            return Parags.setSelectedsAsRelatives()
-          }
-          else if ( Projet.current_panneau.hasCurrent() )
-          {
-            Projet.current_panneau.editCurrent()
+            case Projet.mode_double_panneaux :
+              return Parags.setSelectedsAsRelatives()
+            case curpan.hasCurrent() :
+              return curpan.editCurrent.bind(curpan)()
           }
           break
 
         case 'i':
         case 'ArrowUp':
-          Projet.current_panneau.selectPrevious(evt)
+          curpan.selectPrevious.bing(curpan)(evt)
           return DOM.stopEvent(evt)
 
         case 'k':
         case 'ArrowDown':
-          Projet.current_panneau.selectNext(evt)
+          curpan.selectNext.bind(curpan)(evt)
+          return DOM.stopEvent(evt)
+        case 'Escape':
+          curpan.deselectAll.bind(curpan)()
           return DOM.stopEvent(evt)
         case 'Backspace':
-          Projet.current_panneau.removeCurrent()
+          curpan.removeCurrent.bind(curpan)()
           return DOM.stopEvent(evt)
         case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
           return Parags.create()
@@ -130,7 +133,7 @@ define(
           break
         default:
           // Pour voir la touche :
-          console.log(evt.key)
+          // console.log(evt.key)
       }
       return 'poursuivre' // pour dire de poursuivre le test keyUp
     }// /fin de onkeyup

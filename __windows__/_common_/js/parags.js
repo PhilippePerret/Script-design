@@ -64,10 +64,6 @@ class Parags
   * Cet ajout consiste à ajouter le paragraphe au document affiché et à
   * l'ajouter dans la liste des paragraphes du panneau (s'il ne s'y trouve
   * pas déjà - au chargement, tous les paragraphes sont ajoutés).
-  * TODO Pour le moment, le paragraphe s'ajoute toujours à la fin du
-  * panneau mais on pourra déterminer plus tard la position que doit
-  * adopter l'ajout, avant ou après la sélection courante (le paragraphe
-  * courant).
   *
   * NOTE Maintenant, la méthode est seulement un raccourci public de
   * la méthode `add` de l'instance `Parags` du panneau, qui gère tous ses
@@ -80,6 +76,8 @@ class Parags
   *                               édition.
   *                     before    {Parag} Au besoin, le parag avant lequel
   *                               créer le nouveau.
+  *                     reset     {Boolean} Pour tout réinitialiser, comme au
+  *                               chargement du panneau.
   *
   * Note : on observe aussi ce paragraphe.
   **/
@@ -87,6 +85,9 @@ class Parags
   {
     options || ( options = {} )
     options.edited && ( options.selected = true )
+
+    // S'il faut tout réinitialiser
+    options.reset && this.reset()
 
     Array.isArray(argp) || ( argp = [argp] )
 
@@ -110,31 +111,27 @@ class Parags
       }
 
       // On ajoute le paragraphe à la liste des paragraphes du panneau
-      // si c'est utile. Au chargement du panneau, tous les parags sont
-      // ajoutés à _dict et _items
-      if ( undefined === my._dict[iparag.id] ) {
-        if (options.before)
-        {
-          let index_before = options.before.index - 1
-          my._items .splice(index_before, 0, iparag)
-          my._ids   .splice(index_before, 0, iparag.id)
-        }
-        else
-        {
-          my._items.push(iparag)
-          my._ids.push(iparag.id)
-        }
-        my._dict[iparag.id] = iparag
-
-        // Il faut aussi ajouter une donnée relative pour ce paragraphe
-        my.projet.relatives.addParag(iparag)
+      if (options.before)
+      {
+        let index_before = options.before.index - 1
+        my._items .splice(index_before, 0, iparag)
+        my._ids   .splice(index_before, 0, iparag.id)
       }
+      else
+      {
+        my._items.push(iparag)
+        my._ids.push(iparag.id)
+      }
+      my._dict[iparag.id] = iparag
+
+      // Il faut aussi ajouter une donnée relative pour ce paragraphe
+      my.projet.relatives.addParag(iparag)
 
       // On augmente le nombre de paragraphe du panneau
       my._count ++
 
       // Noter que seule l'option selected pourra être appliquée
-      // à tous les parags fournis.
+      // à tous les parags fournis, pas l'option current.
       options.selected && my.selection.add( iparag )
 
       lastParag = iparag
@@ -494,9 +491,9 @@ class Parags
   **/
   unRemoveLast ()
   {
-    console.log('-> unRemoveLast')
+    // console.log('-> unRemoveLast')
     this.cancelFunctions && this.cancelFunctions.forEach( f => f.call() )
-    console.log('<- unRemoveLast')
+    // console.log('<- unRemoveLast')
   }
 
   /**
@@ -547,44 +544,6 @@ class Parags
       this._items = arr
     }
     return this._items
-  }
-  /**
-  * Définit les paragraphes (instances) au chargement du panneau.
-  *
-  * Ajoute également un index pour connaitre la position du paragraphe
-  * dans le panneau.
-  *
-  * @param {Array} de {Object|Parag} pars Liste des paragraphes à mettre dans les
-  * items du panneau. Chaque élément est soit un tableau contenant les données
-  * du paragraphe, comme au chargement des données, soit une instance {Parag}
-  * du paragraphe (utilisé pour le moment par les tests)
-  **/
-  set items ( pars )
-  {
-    let index = 0
-      , my    = this
-      , inst
-
-    if ( pars[0] && pars[0].constructor.name == 'Parag'){
-      // Les éléments de pars sont déjà des instances {Parag}
-      this._items = pars.map( ipar => {
-        return ipar
-      } )
-    } else {
-      // Les éléments de pars sont des tables
-      this._items = pars.map( hpars => {
-        inst = new Parag(hpars)
-        return inst
-      } )
-    }
-    this._count = this._items.length
-    // On renseigne le dictionnaire
-    my._dict = {}
-    my._ids  = []
-    this._items.forEach( (p) => {
-      my._dict[p.id] = p
-      my._ids.push(p.id)
-    } )
   }
 
   /**
@@ -668,7 +627,7 @@ class Parags
   static setSelectedsAsRelatives ()
   {
 
-    console.log("Il faut actualiser cette méthode pour tenir compte du fait que les sélections se trouvent maintenant dans les deux panneaux.")
+    alert("Il faut actualiser cette méthode pour tenir compte du fait que les sélections se trouvent maintenant dans les deux panneaux.")
     return true
     // if ( Parag.selecteds.length < 2 )
     // {
@@ -739,6 +698,9 @@ class ParagsSelection
   **/
   reset ()
   {
+    // console.log('-> ParagsSelection#reset')
+    // try{throw new Error('Just pour voir')}
+    // catch(err){console.log(err)}
     this.current && this.unsetCurrent()
     this.count && this.items.forEach(p => p.deselect())
     this.resetList()
@@ -827,6 +789,7 @@ class ParagsSelection
   }
   unsetCurrent ()
   {
+    // console.log('-> ParagsSelection#unsetCurrent')
     if ( ! this.current ) { return false }
     this.current.unsetCurrent()
   }

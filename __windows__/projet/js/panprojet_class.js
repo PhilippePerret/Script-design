@@ -65,7 +65,7 @@ class PanProjet
   **/
   get projet ()
   {
-    !this._projet && (this._projet = Projet.current)
+    this._projet || ( this._projet = Projet.current )
     return this._projet
   }
 
@@ -74,7 +74,8 @@ class PanProjet
   * courant, affiché dans l'interface.
   **/
   activate () {
-    if ( ! this.loaded ) { this.load() }
+    // console.log("-> activate panneau")
+    this.loaded || this.load()
     DOM.addClass(`panneau-${this.id}`,'actif')
     this.actif = true
   }
@@ -95,7 +96,7 @@ class PanProjet
   * @return {HTMLElement} Le container dans le DOM des éléments du pan-projet
   **/
   get container () {
-    if (undefined===this._container){this._container=DOM.get(`panneau-${this.id}-contents`)}
+    this._container || (this._container=DOM.get(`panneau-${this.id}-contents`))
     return this._container
   }
   /**
@@ -141,6 +142,8 @@ class PanProjet
     *   Raccourcis
     *
   *** --------------------------------------------------------------------- */
+  select          (e) { return this.parags.select(e)            }
+  deselect        (e) { return this.parags.deselect(e)          }
   deselectAll     ()  { return this.parags.deselectAll()        }
   selectNext      (e) { return this.parags.selectNext(e)        }
   selectPrevious  (e) { return this.parags.selectPrevious(e)    }
@@ -148,6 +151,7 @@ class PanProjet
   moveCurrentDown (e) { return this.parags.moveCurrentDown(e)   }
   hasCurrent      (e) { return this.parags.hasCurrent()         }
   removeCurrent   ()  { return this.parags.removeCurrent()      }
+  editCurrent     ()  { return this.parags.editCurrent()        }
 
   /** ---------------------------------------------------------------------
     *
@@ -180,8 +184,9 @@ class PanProjet
     // Attention, ici, on ne peut pas faire `this.parags`, car cette méthode
     // relève les parags dans l'interface (pour enregistrement) et, pour le
     // moment, il n'y en a pas.
-    if ( this.data.parags ) { this.displayParags() }
+    this.data.parags && this.displayParags()
     this.loaded = true
+    // console.log("<- PanProjet#load")
   }
   /**
   * Procède à la sauvegarde des données actuelles
@@ -238,14 +243,18 @@ class PanProjet
   **/
   get parags ()
   {
-    if (undefined === this._parags) {
-      this._parags = new Parags(this)
-    }
+    this._parags || ( this._parags = new Parags(this) )
     return this._parags
   }
-  set parags ( hparags )
-  {
-    this.parags.items = hparags
+
+  // Attention, les deux méthodes parags et parags= ne sont pas du tout les
+  // même. La méthode `parags=` ci-dessous permet de répondre au chargement
+  // lorsque les données sont dispatchées dans le panneau alors que la méthode
+  // `parags` retourne une instance Parags qui permet de gérer les parags.
+  // Cette méthode ne sert plus nom plus à ajouter les paragraphes à
+  // parags
+  set parags ( hparags ) {
+    // this.parags.items = hparags
   }
 
   /**
@@ -265,8 +274,10 @@ class PanProjet
   **/
   displayParags ()
   {
-    this.container.innerHTML = ''
-    this.data.parags.forEach( hparag => Projet.current_panneau.parags.add( new Parag( hparag ) ) )
+    this.parags.add(
+      this.data.parags.map(hparag=>{return new Parag( hparag )}),
+      {reset: true}
+    )
   }
 
   /**
@@ -275,10 +286,7 @@ class PanProjet
   **/
   get store ()
   {
-    if ( undefined === this._store )
-    {
-      this._store = new Store(this.store_path, this.defaultData)
-    }
+    this._store || (this._store = new Store(this.store_path, this.defaultData))
     return this._store
   }
 
@@ -287,10 +295,7 @@ class PanProjet
   **/
   get store_path ()
   {
-    if ( undefined === this._store_path )
-    {
-      this._store_path = path.join('projets',this.projet.id,this.name)
-    }
+    this._store_path || (this._store_path = path.join('projets',this.projet.id,this.name))
     return this._store_path
   }
 

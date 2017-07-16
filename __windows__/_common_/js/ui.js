@@ -84,14 +84,14 @@ define(
        */
       static onKeyUp (evt)
       {
-
+        console.log('-> UI#onKeyUp')
         /**
         *   On invoque la méthode `onkeyup` que doit définir la fenêtre
         *   appelante
         **/
         if ( this.KeyboardObject && 'function' === typeof this.KeyboardObject.onkeyup)
         {
-          let res = this.KeyboardObject.onkeyup(evt, this.isEdition)
+          let res = this.KeyboardObject.onkeyup.bind(this.KeyboardObject)(evt, this.isEdition)
           if ( res !== 'poursuivre' ) { return res }
         }
 
@@ -163,7 +163,7 @@ define(
       static traiteKeyUp_Inside_TextField (evt)
       {
         let tf = this._current_text_field
-        log(`Touche '${evt.key}' up in text field ${tf.id} `)
+        // log(`Touche '${evt.key}' up in text field ${tf.id} `)
         switch (evt.key)
         {
           // Touches généralistes
@@ -180,7 +180,7 @@ define(
              if ( 'TEXTAREA' === tf.tagName ) { return true }
              else
              {
-               log("C'est un input-text, je joue l'action par défaut.")
+              //  log("C'est un input-text, je joue l'action par défaut.")
                if ( this.KeyboardObject && 'function' == typeof this.KeyboardObject.onEntree )
                {
                  this.KeyboardObject.onEntree.bind(this.KeyboardObject).call()

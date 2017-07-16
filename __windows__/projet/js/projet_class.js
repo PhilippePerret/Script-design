@@ -78,10 +78,11 @@ class Projet
   static UIprepare ()
   {
     // On place un listener d'event click sur le body, pour tout déselectionner
-    document.body.addEventListener('click', (evt) => {
-      Projet.current_panneau.deselectAll()
-      // alert("Click sur le body hors des paragraphes.")
-    })
+    // Le problème, c'est que lorsque l'on fait Enter après avoir édité
+    // un paragraphe, ça simule ce click et donc ça supprime la sélection
+    // document.body.addEventListener('click', (evt) => {
+    //   Projet.current_panneau.deselectAll()
+    // })
   }
 
   /**

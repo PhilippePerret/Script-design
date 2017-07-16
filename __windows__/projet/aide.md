@@ -4,12 +4,12 @@
 
 | Résultat voulu                | Raccourci | Notes |
 | :---------------------------- | :------------- | :----- |
-| Activer le panneau Scénier    | MAJ + s | |
-| Activer le panneau Synopsis   | MAJ + y | |
-| Activer le panneau Traitement | MAJ + t | |
-| ------
+| Activer le menu panneau       | q               | |
+| Choisir un panneau            | q puis q à k    | (tabulator) |
+| Choisir un autre panneau      | q puis fl. haut/bas | (tabulator)|
+| --- | --- | --- |
 | Créer un nouveau paragraphe   | n | |
-| --------
+| --- | --- | --- |
 | Sélectionner un paragraphe    | Flèche bas | |
 |                               | k          | |
 | Sélectionner paragraphe après | Flèche bas | |
@@ -20,11 +20,17 @@
 |                               | MAJ + k     | |
 | Sélection 5e paragraph avant  | MAJ + Fl. haut | |
 |                               | MAJ + i     | |
+| Déselectionnner paragraphes   | ESC         | |
 | --- | --- | --- |
-| Déplacer paragraphe vers bas  | CMD + Fl.bas  | |
-|                               | CMD + k       | |
-| Déplacer paragraphe vers haut | CMD + Fl.haut | |
-|                               | CMD + i       | |
+| Modifier paragraphe           | Enter         | (sélectionné)|
+|                               | e             | (sélectionné) |
+| --- | --- | --- |
+| Déplacer paragraphe vers bas  | CMD + Fl.bas  | (sélectionné) |
+|                               | CMD + k       | (sélectionné) |
+| Déplacer paragraphe vers haut | CMD + Fl.haut | (sélectionné) |
+|                               | CMD + i       | (sélectionné) |
+| --- | --- | --- |
+
 
 ### Introduction {#projet_introduction}
 
