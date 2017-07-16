@@ -84,7 +84,7 @@ define(
        */
       static onKeyUp (evt)
       {
-        console.log('-> UI#onKeyUp')
+        // console.log('-> UI#onKeyUp')
         /**
         *   On invoque la méthode `onkeyup` que doit définir la fenêtre
         *   appelante

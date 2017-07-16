@@ -1,16 +1,8 @@
-* Implémenter les flèches J, K, L, I
 * Rendre l'aide plus apparente dans le panneau projet (ligne du bas)
-* Document la ligne du bas avec le nombre de paragraphe, etc.
-* Quand on change de panneau, on annule les annulations
 
-* Mise en place du système d'annuation (class Cancels)
+* Document la ligne du bas avec le nombre de paragraphes, etc. et des aides/suggestions de raccourcis.
 
-* Comment déselectionner tous les paragraphes pour faire un ajout à la fin ?
 * Faut-il faire l'ajout dans les paragraphes visibles plutôt qu'à la fin lorsqu'il n'y a pas de sélections mais qu'il y a beaucoup de paragraphes ?
-* On ajoute le paragraphe après la sélection courante.
-  QUESTION : faut-il le demander ?
-
-* Destruction du paragraphe courant
 
 * Quand on édite un champ, placer le curseur à la fin plutôt qu'au début
 

@@ -474,9 +474,25 @@ class Parag
   doEdit (evt)
   {
     if (evt && evt.metaKey) { return true }
-    this.divContents.contentEditable = 'true'
-    this.divContents.innerHTML = this.contents.replace(/\n/g,'<br>')
-    this.divContents.focus()
+    let o = this.divContents
+    o.contentEditable = 'true'
+    let realContents = this.contents.replace(/\n/g,'<br>')
+    o.innerHTML = realContents
+    o.focus()
+
+    let startNode = o.firstChild
+      , endNode   = o.firstChild
+
+    let range = document.createRange()
+    // Ci dessous, si on met '0', on sélectionne tout.
+    // À mettre dans les options : soit on se place à la fin soit on
+    // sélectionne tout
+    range.setStart(startNode, realContents.length /* 0 */ )
+    range.setEnd(endNode, realContents.length)
+    let sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+
     Projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
     this.actualContents = String(this.contents)
   }

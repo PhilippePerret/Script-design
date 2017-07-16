@@ -113,7 +113,7 @@ define(
 
         case 'i':
         case 'ArrowUp':
-          curpan.selectPrevious.bing(curpan)(evt)
+          curpan.selectPrevious.bind(curpan)(evt)
           return DOM.stopEvent(evt)
 
         case 'k':
