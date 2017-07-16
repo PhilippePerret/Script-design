@@ -15,12 +15,12 @@
     "start": "./runner.sh",
     "test-unit": "NODE_ENV=test mocha tests/unit/utils/**/*_spec.js",
     "ptests": "./ptests.sh",
+    "test": "./ptests.sh",
     "test-integration": "NODE_ENV=test mocha tests/integration/projets/**/*_spec.js"
   },
   "author": "Philippe perret <philippe.perret@yahoo.fr>",
   "license": "ISC",
   "devDependencies": {
-    "robotjs": "^0.4.7",
     "spectron": "^3.6.4"
   }
 }

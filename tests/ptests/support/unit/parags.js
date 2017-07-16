@@ -74,17 +74,6 @@ global.parag12
 global.PANNEAU_ID  = 'synopsis'
 global.PROJET_ID   = 'exemple'
 
-
-// /**
-// * On sub la méthode pour attribuer une nouvelle ID pour qu'il ne soit pas
-// * enregistré.
-// **/
-// Parag.newID = function(){
-//   if(!this._lastID){this._lastID = 0 }
-//   this._lastID ++
-//   return this._lastID
-// }
-
 /**
 *  Pour définir le projet :
 *     params.panneau_id
@@ -94,13 +83,12 @@ function createParag( params )
 {
   let now = moment().format()
   let lastID
-  if (!lastID){lastID = 0}
-  else{lastID ++}
+  lastID = lastID ? lastID + 1 : 0
 
-  if(!params){params={}}
-  if(!params.id) { params.id = lastID}
+  params || (params = {})
+  params.id || (params.id = lastID)
   params.panneau_id = PANNEAU_ID
-  if(!params.contents){ params.contents = `Contenu du paragraphe #${params.id}`}
+  params.contents || (params.contents = `Contenu du paragraphe #${params.id}`)
   params.data = {
     id: params.id,
     contents: params.contents,
@@ -147,8 +135,12 @@ global.getListeOfIds = function () {
 
 global.resetAll = function ()
 {
+  // console.log('-> resetAll')
+  projet || ( projet  = new Projet(PROJET_ID) )
+  Projet.current = projet
   Parag._lastID = -1
   panneau = new PanProjet(PANNEAU_ID)
+  Projet.panneaux || ( Projet.panneaux = {} )
   Projet.panneaux[PANNEAU_ID] = panneau
   Projet._current_panneau = panneau
 
@@ -158,10 +150,12 @@ global.resetAll = function ()
   panneau.container.innerHTML = ''
   panneau.parags.reset()
   panneau.parags.selection.reset()
+  panneau.parags._projet = projet
   init20Parags()
   projet.data_generales = {
     last_parag_id: 12
   }
+  // console.log('<- resetAll')
 }
 
 projet  = new Projet(PROJET_ID)

@@ -39,17 +39,23 @@ PTests.options.one_line_describe = true
 // PTests.options.test_file = path.join('autotests','dom_children_spec.js')
 // PTests.options.test_file = path.join('autotests','have_tag_spec.js')
 
+// --- APP ---
+//
+// Note : il suffit de choisir un test pour désactiver le 'test_folder' plus
+// bas.
 // PTests.options.test_file = path.join('unit','store_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','relatives_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','pan_parags_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','creation_parag_spec.js')
-PTests.options.test_file = path.join('unit','Parags','remove_parag_spec.js')
+// PTests.options.test_file = path.join('unit','Parags','remove_parag_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','move_parag_spec.js')
+// PTests.options.test_file = path.join('unit','Parags','parag_spec.js')
 // PTests.options.test_file = path.join('page_projet','essai_spec.js')
 
 // Le dossier de tests à faire
 // Ce doit être le chemin relatif (sans './') depuis le dossier ./tests/ptests/
 // PTests.options.test_folder = 'autotests'
+PTests.options.test_folder = 'unit'
 // PTests.options.test_folder = 'unit/Parags'
 
 // beforeSuite(function(){

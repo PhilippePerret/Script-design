@@ -1,3 +1,6 @@
+* Implémenter les flèches J, K, L, I
+* Rendre l'aide plus apparente dans le panneau projet (ligne du bas)
+* Document la ligne du bas avec le nombre de paragraphe, etc.
 * Quand on change de panneau, on annule les annulations
 
 * Mise en place du système d'annuation (class Cancels)

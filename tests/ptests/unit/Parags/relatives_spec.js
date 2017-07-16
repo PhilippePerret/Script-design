@@ -3,6 +3,9 @@
   *
   C'est un problème complexe qui demande d'être traité en profondeur
 *** --------------------------------------------------------------------- */
+let path      = require('path')
+require(path.resolve(path.join('.','tests','ptests','support','unit','parags.js')))
+const oof = {only_on_fail: true}
 
 const oldoptionsOneLinevalue = PTests.options.one_line_describe
 PTests.options.one_line_describe = false
@@ -154,15 +157,16 @@ function associateAndFailure(parag_list, irelatives, alertMessage)
   // irelatives ne doit pas avoir été modifié
   let opts = {
     template:{
-      failure:"La donnée Relatives ne devrait pas avoir été modifiée…"
-      , success: "La données des relatives n'a pas été affectée."
+      failure:    "La donnée Relatives ne devrait pas avoir été modifiée…"
+      , success:  "La données des relatives n'a pas été affectée."
     },
     no_values: true
   }
   expect(irelatives.data).to.equal(initialData, opts)
   // Le message d'alerte doit avoir été fourni
   if (alertMessage){
-    expect(PTests.alertMessage,'le message d’alerte donné',{no_values:true}).to.contains(alertMessage)
+    // puts(`PTests.alertMessage: “${PTests.alertMessage}”`)
+    expect(String(PTests.alertMessage),'le message d’alerte donné',{no_values:true}).to.contains(alertMessage)
   }
 }
 

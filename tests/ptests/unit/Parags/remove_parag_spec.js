@@ -5,7 +5,6 @@ Test de la destruction d'un paragraphe
 */
 let path      = require('path')
 require(path.resolve(path.join('.','tests','ptests','support','unit','parags.js')))
-
 const oof = {only_on_fail: true}
 
 describe("Destruction d'un paragraphe",[

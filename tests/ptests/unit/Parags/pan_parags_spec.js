@@ -5,127 +5,9 @@
   projet).
 
 */
-let
-    path    = require('path')
-  , moment  = require('moment')
-  , Parag   = require_module(path.join('.','__windows__','_common_','js','Parag.js'))
-
-global.Projet     = require_module(path.join('.','__windows__','projet','js','projet_class.js'))
-global.PanProjet  = require_module(path.join('.','__windows__','projet','js','panprojet_class.js'))
-global.Parags     = require_module(path.join('.','__windows__','_common_','js','Parags.js'))
-
-
-const PANNEAU_ID  = 'synopsis'
-    , PROJET_ID   = 'exemple'
-
-/** ---------------------------------------------------------------------
-  *
-  *   STUBS
-  *
-*** --------------------------------------------------------------------- */
-
-Object.defineProperties(PanProjet.prototype, {
-  'container': {
-    get: function(){
-      if ( undefined === this._container ) {
-        this._container = DOM.create('div', {id:`panneau-contents-${PANNEAU_ID}`})
-      }
-      return this._container
-    }
-  }
-})
-
-/** ---------------------------------------------------------------------
-  *
-  *   DÉBUT RÉEL DES TESTS
-  *
-*** --------------------------------------------------------------------- */
-
-
-// Pour que les Parag(s) soient bien associés au panneau
-Projet.panneaux = {}
-
-
-let   projet
-    , panneau
-    , parag0
-    , parag1
-    , parag2
-    , parag3
-    , parag4
-    , parag5
-    , parag6
-    , parag7
-    , parag10
-    , parag11
-    , parag12
-
-
-function createParag( params )
-{
-  let now = moment().format()
-  let lastID
-  if (!lastID){lastID = 0}
-  else{lastID ++}
-
-  if(!params){params={}}
-  if(!params.id) { params.id = lastID}
-  params.panneau_id = PANNEAU_ID
-  if(!params.contents){ params.contents = `Contenu du paragraphe #${params.id}`}
-  params.data = {
-    id: params.id,
-    contents: params.contents,
-    created_at: now, updated_at: now
-  }
-  return new Parag(params)
-}
-
-function init20Parags ()
-{
-  let listeParags = []
-  for(var pid = 0 ; pid < 20 ; ++ pid){
-    listeParags.push(createParag({id: pid}))
-  }
-  parag0  = listeParags[0]
-  parag1  = listeParags[1]
-  parag2  = listeParags[2]
-  parag3  = listeParags[3]
-  parag4  = listeParags[4]
-  parag5  = listeParags[5]
-  parag6  = listeParags[6]
-  parag7  = listeParags[7]
-  parag10 = listeParags[10]
-  parag11 = listeParags[11]
-  parag12 = listeParags[12]
-
-}
-
-/**
-* @return {Array} La liste des IDentifiants des parag dans le
-* document.
-**/
-function getListeOfIds () {
-  let   l = panneau.container.getElementsByClassName('p')
-      , len = l.length
-      , arr = []
-  for(let i=0;i<len;++i){
-    arr.push( Number(l[i].getAttribute('data-id')) )
-  }
-  return arr
-}
-
-function resetAll ()
-{
-  projet  = new Projet(PROJET_ID)
-  panneau = new PanProjet(PANNEAU_ID)
-  Projet.panneaux[PANNEAU_ID] = panneau
-
-  panneau.container.innerHTML = ''
-  panneau.parags.reset()
-  panneau.parags.selection.reset()
-  init20Parags()
-}
-
+let path      = require('path')
+require(path.resolve(path.join('.','tests','ptests','support','unit','parags.js')))
+const oof = {only_on_fail: true}
 
 
 resetAll()
@@ -234,22 +116,19 @@ describe("La méthode #reset",[
 describe("La propriété #items",[
   , it("permet de définir la liste des items", ()=>{
     resetAll()
-    expect(panneau.container.innerHTML, 'le container du panneau').to.equal('', {only_if_fail:true})
-    expect(panneau.parags.count,'le nombre des items').to.equal(0,{only_if_fail:true})
+    expect(panneau.container.innerHTML, 'le container du panneau').to.equal('', oof)
+    expect(panneau.parags.count,'le nombre des items').to.equal(0, oof)
     panneau.parags.items = [parag1, parag4, parag12]
     expect(panneau.parags.count,'le nombre des items').to.equal(3)
     expect(panneau.parags.items[2].id, 'l’ID du 3e item').to.equal(12)
   })
-  , it("règle l'index de chaque élément en fonction de son rang", ()=>{
-    panneau.parags.items = [parag12, parag2, parag4, parag1]
+  , it("règle l'index de chaque élément en fonction de son rang dans le document", ()=>{
+    resetAll()
+    panneau.parags.add([parag12, parag2, parag4, parag1])
     expect(parag12.index, "l'index du premier élément").to.equal(0)
     expect(parag2.index, "l'index du 2e élément").to.equal(1)
     expect(parag4.index, "l'index du 3e élément").to.equal(2)
     expect(parag1.index, "l'index du 4e élément").to.equal(3)
-  })
-  , it("ne place pas les items dans le container", ()=>{
-
-    expect(panneau.container.innerHTML, 'le container du panneau').to.equal('')
   })
 ])
 
@@ -339,14 +218,14 @@ describe("Ajout d'un paragraphe avec #add",[
   // ==== Les erreurs possibles ====
   , context("avec un paragraphe qui se trouve déjà dans le panneau",[
     , it("produit une erreur et n'ajoute pas le paragraphe", ()=>{
-      panneau.parags.reset()
+      resetAll()
       panneau.parags.add([parag1, parag2, parag3])
-      expect(panneau.parags.count, 'count').to.equal(3, {only_if_fail: true})
+      expect(panneau.parags.count, 'count').to.equal(3, oof)
       // =========> TEST <==========
       panneau.parags.add(parag2)
     })
     , it("n'ajoute pas deux fois l'item dans le panneau", ()=>{
-      expect(panneau.container).to.have_tag('div',{id:'p-2'})
+      expect(panneau.container, 'panneau.container').to.have_tag('div',{id:'p-2', count:1})
       expect(panneau.container).not.to.have_tag('div',{id:'p-2', count:2})
     })
     , it("ne modifie pas le nombre de parags", ()=>{
@@ -1016,7 +895,6 @@ describe("Parags#editCurrent",[
       // ======> TEST <========
       panneau.parags.editCurrent()
       // ====== VÉRIFICATIONS ======
-      puts(panneau.container.inspect())
       expect(panneau.container,'panneau.container').not.to.have_tag('div',{class:'p-contents', contenteditable:'true'})
     })
   ])

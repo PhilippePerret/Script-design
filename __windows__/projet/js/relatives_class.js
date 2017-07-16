@@ -199,8 +199,8 @@ class Relatives
     }
     catch(erreur)
     {
-      // alert(erreur.message)
-      console.log(erreur)
+      alert(erreur.message) // Attention : sert au test et à donner une alerte à l'user
+      // console.log(erreur)
       return true
     }
   }

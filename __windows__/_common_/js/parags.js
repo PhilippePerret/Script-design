@@ -26,7 +26,11 @@ class Parags
   constructor ( panprojet )
   {
     this.panneau = panprojet
-    this.projet  = panprojet.projet
+  }
+
+  get projet () {
+    this._projet || ( this._projet = this.panneau.projet )
+    return this._projet
   }
 
   /**
@@ -84,9 +88,6 @@ class Parags
     options || ( options = {} )
     options.edited && ( options.selected = true )
 
-    // console.log("options dans add:", options)
-
-    // if ( ! Array.isArray(argp) ) { argp = [argp] }
     Array.isArray(argp) || ( argp = [argp] )
 
     // On répète pour chaque paragraphe
@@ -95,11 +96,12 @@ class Parags
       , lastParag
     argp.forEach( (iparag) => {
 
-      // console.log(`Ajout du paragraphe #${iparag.id}`)
+      // Paragraphe existant déjà
+      if ( undefined !== my._dict[iparag.id] ) { return }
+
       // On ajoute la div du paragraphe dans le panneau HTML
       if (options.before)
       {
-        console.log("Ajout du paragraphe avant le paragraphes",options.before.id)
         my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv)
       }
       else

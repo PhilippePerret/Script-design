@@ -59,6 +59,7 @@ define([
         , options:[
               {inner: 'Projets personnels', class: 'titre'}
             , {inner: 'Un projet exemple',  value: 'exemple'}
+            , {inner: 'Start-up',           value: 'start-up'}
             , {inner: 'Tueuses vertes',     value: 'tueuses_vertes'}
             , {inner: 'Projets partagés',   class: 'titre'}
           ]
