@@ -4,8 +4,6 @@
 
 * Faut-il faire l'ajout dans les paragraphes visibles plutôt qu'à la fin lorsqu'il n'y a pas de sélections mais qu'il y a beaucoup de paragraphes ?
 
-* Quand on édite un champ, placer le curseur à la fin plutôt qu'au début
-
 * Poursuivre l'essai sur les tests d'inégration et notamment le fonctionnement des tabulators.
 
 * Pouvoir supprimer une association (Relatives)
