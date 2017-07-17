@@ -16,17 +16,22 @@ class ProjetOptions
         'autosave':{
             1 : "Sauvegarde automatique"
           , 0 : "Sauvegarde manuelle"
-          , 'aide': ""
+          , 'aide': ''
         }
         , 'autosync':{
             1: 'Synchronisation automatique des paragraphes'
           , 0: 'Synchronisation manuelle des paragraphes'
-          , 'aide': ""
+          , 'aide': ''
         }
         , 'seloneditpar':{
-            1: 'À l’édition, sélectionner paragraphe'
-          , 0: 'À l’édition, mettre le curseur en fin'
-          , 'aide': ""
+            1: 'À l’édition, sélectionner tout le champ'
+          , 0: 'À l’édition, mettre le curseur en fin de champ'
+          , 'aide': ''
+        }
+        , 'dureepage':{
+            1: 'Durée en nombre de pages'
+          , 0: 'Durée en nombre de secondes'
+          , 'aide': ''
         }
       }
     }
@@ -55,13 +60,14 @@ class ProjetOptions
   **/
   define ( args )
   {
-    console.log(args)
+    // console.log(args)
     let my = this
       , rien
       , optionProp
       , spanb
       , bouton
       , curval, newval
+    this._data || load()
     args.forEach( (arg) => {
       [rien, optionProp] = arg.split('-')
       // console.log('optionProp',optionProp)
@@ -74,12 +80,14 @@ class ProjetOptions
         spanb.innerHTML = ''
         spanb.innerHTML = ProjetOptions.DATA[optionProp][newval]
         bouton.setAttribute('value', String(newval))
+        this._data[optionProp] = newval
       }
       else
       {
         alert(`Problème avec le bouton option ${optionProp}, il est introuvable.`)
       }
     })
+    this.save()
   }
 
   /* -private- */
@@ -94,6 +102,7 @@ class ProjetOptions
   **/
   save ()
   {
+    this.store_options._data = this.data
     this.store_options.save()
   }
 
@@ -101,6 +110,9 @@ class ProjetOptions
   * Chargement des données des options
   *
   * La méthode définit this._data
+  *
+  * Si le fichier est options n'existe pas encore, la méthode met {}
+  * à la donnée _data.
   **/
   load ()
   {
@@ -123,7 +135,7 @@ class ProjetOptions
 
   get ( prop )
   {
-    return this.data[prop]
+    return this.data[prop] || false
   }
 
 
@@ -154,6 +166,29 @@ class ProjetOptions
   {
     this._container || ( this._container = document.getElementById('options-projet') )
     return this._container
+  }
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *   Méthodes DOM
+    *
+  *** --------------------------------------------------------------------- */
+  build ()
+  {
+    let option, bouton, value, vNumber
+    // '<button data-tab="option-autosave" value="0">Sauvegarde manuelle</button>'
+    for(option in ProjetOptions.DATA)
+    {
+      value   = this.get(option)
+      vNumber = value ? 1 : 0
+      bouton  = DOM.create('button', {
+          'data-tab': `option-${option}`
+        , 'value'   : String(vNumber)
+        , inner     : ProjetOptions.DATA[option][vNumber]
+      })
+      this.container.appendChild(bouton)
+    }
   }
 }
 

@@ -1,4 +1,9 @@
 * Poursuivre l'implémentation des options
+  - mettre en place la sauvegarde automatique
+  - mettre en place la synchronisation automatique
+  - mettre en place la sélection à l'édition / fin de paragraphe
+  - mettre en place l'indication de la durée en page ou en secondes
+    (peut-être qu'il faut déjà implémenter la définition de la propriété durée)
 
 * Travailler le pied de page
   - Rendre l'aide plus apparente dans le panneau projet (ligne du bas)

@@ -156,7 +156,7 @@ class Tabulator
     // console.log(`-> Tabulator#observe (tabulator#${this.id})`)
     let my = this
     this.tabulator.addEventListener('focus',  my.onFocus.bind(my))
-    this.tabulator.addEventListener('blur',   my.onBlur.bind(my))
+    this.tabulator.addEventListener('blur',   my.onBlur .bind(my))
     // console.log(`<- Tabulator#observe (tabulator#${this.id})`)
   }
 
@@ -328,8 +328,10 @@ class Tabulator
   }
 
   /**
+  *
   * Met le bouton +bouton+ ({TabulatorButton}) en bouton courant. Si +withMaj+
   * est true, on conserve les boutons courants (multi sélection).
+  *
   *
   * @param {TabulatorButton}  bouton Le bouton activé
   * @param {Boolean}          withMaj  True si la touche majuscule est activée.
@@ -487,16 +489,11 @@ class TabulatorButton
   **/
   prepare ()
   {
-    let btn = this.button
-    btn.insertAdjacentHTML(
-      'afterbegin',
-      `<span class="tab-letter">${this.key}</span>` +
-      '<span class="tab-label">'
-    )
-    btn.insertAdjacentHTML(
-      'beforeend',
-      '</span><span class="smallidx"></span>'
-    )
+    this.button.innerHTML = `
+<span class="tab-letter">${this.key}</span>
+<span class="tab-label">${this.button.innerHTML}</span>
+<span class="smallidx"></span>
+    `
   }
 
   get downed () { return this._downed }

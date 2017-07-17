@@ -89,6 +89,7 @@ requirejs(
           Projet.UIprepare()
           Projet.load(data)
 
+          Projet.current.options.build()
 
           // --------- T A B U L A T O R S -------------
 

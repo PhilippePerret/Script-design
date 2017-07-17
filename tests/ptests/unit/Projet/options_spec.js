@@ -28,6 +28,21 @@ describe("Les options des projets",[
     , it("#get", ()=>{
       expect(projet.options.get,'options.get').to.be.classOf('function')
     })
+    , it("#define", ()=>{
+      expect(projet.options.define,'options.define').to.be.classOf('function')
+    })
+    , it("#build", ()=>{
+      expect(projet.options.build,'options.build').to.be.classOf('function')
+    })
+    , it("#load", ()=>{
+      expect(projet.options.load,'options.load').to.be.classOf('function')
+    })
+    , it("#getButton", ()=>{
+      expect(projet.options.getButton,'options.getButton').to.be.classOf('function')
+    })
+    , it("#getSpanButton", ()=>{
+      expect(projet.options.getSpanButton,'options.getSpanButton').to.be.classOf('function')
+    })
   ])
   , describe("définit les propriétés",[
     , it("@store_options", ()=>{
