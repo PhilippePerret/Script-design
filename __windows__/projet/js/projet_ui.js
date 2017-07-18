@@ -21,9 +21,9 @@ class ProjetUI
    * La méthode est appelée par les propriétés modified et saving de la
    * class Projet.
    */
-  setProjetModifed    () { this.indicateurSauvegarde.className = 'unsaved'  }
-  setProjetUnmodified () { this.indicateurSauvegarde.className = 'saved'    }
-  setProjetSaving     () { this.indicateurSauvegarde.className = 'saving'   }
+  setProjetModifed    () { this.indicateurSauvegarde && (this.indicateurSauvegarde.className = 'unsaved')  }
+  setProjetUnmodified () { this.indicateurSauvegarde && (this.indicateurSauvegarde.className = 'saved')    }
+  setProjetSaving     () { this.indicateurSauvegarde && (this.indicateurSauvegarde.className = 'saving')   }
 
   get indicateurSauvegarde () {
     this._indSave || ( this._indSave = document.getElementById('save-state-indicator'))

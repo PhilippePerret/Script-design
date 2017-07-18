@@ -1,7 +1,6 @@
-* À l'activation du panneau, il faut vérifier s'il est encore modifié.
 * Implémenter les messages dans le footer (méthode `log` de projet.ui)
-* Vérifier l'enregistrement d'un panneau (avec le nouveau stream, en mettant en console les résulats)
-* Remplacer l'utilisation de Projet.panneaux par projet.panneaux ou projet.panneau(pan_id)
+
+* Poursuivre le test Projet/save_spec.js
 
 * Poursuivre l'implémentation des options
   - mettre en place la sauvegarde automatique

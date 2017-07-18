@@ -82,7 +82,7 @@ define(
     {
       let curpan = Projet.current.current_panneau
 
-      // console.log("[kbshortcuts] Projet.mode_edition = ",Projet.mode_edition)
+      // console.log("[kbshortcuts] Projet.current.mode_edition = ",Projet.current.mode_edition)
       // console.log('[kbshortcuts] selection courante', curpan.parags.selection.current)
       // On ne passe à la suite que si l'on n'est plus en mode Édition
       if ( Projet.current.mode_edition ){ return 'poursuivre' }

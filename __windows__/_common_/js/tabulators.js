@@ -97,7 +97,7 @@ class Tabulator
     // code qui va gérer les raccourcis-clavier
     let current_window_onkeyup = window.onkeyup
     window.onkeyup = (evt) => {
-      if ( ! Projet.mode_edition )
+      if ( ! Projet.current.mode_edition )
       {
         let keyIndex = this.LETTERS.indexOf(evt.key)
         if ( keyIndex > -1 && keyIndex < nombre_tabulators )

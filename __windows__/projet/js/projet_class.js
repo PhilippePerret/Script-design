@@ -55,22 +55,6 @@ class Projet
     )
     return this._panneauData
   }
-  // Détermine si on se trouve en mode édition, c'est-à-dire dans un contenu
-  // éditable. Ce mode détermine surtout l'action des raccourcis-clavier
-  // uno-touche.
-  get mode_edition () { return !!this._mode_edition }
-  set mode_edition (v){ this._mode_edition = !!v }
-
-  /**
-  * La méthode d'annulation courante du projet.
-  *
-  * C'est la méthode qui sera interrogée par la combinaison CMD+Z pour
-  * savoir si une cancellisation doit être exécutée.
-  * Pour le moment, elle n'est implémentée que pour la suppression de
-  * paragraphes.
-  **/
-  get cancelableMethod () { return this._cancelableMethod }
-  set cancelableMethod (v){ this._cancelableMethod = v    }
 
   static UIprepare ()
   {
@@ -117,16 +101,17 @@ class Projet
   {
     // Désactiver les panneaux courants (if any)
     this.desactiveAllCurrents()
+    let cur = this.current
 
-    this.current._current_panneau = this.panneaux[pan2_id]
-    this.current.current_panneau.activate()
-    this.current.current_panneau.setModeDouble('right')
+    cur._current_panneau = this.panneaux[pan2_id]
+    cur.current_panneau.activate()
+    cur.current_panneau.setModeDouble('right')
 
-    this.current.alt_panneau = this.panneaux[pan1_id]
-    this.current.alt_panneau.activate()
-    this.current.alt_panneau.setModeDouble('left')
+    cur.alt_panneau = this.panneaux[pan1_id]
+    cur.alt_panneau.activate()
+    cur.alt_panneau.setModeDouble('left')
 
-    this.current.mode_double_panneaux = true
+    cur.mode_double_panneaux = true
   }
 
   /**
@@ -186,6 +171,23 @@ class Projet
     *
   *** --------------------------------------------------------------------- */
 
+  // Détermine si on se trouve en mode édition, c'est-à-dire dans un contenu
+  // éditable. Ce mode détermine surtout l'action des raccourcis-clavier
+  // uno-touche.
+  get mode_edition () { return !!this._mode_edition }
+  set mode_edition (v){ this._mode_edition = !!v }
+
+  /**
+  * La méthode d'annulation courante du projet.
+  *
+  * C'est la méthode qui sera interrogée par la combinaison CMD+Z pour
+  * savoir si une cancellisation doit être exécutée.
+  * Pour le moment, elle n'est implémentée que pour la suppression de
+  * paragraphes.
+  **/
+  get cancelableMethod () { return this._cancelableMethod }
+  set cancelableMethod (v){ this._cancelableMethod = v    }
+
   /**
   * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
   * Par défaut, c'est le panneau des données générales du projet.
@@ -239,16 +241,12 @@ class Projet
   **/
   checkModifiedState ()
   {
-    // console.log('-> checkModifiedState')
-    // On passe en revue chaque panneau pour voir s'il est sauvé
     let my  = this
       , mod = false // Sera mis à true si on trouve quelque chose modifié
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
-      console.log(`[checkModifiedState] Projet#${my.__ID}.panneau(${pan_id} - #${my.panneau(pan_id).__ID}).modified = ${my.panneau(pan_id).modified}`)
       my.panneau(pan_id).modified && ( mod = true )
     })
     this.modified = mod // changera l'indicateur de sauvegarde
-    // console.log('<- checkModifiedState')
   }
 
   /* --- publiques --- */
@@ -292,13 +290,13 @@ class Projet
         let o = evt.target
         o.contentEditable = 'true'
         o.focus()
-        Projet.mode_edition = true
+        this.mode_edition = true
       })
       editables[i].addEventListener('blur', (evt) => {
         let o = evt.target
         my.onChangeData.bind(my)(o)
         o.contentEditable = 'false'
-        Projet.mode_edition = false
+        this.mode_edition = false
       })
     }
   }
@@ -321,9 +319,8 @@ class Projet
    * Méthode appelée quand la sauvegarde automatique est enclenchée
    */
   doAutosave () {
-    if ( Projet.mode_edition ) { return false }
+    if ( this.mode_edition ) { return false }
     this.checkModifiedState()
-    console.log(`[doAutosave] projet.modified = ${this.modified}`)
     this.modified && this.saveAll()
     return true
   }
@@ -344,7 +341,6 @@ class Projet
       , pan
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
       pan = my.panneau(pan_id)
-      console.log(`[saveAll] panneau(${pan_id}).modified = ${pan.modified}`)
       pan.modified && pan.save.bind(pan)()
     })
   }

@@ -41,7 +41,10 @@ class Parag
     Projet.current.store_data.set({
         updated_at: moment().format()
       , last_parag_id: this._lastID
-    })
+      },
+      undefined,
+      true /* pour dire de ne pas le faire en asynchrone */
+    )
     // console.log('this._lastID',this._lastID)
     return Number(this._lastID)
   }
