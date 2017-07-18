@@ -82,6 +82,11 @@ class Projet
 
   /**
   *   Chargement du projet data.projet_id
+  *
+  * La méthode regarde aussi s'il y a d'autres choses à faire, comme mettre
+  * en route la boucle de sauvegarde en fonction des options.
+  * TODO Plus tard, on pourra aussi avoir des notes à rappeler à l'ouverture,
+  * par exemple.
   **/
   static load (data)
   {
@@ -255,6 +260,8 @@ class Projet
 
   /**
   * Chargement du projet
+  * Note : ce sont les données qui s'affichent toujours en premier, pour
+  * le moment.
   **/
   load ()
   {
@@ -266,7 +273,9 @@ class Projet
     this.set_updated_at()
 
     this.observeEditableFields()
+    this.prepareSuivantOptions()
   }
+
 
   /**
   * Place les observers pour les contenus éditables
@@ -292,6 +301,50 @@ class Projet
         Projet.mode_edition = false
       })
     }
+  }
+
+  /**
+  * Méthode qui prépare l'interface et le programme en fonction des options
+  * choisies par l'auteur. Par exemple, c'est cette méthode qui met en route
+  * la sauvegarde automatique si nécessaire.
+  **/
+  prepareSuivantOptions ()
+  {
+    if ( this.option('autosave') )
+    {
+      this.options.activateAutosave()
+      console.log("Sauvegarde automatiquement activée.")
+    }
+  }
+
+  /**
+   * Méthode appelée quand la sauvegarde automatique est enclenchée
+   */
+  doAutosave () {
+    if ( Projet.mode_edition ) { return false }
+    this.checkModifiedState()
+    this.modified && this.saveAll()
+    return true
+  }
+  /**
+  * Sauve tout
+  * ----------
+  * Pour le moment, ça ne sauve que les panneaux et les relatives.
+  *
+  * Noter que l'appel de la sauvegarde des relatives et le check du nouvel
+  * état du projet est inutile puisque ces deux méthodes sont appelées à
+  * chaque sauvegarde de panneau. Et ici, normalement, il ne doit pas y
+  * avoir plus de deux panneaux modifiés en même temps, en tout cas en
+  * mode de sauvegarde automatique.
+  **/
+  saveAll ()
+  {
+    let my = this
+      , pan
+    Projet.PANNEAU_LIST.forEach( (pan_id) => {
+      pan = my.panneau(pan_id)
+      pan.modified && pan.save.bind(pan)()
+    })
   }
 
   onChangeData (o)

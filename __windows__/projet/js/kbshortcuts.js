@@ -55,10 +55,7 @@ define(
         case 's':
           if( ! Projet.mode_edition )
           {
-            if ( evt.metaKey )
-            {
-              Projet.current_panneau.save()
-            }
+            evt.metaKey && Projet.current.save()
             return DOM.stopEvent(evt)
           }
 

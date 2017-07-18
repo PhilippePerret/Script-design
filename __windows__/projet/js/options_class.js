@@ -90,6 +90,23 @@ class ProjetOptions
     this.save()
   }
 
+
+  /**
+  * Les deux méthodes qui activent et désactivent la sauvegarde automatique
+  * du projet.
+  * Note : activeAutosave est appelée soit au chargement du projet si l'option
+  * autosave est true, soit au changement d'option.
+  **/
+  activateAutosave ()
+  {
+    let my = this
+    let autosaveTimer = setInterval(my.projet.doAutosave.bind(my.projet), 15000 /* 15 secondes */)
+  }
+  desactivateAutosave()
+  {
+    this.autosaveTimer && ( clearInterval(this.autosaveTimer) )
+  }
+
   /* -private- */
 
   get data ()
