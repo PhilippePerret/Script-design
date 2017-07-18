@@ -483,15 +483,18 @@ class Parag
     let startNode = o.firstChild
       , endNode   = o.firstChild
 
-    let range = document.createRange()
-    // Ci dessous, si on met '0', on sélectionne tout.
-    // À mettre dans les options : soit on se place à la fin soit on
-    // sélectionne tout
-    range.setStart(startNode, realContents.length /* 0 */ )
-    range.setEnd(endNode, realContents.length)
-    let sel = window.getSelection()
-    sel.removeAllRanges()
-    sel.addRange(range)
+    if ( startNode )
+    {
+      let range     = document.createRange()
+      // Ci dessous, si on met '0', on sélectionne tout.
+      // À mettre dans les options : soit on se place à la fin soit on
+      // sélectionne tout
+      range.setStart(startNode, realContents.length /* 0 */ )
+      range.setEnd(endNode, realContents.length)
+      let sel = window.getSelection()
+      sel.removeAllRanges()
+      sel.addRange(range)      
+    }
 
     Projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
     this.actualContents = String(this.contents)
