@@ -39,7 +39,7 @@ define(
           // les capter avant pour les faire agir.
           if ( evt.metaKey )
           {
-            Projet.current_panneau.moveCurrentDown(evt)
+            Projet.current.current_panneau.moveCurrentDown(evt)
             return DOM.stopEvent(evt)
           }
           break
@@ -47,13 +47,13 @@ define(
         case 'ArrowUp':
           if ( evt.metaKey )
           {
-            Projet.current_panneau.moveCurrentUp(evt)
+            Projet.current.current_panneau.moveCurrentUp(evt)
             return DOM.stopEvent(evt)
           }
           break
 
         case 's':
-          if( ! Projet.mode_edition )
+          if( ! Projet.current.mode_edition )
           {
             evt.metaKey && Projet.current.save()
             return DOM.stopEvent(evt)
@@ -80,12 +80,12 @@ define(
     **/
     static onkeyup (evt)
     {
-      let curpan = Projet.current_panneau
+      let curpan = Projet.current.current_panneau
 
       // console.log("[kbshortcuts] Projet.mode_edition = ",Projet.mode_edition)
       // console.log('[kbshortcuts] selection courante', curpan.parags.selection.current)
       // On ne passe à la suite que si l'on n'est plus en mode Édition
-      if ( Projet.mode_edition ){ return 'poursuivre' }
+      if ( Projet.current.mode_edition ){ return 'poursuivre' }
       switch ( evt.key )
       {
 
@@ -101,7 +101,7 @@ define(
           // mode non édition, on édite le paragraphe en question
           switch (true)
           {
-            case Projet.mode_double_panneaux :
+            case Projet.current.mode_double_panneaux :
               return Parags.setSelectedsAsRelatives()
             case curpan.hasCurrent() :
               return curpan.editCurrent.bind(curpan)()

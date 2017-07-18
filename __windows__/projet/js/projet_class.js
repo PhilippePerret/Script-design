@@ -30,15 +30,12 @@ moment.locale('fr')
 class Projet
 {
   static get PANNEAU_LIST () {
-    if(undefined===this._panneaulist){
-      this._panneaulist = ['data','personnages','notes','synopsis','scenier','treatment','manuscrit']
-    }
+    this._panneaulist || (this._panneaulist = ['data','personnages','notes','synopsis','scenier','treatment','manuscrit'])
     return this._panneaulist
   }
   static get PANNEAUX_DATA ()
   {
-    if (undefined === this._panneauData )
-    {
+    this._panneauData || (
       this._panneauData = {
           'data'        : {oneLetter: 'd'/* pour relatives*/ }
         , 'd' : 'data'
@@ -55,7 +52,7 @@ class Projet
         , 'treatment'   : {oneLetter: 't'}
         , 't' : 'treatment'
       }
-    }
+    )
     return this._panneauData
   }
   // Détermine si on se trouve en mode édition, c'est-à-dire dans un contenu
@@ -95,38 +92,6 @@ class Projet
   }
 
   /**
-  * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
-  * Par défaut, c'est le panneau des données générales du projet.
-  **/
-  static get current_panneau () {
-    this._current_panneau || ( this._current_panneau = this.panneaux['data'] )
-    return this._current_panneau
-  }
-
-  /**
-  * Propriété définissant les panneaux du projet, c'est-à-dire les instances
-  * de {PanProjet} correspondant à chaque panneau ('data','scenier', 'synopsis',
-  * etc.)
-  * On récupère un panneau par Projet.panneaux['<id panneau>']
-  **/
-  static get panneaux () {
-    if ( undefined === this._panneaux )
-    {
-      let my = this
-      my._panneaux = {}
-      // Pour la transition de Projet.panneaux à projet.panneaux
-      my.current._panneaux = {}
-      my.PANNEAU_LIST.forEach( (panneau_id) => {
-        my._panneaux[panneau_id] = new PanProjet(panneau_id)
-        // Pour la transition de Projet.panneaux à projet.panneaux (donc
-        // de l'utilisation de la class à l'utilisation de l'instance)
-        my.current._panneaux[panneau_id] = new PanProjet(panneau_id, my.current)
-      })
-    }
-    return this._panneaux
-  }
-
-  /**
   * Méthode appelée par le tabulator des panneaux pour ouvrir un ou plusieurs
   * panneaux
   *
@@ -153,28 +118,28 @@ class Projet
     // Désactiver les panneaux courants (if any)
     this.desactiveAllCurrents()
 
-    this._current_panneau = this.panneaux[pan2_id]
-    this.current_panneau.activate()
-    this.current_panneau.setModeDouble('right')
+    this.current._current_panneau = this.panneaux[pan2_id]
+    this.current.current_panneau.activate()
+    this.current.current_panneau.setModeDouble('right')
 
-    this.alt_panneau = this.panneaux[pan1_id]
-    this.alt_panneau.activate()
-    this.alt_panneau.setModeDouble('left')
+    this.current.alt_panneau = this.panneaux[pan1_id]
+    this.current.alt_panneau.activate()
+    this.current.alt_panneau.setModeDouble('left')
 
-    this.mode_double_panneaux = true
+    this.current.mode_double_panneaux = true
   }
 
   /**
-  * Méthode fonctionnelle chargeant le plateau voulant
+  * Méthode fonctionnelle chargeant le plateau voulu
   **/
   static loadPanneau (panneau_id, evt)
   {
     // Si on était en mode double panneau, il faut en sortir, même
     // si on va y revenir tout de suite
     this.desactiveAllCurrents()
-    this._current_panneau = this.panneaux[panneau_id]
-    this.current_panneau.activate()
-    this.mode_double_panneaux = false
+    this.current._current_panneau = this.current.panneau(panneau_id)
+    this.current.current_panneau.activate()
+    this.current.mode_double_panneaux = false
   }
 
 
@@ -185,17 +150,22 @@ class Projet
   **/
   static desactiveAllCurrents ()
   {
-    if ( this.mode_double_panneaux )
+    if ( this.current.mode_double_panneaux )
     {
-      this.alt_panneau.desactivate()
-      this.alt_panneau.unsetModeDouble()
-      this.current_panneau.unsetModeDouble()
+      this.current.alt_panneau.desactivate()
+      this.current.alt_panneau.unsetModeDouble()
+      this.current.current_panneau.unsetModeDouble()
     }
-    if ( this.current_panneau ) { this.current_panneau.desactivate() }
+    this.current.current_panneau || this.current.current_panneau.desactivate()
   }
 
 
-
+  static newID ()
+  {
+    this._lastid || ( this._lastid = 0 )
+    this._lastid ++
+    return this._lastid
+  }
 
 
   /** ---------------------------------------------------------------------
@@ -207,6 +177,7 @@ class Projet
   constructor (projet_id)
   {
     this.id = projet_id
+    this.__ID = Projet.newID()
   }
 
   /** ---------------------------------------------------------------------
@@ -214,6 +185,15 @@ class Projet
     *   Propriétés générales
     *
   *** --------------------------------------------------------------------- */
+
+  /**
+  * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
+  * Par défaut, c'est le panneau des données générales du projet.
+  **/
+  get current_panneau () {
+    this._current_panneau || ( this._current_panneau = this.panneaux['data'] )
+    return this._current_panneau
+  }
 
   get modified () { return this._modified || false }
   set modified (v)
@@ -227,9 +207,28 @@ class Projet
     if (v) { this.ui.setProjetSaving() }
   }
 
-  panneau (pan_id) { return this._panneaux[pan_id] }
-  get panneaux () { return this._panneaux }
+  panneau (pan_id) {
+    this._panneaux || this.definePanneaux()
+    return this._panneaux[pan_id]
+  }
+  get panneaux () {
+    this._panneaux || this.definePanneaux()
+    return this._panneaux
+  }
 
+  definePanneaux ()
+  {
+    let my = this
+    // my._panneaux = {}
+    // Pour la transition de Projet.panneaux à projet.panneaux
+    my._panneaux = {}
+    Projet.PANNEAU_LIST.forEach( (panneau_id) => {
+      // my._panneaux[panneau_id] = new PanProjet(panneau_id)
+      // Pour la transition de Projet.panneaux à projet.panneaux (donc
+      // de l'utilisation de la class à l'utilisation de l'instance)
+      my._panneaux[panneau_id] = new PanProjet(panneau_id, my)
+    })
+  }
   /**
   * Méthode appelée après chaque sauvegarde de panneau (ou autre) qui
   * vérifie l'état de sauvegarde du projet en général.
@@ -245,6 +244,7 @@ class Projet
     let my  = this
       , mod = false // Sera mis à true si on trouve quelque chose modifié
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
+      console.log(`[checkModifiedState] Projet#${my.__ID}.panneau(${pan_id} - #${my.panneau(pan_id).__ID}).modified = ${my.panneau(pan_id).modified}`)
       my.panneau(pan_id).modified && ( mod = true )
     })
     this.modified = mod // changera l'indicateur de sauvegarde
@@ -323,6 +323,7 @@ class Projet
   doAutosave () {
     if ( Projet.mode_edition ) { return false }
     this.checkModifiedState()
+    console.log(`[doAutosave] projet.modified = ${this.modified}`)
     this.modified && this.saveAll()
     return true
   }
@@ -343,6 +344,7 @@ class Projet
       , pan
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
       pan = my.panneau(pan_id)
+      console.log(`[saveAll] panneau(${pan_id}).modified = ${pan.modified}`)
       pan.modified && pan.save.bind(pan)()
     })
   }
