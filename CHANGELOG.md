@@ -1,7 +1,13 @@
+# 0.1.10
+
+  * Ajout d'un footer dans la page projet
+  * Ajout d'une class ProjetUI pour la gestion de l'interface en générale
+  * Première implémentation des options.
+  
 # 0.1.9
 
   * Implémentation des touches 'i' et 'k' pour remplacer les flèches haut/bas.
-  
+
 # 0.1.8
 
   * Possibilité d'activer un menu/commande Tabulator simplement en répétant la touche.

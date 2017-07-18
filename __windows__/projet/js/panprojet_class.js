@@ -18,7 +18,7 @@ class PanProjet
     return this._newid
   }
 
-  constructor (name)
+  constructor (name, projet)
   {
     this.__ID   = PanProjet.newID()
     this.id     = name
@@ -30,6 +30,7 @@ class PanProjet
     // Mis à true quand les données du panneau ont été chargées (qu'elles
     // existent ou non)
     this.loaded = false
+    projet && ( this._projet = projet )
   }
 
   /* --- Public --- */
@@ -62,6 +63,8 @@ class PanProjet
 
   /**
   * @return {Projet} Le projet courant (raccourci)
+  * TODO Doit devenir OBSOLÈTE, CAR PASSÉ MAINTENANT AU CONSTRUCTOR
+  * AVEC LE CHANGEMENT DE Projet.panneaux à projet.panneaux
   **/
   get projet ()
   {
@@ -193,20 +196,30 @@ class PanProjet
   **/
   save ()
   {
+    console.log("-> save")
     if ( ! this.modified )
     {
       alert(`Le panneau ${this.projet.id}/${this.name} n'est pas marqué modifié, normalement, je ne devrais pas avoir à le sauver.`)
     }
-    let resultat_save = this.store.set(this.data2save)
-    if ( resultat_save ) {
-      // Si nécessaire, on procède à la sauvegarde des relatives
-      if ( this.projet.relatives.modified )
-      {
-        this.projet.relatives.save()
-      }
-      this.setAllParagsUnmodified()
-      this.modified = false
-    }
+    // La sauvegarde est asynchrone, on doit donc attendre qu'elle soit
+    // faite pour poursuivre.
+    this.store.set(this.data2save)
+    console.log("<- save")
+  }
+  /**
+  * Méthode appelée lorsque la sauvegarde est terminée, avec succès
+  *
+  * Elle est appelée par la class Store, dans Store#save
+  **/
+  onFinishSave ()
+  {
+    console.log("-> onFinishSave")
+    // Si nécessaire, on procède à la sauvegarde des relatives
+    this.projet.relatives.modified && this.projet.relatives.save()
+    this.setAllParagsUnmodified()
+    this.modified = false
+    this.projet.checkModifiedState()
+    console.log("<- onFinishSave")
   }
 
   /**
@@ -286,7 +299,7 @@ class PanProjet
   **/
   get store ()
   {
-    this._store || (this._store = new Store(this.store_path, this.defaultData))
+    this._store || (this._store = new Store(this.store_path, this.defaultData, this))
     return this._store
   }
 

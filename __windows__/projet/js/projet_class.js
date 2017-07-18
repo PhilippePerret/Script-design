@@ -77,12 +77,7 @@ class Projet
 
   static UIprepare ()
   {
-    // On place un listener d'event click sur le body, pour tout déselectionner
-    // Le problème, c'est que lorsque l'on fait Enter après avoir édité
-    // un paragraphe, ça simule ce click et donc ça supprime la sélection
-    // document.body.addEventListener('click', (evt) => {
-    //   Projet.current_panneau.deselectAll()
-    // })
+
   }
 
   /**
@@ -112,9 +107,15 @@ class Projet
   static get panneaux () {
     if ( undefined === this._panneaux )
     {
-      this._panneaux = {}
-      this.PANNEAU_LIST.forEach( (panneau_id) => {
-        this._panneaux[panneau_id] = new PanProjet(panneau_id)
+      let my = this
+      my._panneaux = {}
+      // Pour la transition de Projet.panneaux à projet.panneaux
+      my.current._panneaux = {}
+      my.PANNEAU_LIST.forEach( (panneau_id) => {
+        my._panneaux[panneau_id] = new PanProjet(panneau_id)
+        // Pour la transition de Projet.panneaux à projet.panneaux (donc
+        // de l'utilisation de la class à l'utilisation de l'instance)
+        my.current._panneaux[panneau_id] = new PanProjet(panneau_id, my.current)
       })
     }
     return this._panneaux
@@ -203,10 +204,12 @@ class Projet
     this.id = projet_id
   }
 
-  /**
-  * Propriétés générales
-  **/
-  
+  /** ---------------------------------------------------------------------
+    *
+    *   Propriétés générales
+    *
+  *** --------------------------------------------------------------------- */
+
   get modified () { return this._modified || false }
   set modified (v)
   {
@@ -217,6 +220,30 @@ class Projet
   set saving (v) {
     this._saving = v
     if (v) { this.ui.setProjetSaving() }
+  }
+
+  panneau (pan_id) { return this._panneaux[pan_id] }
+  get panneaux () { return this._panneaux }
+
+  /**
+  * Méthode appelée après chaque sauvegarde de panneau (ou autre) qui
+  * vérifie l'état de sauvegarde du projet en général.
+  * C'est également la méthode qui est appelée par la boucle de sauvegarde
+  * automatique.
+  * Noter que cette méthode ne fait rien d'autre, en soi, que vérifier l'état
+  * général et de régler l'indicateur de sauvegarde dans l'interface.
+  **/
+  checkModifiedState ()
+  {
+    // console.log('-> checkModifiedState')
+    // On passe en revue chaque panneau pour voir s'il est sauvé
+    let my  = this
+      , mod = false // Sera mis à true si on trouve quelque chose modifié
+    Projet.PANNEAU_LIST.forEach( (pan_id) => {
+      my.panneau(pan_id).modified && ( mod = true )
+    })
+    this.modified = mod // changera l'indicateur de sauvegarde
+    // console.log('<- checkModifiedState')
   }
 
   /* --- publiques --- */
