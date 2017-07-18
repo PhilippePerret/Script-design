@@ -1,6 +1,16 @@
+* Implémenter le footer des panneaux du projet
+* Vérifier l'enregistrement d'un panneau (avec le nouveau stream, en mettant en console les résulats)
+
 * Poursuivre l'implémentation des options
   - mettre en place la sauvegarde automatique
+    Principe : dès que le projet est modifié, l'enregistrement est lancé, mais
+    s'interrompt dès qu'on exécute une action comme une touche pressée. L'enregistrement
+    se fait par petits segments, de panneau en panneau.
+    OU Quand la sauvegarde automatique est activée, on lance un setInterval (par exemple
+    toutes les 30 secondes) qui vérifie s'il faut sauvegarder.
   - mettre en place la synchronisation automatique
+    Principe : dès qu'un paragraphe est créé, il est automatiquement créé pour les
+    autres panneaux.
   - mettre en place la sélection à l'édition / fin de paragraphe
   - mettre en place l'indication de la durée en page ou en secondes
     (peut-être qu'il faut déjà implémenter la définition de la propriété durée)
