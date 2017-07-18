@@ -26,11 +26,7 @@ class Parags
   constructor ( panprojet )
   {
     this.panneau = panprojet
-  }
-
-  get projet () {
-    this._projet || ( this._projet = this.panneau.projet )
-    return this._projet
+    this.projet  = panprojet.projet
   }
 
   /**
@@ -551,7 +547,7 @@ class Parags
   **/
   get count ()
   {
-    if ( undefined === this._count ) { this._count = this.items.length }
+    this._count || (this._count = this.items.length)
     return this._count
   }
 
@@ -595,24 +591,14 @@ class Parags
   static new (options)
   {
     let newP = new Parag({id:Parag.newID(),contents:''})
-    if (Projet.current_panneau.parags.hasCurrent()) {
+    if (Projet.current.current_panneau.parags.hasCurrent()) {
       if (!options){options = {}}
-      options.before = Projet.current_panneau.parags.selection.current.next
+      options.before = Projet.current.current_panneau.parags.selection.current.next
     }
     // console.log('options:',options)
-    Projet.current_panneau.parags.add(newP, options)
+    Projet.current.current_panneau.parags.add(newP, options)
     return newP
   }
-
-  // /**
-  // * @param {HTMLElement} odom L'objet DOM du parag dans le panneau
-  // * @return {Parag} L'instance Parag correspondante.
-  // * TODO Rendre cette méthode OBSOLETE en utilisatn celle du panneau
-  // **/
-  // static instanceFromElement( odom )
-  // {
-  //   return Parags.items[Number(odom.getAttribute('data-id'))]
-  // }
 
   /** ---------------------------------------------------------------------
     *

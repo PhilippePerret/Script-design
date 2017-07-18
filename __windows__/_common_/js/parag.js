@@ -56,12 +56,13 @@ class Parag
 
   constructor (data)
   {
-    this.id   = data.id // doit toujours exister
-    this.data = data
+    this.id     = data.id // doit toujours exister
+    this.data   = data
+    this.projet = Projet.current
     this.dispatch(data)
     if ( this.id > Parag._lastID ) { Parag._lastID = this.id }
     if ( ! this.panneau_id ) {
-      this.panneau_id = Projet.current_panneau.id // = name
+      this.panneau_id = this.projet.current_panneau.id // = name
     }
     this.selected = false // à true quand il est sélectionné
     this.current  = false // à true quand c'est le paragraphe courant
@@ -133,10 +134,10 @@ class Parag
   }
 
   get data_relatives ()
-    { return Projet.current.relatives.data.relatives[String(this.id)] }
+    { return this.projet.relatives.data.relatives[String(this.id)] }
 
   set data_relatives (v) {
-    Projet.current.relatives.data.relatives[String(this.id)] = v
+    this.projet.relatives.data.relatives[String(this.id)] = v
     // TODO Il faut aussi régler les associés
   }
   /**
@@ -211,8 +212,7 @@ class Parag
   **/
   get panneau ()
   {
-    if ( undefined === this._panneau )
-    { this._panneau = Projet.panneaux[this.panneau_id] }
+    this._panneau || (this._panneau = this.projet.panneau(this.panneau_id))
     return this._panneau
   }
   /**
@@ -221,7 +221,7 @@ class Parag
   **/
   get container ()
   {
-    if ( ! this._container ){ this._container = this.panneau.container }
+    this._container || (this._container = this.panneau.container)
     return this._container
   }
   /**
@@ -353,7 +353,7 @@ class Parag
     if (evt.metaKey)
     {
       // CMD Click
-      if ( Projet.mode_double_panneaux )
+      if ( this.projet.mode_double_panneaux )
       {
         // <= CMD Click mode double panneaux
         if ( this.selected ){
@@ -436,15 +436,15 @@ class Parag
   **/
   get statutDoublePanneau ()
   {
-    if ( ! Projet.mode_double_panneaux ) { return 'none' }
+    if ( ! this.projet.mode_double_panneaux ) { return 'none' }
     let pan_letter = Projet.PANNEAUX_DATA[this.panneau_id].oneLetter
     // console.log(`pan_letter du parag ${this.id} : ${pan_letter}`)
     // Il faut récupérer les deux panneaux activés
     let other_panneau
-    if ( Projet.alt_panneau.name == this.panneau_id ){
-      other_panneau = Projet.current_panneau.name
+    if ( this.projet.alt_panneau.name == this.panneau_id ){
+      other_panneau = this.projet.current_panneau.name
     } else {
-      other_panneau = Projet.alt_panneau.name
+      other_panneau = this.projet.alt_panneau.name
     }
     // console.log(`Nom de l'autre panneau : ${other_panneau}`)
     let other_pan_letter = Projet.PANNEAUX_DATA[other_panneau].oneLetter
@@ -493,10 +493,10 @@ class Parag
       range.setEnd(endNode, realContents.length)
       let sel = window.getSelection()
       sel.removeAllRanges()
-      sel.addRange(range)      
+      sel.addRange(range)
     }
 
-    Projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
+    this.projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
     this.actualContents = String(this.contents)
   }
   // Sortir le champ contents du mode édition (et enregistrer
@@ -507,7 +507,7 @@ class Parag
     this.divContents.contentEditable = 'false'
     this.divContents.innerHTML = this.formatedContents
     this.panneau.select(this) // on le remet toujours en courant
-    Projet.mode_edition = false
+    this.projet.mode_edition = false
   }
 
   /**
