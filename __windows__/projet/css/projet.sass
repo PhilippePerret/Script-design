@@ -149,12 +149,26 @@ section#footer
   width       : calc(100% - 1em)
   > span
     overflow    : hidden
-  span#indicateurs
+  > span#indicateurs
     float       : right
-  span#informations
+    // L'indicateur de sauvegarde générale du projet
+    // Il peut avoir trois états : sauvé, en cours de sauvegarde et modifié
+    > span#save-state-indicator
+      position  : fixed
+      right     : 2px
+      bottom    : 2px
+      width     : 20px
+      height    : 20px
+      &.saved
+        background : #65BE3B
+      &.saving
+        background : orange
+      &.unsaved
+        background : red
+  > span#informations
     display     : inline-block
     width       : 400px
     padding     : 0 0.7em
-  span#log
+  > span#log
     display     : inline-block
     background  : #CCFFCC

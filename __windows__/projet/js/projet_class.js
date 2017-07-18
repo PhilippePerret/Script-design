@@ -203,10 +203,24 @@ class Projet
     this.id = projet_id
   }
 
+  /**
+  * Propriétés générales
+  **/
+  
   get modified () { return this._modified || false }
-  set modified (v){ this._modified = v             }
+  set modified (v)
+  {
+    this._modified = v
+    if (v) { this.ui.setProjetModifed()     }
+    else   { this.ui.setProjetUnmodified()  }
+  }
+  set saving (v) {
+    this._saving = v
+    if (v) { this.ui.setProjetSaving() }
+  }
 
   /* --- publiques --- */
+
   afficherStatistiques ()
   {
     alert("Pour le moment, je ne sais pas encore afficher les statistiques du projet.")
@@ -286,7 +300,16 @@ class Projet
     this._relatives || ( this._relatives = new Relatives(this) )
     return this._relatives
   }
-
+  get options ()
+  {
+    this._options || ( this._options = new ProjetOptions(this) )
+    return this._options
+  }
+  get ui ()
+  {
+    this._ui || ( this._ui = new ProjetUI(this) )
+    return this._ui
+  }
   // ----------------- OPTIONS ---------------------
 
   /**
@@ -295,11 +318,6 @@ class Projet
   **/
   define_options ( arg ) { this.options.define( arg ) }
 
-  get options ()
-  {
-    this._options || ( this._options = new ProjetOptions(this) )
-    return this._options
-  }
   option ( prop, value )
   {
     if ( 'string' == typeof prop )

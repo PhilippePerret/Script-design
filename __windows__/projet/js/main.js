@@ -59,6 +59,8 @@ requirejs(
   global.Tabulator  = Tabulator
   global.ProjetOptions = ProjOpts
 
+  global.ProjetUI   = require(path.join(PROJET_JS_FOLDER,'projet_ui.js'))
+
   // On donne l'app à Store, pour qu'il sache où chercher les fichiers.
   Store._app = app
 
