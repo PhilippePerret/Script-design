@@ -1,10 +1,8 @@
-* Ajouter un outil pour ouvrir le dossier des données du projet
+* Retenir le panneau actif quand on quitte l'application pour le remettre au chargement du projet.
 
 * Poursuivre le test Projet/save_spec.js
 
 * Poursuivre l'implémentation des options
-  - mettre en place la sélection à l'édition / fin de paragraphe
-    (on peut vraiment le faire)
   - mettre en place la synchronisation automatique
     Principe : dès qu'un paragraphe est créé, il est automatiquement créé pour les
     autres panneaux.
@@ -12,20 +10,12 @@
     Il serait peut-être intéressant d'utiliser une propriété `busy` pendant
     un processus comme celui-là pour empêcher les sauvegardes automatiques,
     qui peuvent venir perturber le travail.
-  - mettre en place l'indication de la durée en page ou en secondes
-    (il faut déjà implémenter la propriété pour la durée du parag)
 
 * Travailler le pied de page
   - Rendre l'aide plus apparente dans le panneau projet (ligne du bas)
-  - Document la ligne du bas avec le nombre de paragraphes, etc. et des aides/suggestions de raccourcis.
-
-* Faut-il faire l'ajout dans les paragraphes visibles plutôt qu'à la fin lorsqu'il n'y a pas de sélections mais qu'il y a beaucoup de paragraphes ?
-
-* Poursuivre l'essai sur les tests d'inégration et notamment le fonctionnement des tabulators.
+  - Documenter la ligne du bas avec le nombre de paragraphes, etc. et des aides/suggestions de raccourcis.
 
 * Pouvoir supprimer une association (Relatives)
-
-* Pouvoir supprimer un parag (il y a une issue sur github)
 
 * Il faut calculer les tailles des éléments dans la fenêtre projet :
   - au resize de la fenêtre (si on permet son redimensionnement)
