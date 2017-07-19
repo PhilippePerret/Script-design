@@ -145,7 +145,7 @@ section#footer
   left        : 0
   bottom      : 0
   font-size   : 10.8pt
-  padding     : 0 0.5emf
+  padding     : 0 0.5em
   width       : calc(100% - 1em)
   > span
     overflow    : hidden
@@ -169,6 +169,15 @@ section#footer
     display     : inline-block
     width       : 400px
     padding     : 0 0.7em
-  > span#log
+  > span#footer-log
     display     : inline-block
     background  : #CCFFCC
+    padding     : 0 1em
+    &.notice
+      background    : #CCFFCC
+      color         : black
+    &.error
+      background    : red
+      color         : white
+    &.caution
+      background    : #FFCCCC
