@@ -10,10 +10,48 @@
 */
 class ProjetUI
 {
+  /** ---------------------------------------------------------------------
+    *
+    *   CLASSE
+    *
+  *** --------------------------------------------------------------------- */
+  /**
+  * Méthode pour écrire un message dans le footer
+  *
+  * @param {String} message Le message à écrire
+  * @param {String} type    Le type, parmi 'notice', 'error', 'caution'
+  **/
+  static log (message, type)
+  {
+    type || (type = 'notice')
+    this.spanMessage.innerHTML = message
+    type && (this.spanMessage.className = type)
+    if ( type != 'error' )
+    {
+      this.logTimer = setTimeout(this.resetLog.bind(this), 20*1000)
+    }
+  }
+  static resetLog ()
+  {
+    this.logTimer && clearTimeout(this.logTimer)
+    this.spanMessage.innerHTML = ''
+    this.spanMessage.className = ''
+  }
+  static get spanMessage () {
+    this._span_message || ( this._span_message = document.getElementById('footer-log'))
+    return this._span_message
+  }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   INSTANCE
+    *
+  *** --------------------------------------------------------------------- */
   constructor ( projet )
   {
     this.projet = projet
   }
+
 
   /**
    * Trois méthodes pour indiquer l'état de sauvegarde du projet dans
@@ -29,6 +67,7 @@ class ProjetUI
     this._indSave || ( this._indSave = document.getElementById('save-state-indicator'))
     return this._indSave
   }
+
 }
 
 
