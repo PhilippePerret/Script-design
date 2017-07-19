@@ -1,20 +1,19 @@
-* Implémenter les messages dans le footer (méthode `log` de projet.ui)
+* Ajouter un outil pour ouvrir le dossier des données du projet
 
 * Poursuivre le test Projet/save_spec.js
 
 * Poursuivre l'implémentation des options
-  - mettre en place la sauvegarde automatique
-    Principe : dès que le projet est modifié, l'enregistrement est lancé, mais
-    s'interrompt dès qu'on exécute une action comme une touche pressée. L'enregistrement
-    se fait par petits segments, de panneau en panneau.
-    OU Quand la sauvegarde automatique est activée, on lance un setInterval (par exemple
-    toutes les 30 secondes) qui vérifie s'il faut sauvegarder.
+  - mettre en place la sélection à l'édition / fin de paragraphe
+    (on peut vraiment le faire)
   - mettre en place la synchronisation automatique
     Principe : dès qu'un paragraphe est créé, il est automatiquement créé pour les
     autres panneaux.
-  - mettre en place la sélection à l'édition / fin de paragraphe
+    La méthode est en place, il faut voir comment l'implémenter
+    Il serait peut-être intéressant d'utiliser une propriété `busy` pendant
+    un processus comme celui-là pour empêcher les sauvegardes automatiques,
+    qui peuvent venir perturber le travail.
   - mettre en place l'indication de la durée en page ou en secondes
-    (peut-être qu'il faut déjà implémenter la définition de la propriété durée)
+    (il faut déjà implémenter la propriété pour la durée du parag)
 
 * Travailler le pied de page
   - Rendre l'aide plus apparente dans le panneau projet (ligne du bas)
