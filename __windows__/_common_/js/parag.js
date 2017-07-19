@@ -215,7 +215,7 @@ class Parag
     switch (add_to)
     {
       case 'all':
-        panneau_ids = Projet.PANNEAUX_SYNC
+        panneau_ids = Projet.PANNEAUX_SYNC.filter( p => {return p != this.panneau_id} )
         break
     }
     let projet_relx = this.projet.relatives.data.relatives
