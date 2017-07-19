@@ -58,10 +58,10 @@ class Parag
   constructor (data)
   {
     this.id     = data.id // doit toujours exister
-    this.data   = data
     this.projet = Projet.current
-    this.panneau_id || this.panneau_id = this.projet.current_panneau.id // = name
-    }
+    this.panneau_id = data.panneau_id || this.projet.current_panneau.id
+    delete data.panneau_id
+    this.data   = data
     // Dans tous les cas, on ajoute l'instance à Parags.items afin de pouvoir
     // toujours récupérer un paragraphe, quel que soit son panneau, avec la
     // méthode `Parags.get(<id>)`
@@ -79,8 +79,6 @@ class Parag
   set created_at  (v) { this.data.ca = v      }
   get duration    ()  { return this.data.d    }
   set duration    (v) { this.data.d = v       }
-  get panneau_id  ()  { return this.data.pan  }
-  set panneau_id  (v) { this.data.pan = v     }
 
   /** ---------------------------------------------------------------------
     *
@@ -92,7 +90,27 @@ class Parag
     return Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
   }
 
+  /**
+  * Le texte tel qu'il doit être affiché dans la page
+  *
+  * Peut-être qu'une méthode plus générale devra être instituée pour traiter l'affichage
+  * du paragraphe, notamment lorsqu'il y aura des balises propres au projet, comme les
+  * personnages, etc.
+  **/
+  get formatedContents () {
+    this._formated_contents || (
+      this._formated_contents = this.contents
+        ? Kramdown.parse(this.contents)
+        : ''
+    )
+    return this._formated_contents
+  }
 
+  /** ---------------------------------------------------------------------
+    *
+    *     RELATIVES
+    *
+  *** --------------------------------------------------------------------- */
 
   /**
   * @return {Array} de {Parag}, la liste des relatifs du parag courant
@@ -244,8 +262,6 @@ class Parag
   {
     // console.log('-> onChangeContents')
     this.contents = this.newContents
-    // console.log('On met le contents à ', this.contents)
-    this.data.contents = this.contents
     // pour forcer l'actualisation du contenu mis en forme
     delete this._formated_contents
     this.setModified()
@@ -257,8 +273,8 @@ class Parag
    */
   setModified ()
   {
+    this.updated_at = moment().format('YYMMDD')
     this.modified = true
-    this.data.updated_at = moment().format()
   }
   /** ---------------------------------------------------------------------
     *   EVENTS Méthodes
@@ -593,26 +609,6 @@ class Parag
     this.newContents = c
   }
 
-  /**
-  * Le texte tel qu'il doit être affiché dans la page
-  *
-  * Peut-être qu'une méthode plus générale devra être instituée pour traiter l'affichage
-  * du paragraphe, notamment lorsqu'il y aura des balises propres au projet, comme les
-  * personnages, etc.
-  **/
-  get formatedContents () {
-    if (undefined === this._formated_contents){
-      if ( this.contents )
-      {
-        this._formated_contents = Kramdown.parse(this.contents)
-      }
-      else
-      {
-        this._formated_contents = ''
-      }
-    }
-    return this._formated_contents
-  }
 }
 
 module.exports = Parag

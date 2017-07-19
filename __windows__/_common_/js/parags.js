@@ -4,6 +4,8 @@
   *   Gestion des évènements en tant qu'ensemble d'{Event}s.
   *
 *** --------------------------------------------------------------------- */
+let moment = require('moment')
+
 class Parags
 {
 
@@ -68,6 +70,7 @@ class Parags
   {
     // On crée le paragraphe est on l'affiche
     let newP = this.new({current:true, edited: true})
+    newP.created_at = moment().format('YYMMDD')
     // On l'ajoute à la liste des relatives qui tient à jour la relation entre
     // les paragraphes dans les différents panneaux
     this.projet.relatives.addParag(newP)
