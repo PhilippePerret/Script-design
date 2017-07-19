@@ -96,6 +96,7 @@ requirejs(
       , 'second': monObjet.autreMethode.bind(monObjet)
       , 'third': monObjet.troisMethode.bind(monObjet)
       // ... etc.
+      , default: monObjet.methodeParDefaut.bind(monObjet)
     }
     , '<id autre tabulator>':{
       enter_method: monObjet.methodDeTraitementPropre.bind(monObjet)
@@ -109,7 +110,7 @@ requirejs(
 
 On doit définir ainsi tous les tabulators de la page. Noter que la définition par lettre est moins solide que la définition par `data-tab`. En effet, il suffit qu'un menu soit ajouté, supprimé ou déplacé pour que les lettres, qui sont attribuées dans l'ordre par l'application, ne se retrouvent plus associées avec les bonnes méthodes. Voir [ici une illustration concrète de l'écueil de l'association par lettre](#ecueil_association_par_lettre)
 
-
+La propriété `default` permet de définir une méthode qui sera appelée dans le cas où aucune donnée n'est trouvée pour traiter la commande. À la différence de `enter_method`, qui est appelée systématiquement lorsqu'elle est définie, `default` n'est appelé que si aucune donnée n'est trouvée. Dans l'exemple ci-dessus, si on choisit 'second', il sera traité par `autreMethode`, mais si on choisit un menu `quatre`, alors c'est la méthode `methodeParDefaut` qui sera utilisée, en lui envoyant en premier argument `quatre`.
 
 * **Initialiser les tabulators**. Puis, enfin, avant le début du programme, on demande l'initialisation des tabulateurs. Noter qu'il faut impérativement définir la `Map` avant ce `setup` :
 

@@ -35,6 +35,18 @@ class PanProjet
   }
 
   /* --- Public --- */
+
+  /**
+  * Les méthodes appelées par le menu des commandes
+  **/
+  defaultCommandMethod ( arg )
+  {
+    if ('function' === typeof this[arg]) {
+      this[arg].call(this)
+    } else {
+      throw new Error(`La commande '${arg}' est inconnue. Il faut l'implémenter dans la classe PanProjet.`)
+    }
+  }
   print ()
   {
     alert("Pour le moment, je ne sais pas encore imprimer un panneau.")
@@ -55,6 +67,12 @@ class PanProjet
     return alert("Pour le moment, on ne peut pas découper les parags suivant les retours chariot")
     if(!confirm("Voulez-vous vraiment découper les parags suivant les retours-chariot.\n\nDès qu'un parag contient un retour-chariot, on le découpe en plusieurs Parags séparés (mais héritant des mêmes propriétés)"))
     {return false}
+  }
+  // Pour ouvrir le dossier du projet
+  folderprojet ()
+  {
+    let exec = require('child_process').exec
+    exec(`open "${this.projet.folder}"`, (error, stdout, stderr) => {console.log(error, stdout)})
   }
   /** ---------------------------------------------------------------------
     *

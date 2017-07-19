@@ -60,6 +60,7 @@ requirejs(
   global.ProjetOptions = ProjOpts
 
   global.ProjetUI   = require(path.join(PROJET_JS_FOLDER,'projet_ui.js'))
+  global.UILog      = ProjetUI.log.bind(ProjetUI)
 
   // On donne l'app à Store, pour qu'il sache où chercher les fichiers.
   Store._app = app
@@ -111,6 +112,7 @@ requirejs(
               , 'print'       : currentpan.print.bind(currentpan)
               , 'stats'       : curproj.afficherStatistiques.bind(curproj)
               , 'cutreturn'   : currentpan.cutParagByReturn.bind(currentpan)
+              , default       : currentpan.defaultCommandMethod.bind(currentpan)
             }
             , 'options-projet':{
               enter_method: curproj.define_options.bind(curproj)
