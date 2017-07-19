@@ -97,7 +97,7 @@ class Tabulator
     // code qui va gérer les raccourcis-clavier
     let current_window_onkeyup = window.onkeyup
     window.onkeyup = (evt) => {
-      if ( ! Projet.mode_edition )
+      if ( ! Projet.current.mode_edition )
       {
         let keyIndex = this.LETTERS.indexOf(evt.key)
         if ( keyIndex > -1 && keyIndex < nombre_tabulators )
@@ -156,7 +156,7 @@ class Tabulator
     // console.log(`-> Tabulator#observe (tabulator#${this.id})`)
     let my = this
     this.tabulator.addEventListener('focus',  my.onFocus.bind(my))
-    this.tabulator.addEventListener('blur',   my.onBlur.bind(my))
+    this.tabulator.addEventListener('blur',   my.onBlur .bind(my))
     // console.log(`<- Tabulator#observe (tabulator#${this.id})`)
   }
 
@@ -200,11 +200,46 @@ class Tabulator
   // La map de ce tabulator définissant les méthodes à utiliser en
   // fonction des keys
   get Map () {
-    if ( undefined === this._map ) { this._map = Tabulator.Map[this.id] }
+    this._map || ( this._map = Tabulator.Map[this.id] )
     return this._map
   }
 
   get maxSelected () { return this.Map.maxSelected }
+
+  get hasBeforeEach () {
+    if ( undefined === this._hasbeforeeach ) {
+      this._hasbeforeeach = ( 'function' === typeof this.Map.beforeEach )
+    }
+    return this._hasbeforeeach
+  }
+  get hasAfterEach () {
+    if ( undefined === this._hasaftereach ) {
+      this._hasaftereach = ( 'function' === typeof this.Map.afterEach )
+    }
+    return this._hasaftereach
+  }
+  get hasBeforeAll () {
+    if ( undefined === this._hasbeforeall ) {
+      this._hasbeforeall = ('function' === typeof this.Map.beforeAll)
+    }
+    return this._hasbeforeall
+  }
+  get hasAfterAll () {
+    if ( undefined === this._hasaftereall ) {
+      this._hasaftereall = ('function' === typeof this.Map.afterAll)
+    }
+    return this._hasaftereall
+  }
+
+  get hasDefaultMethod () {
+    if (undefined === this._hasdefmeth){
+      this._hasdefmeth = ('function' === typeof this.defaultMethod)
+    }
+    return this._hasdefmeth
+  }
+  get defaultMethod () {
+    return this.Map.default
+  }
 
   /**
    * Gestion de la touche entrée sur un Tabulator
@@ -228,33 +263,30 @@ class Tabulator
     } else {
 
       // Si une méthode Before-All est définie
-      if ( 'function' === typeof my.Map.beforeAll ){
-        my.Map.beforeAll.call()
-      }
+      this.hasBeforeAll && my.Map.beforeAll.call()
 
+      /**
+      * On traite ensuite chaque menu/commande/bouton choisi (en général,
+      * il y en a un seul, comme un menu)
+      **/
       my.current_buttons.forEach( (bouton) => {
 
         // Si une méthode Before-Each est définie
-        if ( 'function' === typeof my.Map.beforeEach ){
-          my.Map.beforeEach.call()
-        }
+        my.hasBeforeEach && my.Map.beforeEach.call()
 
         // === Exécution de la méthode de data ou de lettre ===
         method = my.Map[bouton.data]
         if ( 'function' == typeof method ) { method.call() }
+        else if ( my.hasDefaultMethod ) { my.defaultMethod.call(null,bouton.data) }
         else { throw new Error(`Aucune méthode d'action n'est définie pour ${bouton.data} (lettre ${bouton.key})`)}
 
         // Si une méthode After-Each est définie
-        if ( 'function' === typeof my.Map.afterEach ){
-          my.Map.afterEach.call()
-        }
+        my.hasAfterEach && my.Map.afterEach.call()
 
       })
 
       // Si une méthode After-All est définie
-      if ( 'function' === typeof my.Map.afterAll ){
-        my.Map.afterAll.call()
-      }
+      my.hasAfterAll && my.Map.afterAll.call()
     }
     this.hasBeenRan = true
     this.tabulator.blur()
@@ -328,8 +360,10 @@ class Tabulator
   }
 
   /**
+  *
   * Met le bouton +bouton+ ({TabulatorButton}) en bouton courant. Si +withMaj+
   * est true, on conserve les boutons courants (multi sélection).
+  *
   *
   * @param {TabulatorButton}  bouton Le bouton activé
   * @param {Boolean}          withMaj  True si la touche majuscule est activée.
@@ -487,16 +521,11 @@ class TabulatorButton
   **/
   prepare ()
   {
-    let btn = this.button
-    btn.insertAdjacentHTML(
-      'afterbegin',
-      `<span class="tab-letter">${this.key}</span>` +
-      '<span class="tab-label">'
-    )
-    btn.insertAdjacentHTML(
-      'beforeend',
-      '</span><span class="smallidx"></span>'
-    )
+    this.button.innerHTML = `
+<span class="tab-letter">${this.key}</span>
+<span class="tab-label">${this.button.innerHTML}</span>
+<span class="smallidx"></span>
+    `
   }
 
   get downed () { return this._downed }

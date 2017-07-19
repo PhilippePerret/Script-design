@@ -18,8 +18,9 @@ class PanProjet
     return this._newid
   }
 
-  constructor (name)
+  constructor (name, projet)
   {
+    if(!projet){throw(new Error("Un panneau doit obligatoirement être initialisé avec son projet, maintenant."))}
     this.__ID   = PanProjet.newID()
     this.id     = name
     this.name   = name // p.e. 'data', ou 'scenier'
@@ -30,9 +31,22 @@ class PanProjet
     // Mis à true quand les données du panneau ont été chargées (qu'elles
     // existent ou non)
     this.loaded = false
+    this.projet = projet
   }
 
   /* --- Public --- */
+
+  /**
+  * Les méthodes appelées par le menu des commandes
+  **/
+  defaultCommandMethod ( arg )
+  {
+    if ('function' === typeof this[arg]) {
+      this[arg].call(this)
+    } else {
+      throw new Error(`La commande '${arg}' est inconnue. Il faut l'implémenter dans la classe PanProjet.`)
+    }
+  }
   print ()
   {
     alert("Pour le moment, je ne sais pas encore imprimer un panneau.")
@@ -54,20 +68,17 @@ class PanProjet
     if(!confirm("Voulez-vous vraiment découper les parags suivant les retours-chariot.\n\nDès qu'un parag contient un retour-chariot, on le découpe en plusieurs Parags séparés (mais héritant des mêmes propriétés)"))
     {return false}
   }
+  // Pour ouvrir le dossier du projet
+  folderprojet ()
+  {
+    let exec = require('child_process').exec
+    exec(`open "${this.projet.folder}"`, (error, stdout, stderr) => {console.log(error, stdout)})
+  }
   /** ---------------------------------------------------------------------
     *
     *   DATA
     *
   *** --------------------------------------------------------------------- */
-
-  /**
-  * @return {Projet} Le projet courant (raccourci)
-  **/
-  get projet ()
-  {
-    this._projet || ( this._projet = Projet.current )
-    return this._projet
-  }
 
   /**
   * Pour activer/désactiver le panneau, c'est-à-dire le mettre en panneau
@@ -77,6 +88,9 @@ class PanProjet
     // console.log("-> activate panneau")
     this.loaded || this.load()
     DOM.addClass(`panneau-${this.id}`,'actif')
+    // Le panneau pouvant être enregistré alors qu'un autre est activé,
+    // il faut vérifier sa marque à son activation.
+    this.setupLight()
     this.actif = true
   }
   desactivate () {
@@ -85,7 +99,7 @@ class PanProjet
     this.parags.selection.reset()
     DOM.removeClass(`panneau-${this.id}`,'actif')
     // On supprime aussi l'annulation possible
-    delete Projet.current.cancelableMethod
+    delete this.projet.cancelableMethod
     // Puis on marque que le panneau n'est plus actif.
     this.actif = false
   }
@@ -104,7 +118,7 @@ class PanProjet
   **/
   get section ()
   {
-    if ( !this._section ) { this._section = DOM.get(`panneau-${this.name}`) }
+    this._section || (this._section = DOM.get(`panneau-${this.name}`))
     return this._section
   }
 
@@ -116,11 +130,16 @@ class PanProjet
   get modified () { return this._modified || false }
   set modified (v)
   {
+    console.log(`-> modified de panneau #${this.__ID} du projet #${this.projet.__ID}`)
     this._modified = !!v
     // Noter que dans les tests unitaires the.light se sera pas défini,
     // par défaut.
-    this.section && ( this.light.innerHTML = this._modified ? '🔴' : '🔵' )
+    this.section && this.setupLight()
     this.projet.modified = true
+  }
+  setupLight () {
+    console.log(`-> setupLight / modified = ${this.modified}`)
+    this.light.innerHTML = this._modified ? '🔴' : '🔵'
   }
   get light () {
     this._light || (this._light = this.section.getElementsByClassName('statelight')[0])
@@ -193,20 +212,31 @@ class PanProjet
   **/
   save ()
   {
+    // console.log("-> save")
     if ( ! this.modified )
     {
       alert(`Le panneau ${this.projet.id}/${this.name} n'est pas marqué modifié, normalement, je ne devrais pas avoir à le sauver.`)
     }
-    let resultat_save = this.store.set(this.data2save)
-    if ( resultat_save ) {
-      // Si nécessaire, on procède à la sauvegarde des relatives
-      if ( this.projet.relatives.modified )
-      {
-        this.projet.relatives.save()
-      }
-      this.setAllParagsUnmodified()
-      this.modified = false
-    }
+    // La sauvegarde est asynchrone, on doit donc attendre qu'elle soit
+    // faite pour poursuivre.
+    console.log(`-> sauvegarde (save) du panneau '${this.id}'`)
+    this.store.set(this.data2save)
+    // console.log("<- save")
+  }
+  /**
+  * Méthode appelée lorsque la sauvegarde est terminée, avec succès
+  *
+  * Elle est appelée par la class Store, dans Store#save
+  **/
+  onFinishSave ()
+  {
+    // console.log("-> onFinishSave")
+    // Si nécessaire, on procède à la sauvegarde des relatives
+    this.projet.relatives.modified && this.projet.relatives.save()
+    this.setAllParagsUnmodified()
+    this.modified = false
+    this.projet.checkModifiedState()
+    // console.log("<- onFinishSave")
   }
 
   /**
@@ -286,7 +316,7 @@ class PanProjet
   **/
   get store ()
   {
-    this._store || (this._store = new Store(this.store_path, this.defaultData))
+    this._store || (this._store = new Store(this.store_path, this.defaultData, this))
     return this._store
   }
 

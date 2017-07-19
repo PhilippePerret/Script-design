@@ -30,15 +30,12 @@ moment.locale('fr')
 class Projet
 {
   static get PANNEAU_LIST () {
-    if(undefined===this._panneaulist){
-      this._panneaulist = ['data','personnages','notes','synopsis','scenier','treatment','manuscrit']
-    }
+    this._panneaulist || (this._panneaulist = ['data','personnages','notes','synopsis','scenier','treatment','manuscrit'])
     return this._panneaulist
   }
   static get PANNEAUX_DATA ()
   {
-    if (undefined === this._panneauData )
-    {
+    this._panneauData || (
       this._panneauData = {
           'data'        : {oneLetter: 'd'/* pour relatives*/ }
         , 'd' : 'data'
@@ -55,69 +52,27 @@ class Projet
         , 'treatment'   : {oneLetter: 't'}
         , 't' : 'treatment'
       }
-    }
+    )
     return this._panneauData
   }
-  // Détermine si on se trouve en mode édition, c'est-à-dire dans un contenu
-  // éditable. Ce mode détermine surtout l'action des raccourcis-clavier
-  // uno-touche.
-  get mode_edition () { return !!this._mode_edition }
-  set mode_edition (v){ this._mode_edition = !!v }
-
-  /**
-  * La méthode d'annulation courante du projet.
-  *
-  * C'est la méthode qui sera interrogée par la combinaison CMD+Z pour
-  * savoir si une cancellisation doit être exécutée.
-  * Pour le moment, elle n'est implémentée que pour la suppression de
-  * paragraphes.
-  **/
-  get cancelableMethod () { return this._cancelableMethod }
-  set cancelableMethod (v){ this._cancelableMethod = v    }
 
   static UIprepare ()
   {
-    // On place un listener d'event click sur le body, pour tout déselectionner
-    // Le problème, c'est que lorsque l'on fait Enter après avoir édité
-    // un paragraphe, ça simule ce click et donc ça supprime la sélection
-    // document.body.addEventListener('click', (evt) => {
-    //   Projet.current_panneau.deselectAll()
-    // })
+
   }
 
   /**
   *   Chargement du projet data.projet_id
+  *
+  * La méthode regarde aussi s'il y a d'autres choses à faire, comme mettre
+  * en route la boucle de sauvegarde en fonction des options.
+  * TODO Plus tard, on pourra aussi avoir des notes à rappeler à l'ouverture,
+  * par exemple.
   **/
   static load (data)
   {
     this.current = new Projet(data.projet_id)
     this.current.load.bind(this.current)()
-  }
-
-  /**
-  * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
-  * Par défaut, c'est le panneau des données générales du projet.
-  **/
-  static get current_panneau () {
-    if ( undefined === this._current_panneau){this._current_panneau = this.panneaux['data']}
-    return this._current_panneau
-  }
-
-  /**
-  * Propriété définissant les panneaux du projet, c'est-à-dire les instances
-  * de {PanProjet} correspondant à chaque panneau ('data','scenier', 'synopsis',
-  * etc.)
-  * On récupère un panneau par Projet.panneaux['<id panneau>']
-  **/
-  static get panneaux () {
-    if ( undefined === this._panneaux )
-    {
-      this._panneaux = {}
-      this.PANNEAU_LIST.forEach( (panneau_id) => {
-        this._panneaux[panneau_id] = new PanProjet(panneau_id)
-      })
-    }
-    return this._panneaux
   }
 
   /**
@@ -146,29 +101,30 @@ class Projet
   {
     // Désactiver les panneaux courants (if any)
     this.desactiveAllCurrents()
+    let cur = this.current
 
-    this._current_panneau = this.panneaux[pan2_id]
-    this.current_panneau.activate()
-    this.current_panneau.setModeDouble('right')
+    cur._current_panneau = this.panneaux[pan2_id]
+    cur.current_panneau.activate()
+    cur.current_panneau.setModeDouble('right')
 
-    this.alt_panneau = this.panneaux[pan1_id]
-    this.alt_panneau.activate()
-    this.alt_panneau.setModeDouble('left')
+    cur.alt_panneau = this.panneaux[pan1_id]
+    cur.alt_panneau.activate()
+    cur.alt_panneau.setModeDouble('left')
 
-    this.mode_double_panneaux = true
+    cur.mode_double_panneaux = true
   }
 
   /**
-  * Méthode fonctionnelle chargeant le plateau voulant
+  * Méthode fonctionnelle chargeant le plateau voulu
   **/
   static loadPanneau (panneau_id, evt)
   {
     // Si on était en mode double panneau, il faut en sortir, même
     // si on va y revenir tout de suite
     this.desactiveAllCurrents()
-    this._current_panneau = this.panneaux[panneau_id]
-    this.current_panneau.activate()
-    this.mode_double_panneaux = false
+    this.current._current_panneau = this.current.panneau(panneau_id)
+    this.current.current_panneau.activate()
+    this.current.mode_double_panneaux = false
   }
 
 
@@ -179,17 +135,22 @@ class Projet
   **/
   static desactiveAllCurrents ()
   {
-    if ( this.mode_double_panneaux )
+    if ( this.current.mode_double_panneaux )
     {
-      this.alt_panneau.desactivate()
-      this.alt_panneau.unsetModeDouble()
-      this.current_panneau.unsetModeDouble()
+      this.current.alt_panneau.desactivate()
+      this.current.alt_panneau.unsetModeDouble()
+      this.current.current_panneau.unsetModeDouble()
     }
-    if ( this.current_panneau ) { this.current_panneau.desactivate() }
+    this.current.current_panneau || this.current.current_panneau.desactivate()
   }
 
 
-
+  static newID ()
+  {
+    this._lastid || ( this._lastid = 0 )
+    this._lastid ++
+    return this._lastid
+  }
 
 
   /** ---------------------------------------------------------------------
@@ -201,12 +162,95 @@ class Projet
   constructor (projet_id)
   {
     this.id = projet_id
+    this.__ID = Projet.newID()
+  }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   Propriétés générales
+    *
+  *** --------------------------------------------------------------------- */
+
+  // Détermine si on se trouve en mode édition, c'est-à-dire dans un contenu
+  // éditable. Ce mode détermine surtout l'action des raccourcis-clavier
+  // uno-touche.
+  get mode_edition () { return !!this._mode_edition }
+  set mode_edition (v){ this._mode_edition = !!v }
+
+  /**
+  * La méthode d'annulation courante du projet.
+  *
+  * C'est la méthode qui sera interrogée par la combinaison CMD+Z pour
+  * savoir si une cancellisation doit être exécutée.
+  * Pour le moment, elle n'est implémentée que pour la suppression de
+  * paragraphes.
+  **/
+  get cancelableMethod () { return this._cancelableMethod }
+  set cancelableMethod (v){ this._cancelableMethod = v    }
+
+  /**
+  * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
+  * Par défaut, c'est le panneau des données générales du projet.
+  **/
+  get current_panneau () {
+    this._current_panneau || ( this._current_panneau = this.panneaux['data'] )
+    return this._current_panneau
   }
 
   get modified () { return this._modified || false }
-  set modified (v){ this._modified = v             }
+  set modified (v)
+  {
+    this._modified = v
+    if (v) { this.ui.setProjetModifed()     }
+    else   { this.ui.setProjetUnmodified()  }
+  }
+  set saving (v) {
+    this._saving = v
+    if (v) { this.ui.setProjetSaving() }
+  }
+
+  panneau (pan_id) {
+    this._panneaux || this.definePanneaux()
+    return this._panneaux[pan_id]
+  }
+  get panneaux () {
+    this._panneaux || this.definePanneaux()
+    return this._panneaux
+  }
+
+  definePanneaux ()
+  {
+    let my = this
+    // my._panneaux = {}
+    // Pour la transition de Projet.panneaux à projet.panneaux
+    my._panneaux = {}
+    Projet.PANNEAU_LIST.forEach( (panneau_id) => {
+      // my._panneaux[panneau_id] = new PanProjet(panneau_id)
+      // Pour la transition de Projet.panneaux à projet.panneaux (donc
+      // de l'utilisation de la class à l'utilisation de l'instance)
+      my._panneaux[panneau_id] = new PanProjet(panneau_id, my)
+    })
+  }
+  /**
+  * Méthode appelée après chaque sauvegarde de panneau (ou autre) qui
+  * vérifie l'état de sauvegarde du projet en général.
+  * C'est également la méthode qui est appelée par la boucle de sauvegarde
+  * automatique.
+  * Noter que cette méthode ne fait rien d'autre, en soi, que vérifier l'état
+  * général et de régler l'indicateur de sauvegarde dans l'interface.
+  **/
+  checkModifiedState ()
+  {
+    let my  = this
+      , mod = false // Sera mis à true si on trouve quelque chose modifié
+    Projet.PANNEAU_LIST.forEach( (pan_id) => {
+      my.panneau(pan_id).modified && ( mod = true )
+    })
+    this.modified = mod // changera l'indicateur de sauvegarde
+  }
 
   /* --- publiques --- */
+
   afficherStatistiques ()
   {
     alert("Pour le moment, je ne sais pas encore afficher les statistiques du projet.")
@@ -214,6 +258,8 @@ class Projet
 
   /**
   * Chargement du projet
+  * Note : ce sont les données qui s'affichent toujours en premier, pour
+  * le moment.
   **/
   load ()
   {
@@ -225,7 +271,9 @@ class Projet
     this.set_updated_at()
 
     this.observeEditableFields()
+    this.prepareSuivantOptions()
   }
+
 
   /**
   * Place les observers pour les contenus éditables
@@ -242,15 +290,58 @@ class Projet
         let o = evt.target
         o.contentEditable = 'true'
         o.focus()
-        Projet.mode_edition = true
+        this.mode_edition = true
       })
       editables[i].addEventListener('blur', (evt) => {
         let o = evt.target
         my.onChangeData.bind(my)(o)
         o.contentEditable = 'false'
-        Projet.mode_edition = false
+        this.mode_edition = false
       })
     }
+  }
+
+  /**
+  * Méthode qui prépare l'interface et le programme en fonction des options
+  * choisies par l'auteur. Par exemple, c'est cette méthode qui met en route
+  * la sauvegarde automatique si nécessaire.
+  **/
+  prepareSuivantOptions ()
+  {
+    if ( this.option('autosave') )
+    {
+      this.options.activateAutosave()
+    }
+  }
+
+  /**
+   * Méthode appelée quand la sauvegarde automatique est enclenchée
+   */
+  doAutosave () {
+    if ( this.mode_edition ) { return false }
+    this.checkModifiedState()
+    this.modified && this.saveAll()
+    return true
+  }
+  /**
+  * Sauve tout
+  * ----------
+  * Pour le moment, ça ne sauve que les panneaux et les relatives.
+  *
+  * Noter que l'appel de la sauvegarde des relatives et le check du nouvel
+  * état du projet est inutile puisque ces deux méthodes sont appelées à
+  * chaque sauvegarde de panneau. Et ici, normalement, il ne doit pas y
+  * avoir plus de deux panneaux modifiés en même temps, en tout cas en
+  * mode de sauvegarde automatique.
+  **/
+  saveAll ()
+  {
+    let my = this
+      , pan
+    Projet.PANNEAU_LIST.forEach( (pan_id) => {
+      pan = my.panneau(pan_id)
+      pan.modified && pan.save.bind(pan)()
+    })
   }
 
   onChangeData (o)
@@ -285,6 +376,42 @@ class Projet
   {
     this._relatives || ( this._relatives = new Relatives(this) )
     return this._relatives
+  }
+  get options ()
+  {
+    this._options || ( this._options = new ProjetOptions(this) )
+    return this._options
+  }
+  get ui ()
+  {
+    this._ui || ( this._ui = new ProjetUI(this) )
+    return this._ui
+  }
+  // ----------------- OPTIONS ---------------------
+
+  /**
+  * Raccourci servant au tabulator (car on ne peut pas utiliser `projet.options`
+  * dans le départ)
+  **/
+  define_options ( arg ) { this.options.define( arg ) }
+
+  option ( prop, value )
+  {
+    if ( 'string' == typeof prop )
+    {
+      if ( undefined === value ) { return this.options.get(prop) }
+      else {
+        let h = {} ; h[prop] = value ; this.options.set(h)
+      }
+    }
+    else if ( 'object' == typeof prop )
+    {
+      this.options.set(prop)
+    }
+    else
+    {
+      throw new Error('Mauvais argument pour projet#option')
+    }
   }
 
   /**
@@ -327,6 +454,18 @@ class Projet
   get store_scenes      () {
     if(!this.id){throw new Error("Impossible de récupérer le fichier data des scènes : id est indéfini")}
     return new Store(`projets/${this.id}/scenes`)}
+
+  /**
+  * @return {String} Le dossier du projet dans les librairies.
+  * Normalement, on ne doit pas y avoir accès, mais pour des raisons de
+  * programmation, on permet de l'ouvrir avec une commande.
+  **/
+  get folder ()
+  {
+    this._folder || ( this._folder = this.store_data.folder )
+    return this._folder
+  }
+
   // Les données remontées des différents stores
   get data_generales    () { return this.store_data.data }
   get data_personnages  () { return this.store_personnages.data }

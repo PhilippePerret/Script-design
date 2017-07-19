@@ -35,13 +35,13 @@
           <div id="div_summary" class="normal-size">
             <span class="libelle">Résumé</span><span id="summary" class="value editable"></span>
           </div>
+          <div id="div_created_at" class="normal-size">
+            <span class="libelle">Créé le</span><span id="created_at" class="value"></span>
+          </div>
+          <div id="div_updated_at" class="normal-size">
+            <span class="libelle">Modifié le</span><span id="updated_at" class="value"></span>
+          </div>
         </fieldset>
-      </div>
-      <div id="div_created_at" class="tiny-size">
-        <span class="libelle">Créé le</span><span id="created_at" class="value"></span>
-      </div>
-      <div id="div_updated_at" class="tiny-size">
-        <span class="libelle">Modifié le</span><span id="updated_at" class="value"></span>
       </div>
     </section>
 
@@ -97,7 +97,29 @@
       <button data-tab="print">Imprimer le panneau</button>
       <button data-tab="stats">Afficher les statistiques</button>
       <button data-tab="cutreturn">Découper selon les retours-chariots</button>
+      <button data-tab="folderprojet">Ouvrir le dossier du projet</button>
     </tabulator>
+
+    <tabulator id="options-projet" class="tools" tabindex="3">
+      <picto>Op.</picto>
+      <!-- La liste est construite automatiquement au chargement du projet -->
+    </tabulator>
+
+    <!--
+      PIED DE PAGE (FIXE)
+    -->
+    <section id="footer">
+      <span id="indicateurs">
+        <!-- Indicateurs généraux  -->
+        <span id="save-state-indicator" class="saved"></span>
+      </span>
+      <span id="informations">
+        <!-- Pour les informations générales  -->
+      </span>
+      <span id="footer-log">
+        <!-- Pour les messages programme -->
+      </span>
+    </section>
 
     <script type="text/javascript" src="projet/js/main.js"></script>
   </body>

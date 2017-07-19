@@ -26,11 +26,7 @@ class Parags
   constructor ( panprojet )
   {
     this.panneau = panprojet
-  }
-
-  get projet () {
-    this._projet || ( this._projet = this.panneau.projet )
-    return this._projet
+    this.projet  = panprojet.projet
   }
 
   /**
@@ -56,6 +52,43 @@ class Parags
     this._ids   = []
     this._count = 0
     this.panneau.container.innerHTML = ''
+  }
+
+
+  /**
+  * Appelée pour créer un parag. Contrairement à la méthode `new`, qui
+  * instancie un paragraphe qui existe déjà (qui a déjà été créé), cette
+  * méthode crée un tout nouveau parag et, notamment, l'ajoute à la liste
+  * des `relatives`.
+  *
+  * C'est la méthode qui est appelée par la touche `n` hors mode d'édition
+  * depuis n'importe quel pano.
+  **/
+  create ()
+  {
+    // On crée le paragraphe est on l'affiche
+    let newP = this.new({current:true, edited: true})
+    // On l'ajoute à la liste des relatives qui tient à jour la relation entre
+    // les paragraphes dans les différents panneaux
+    this.projet.relatives.addParag(newP)
+    // Si les options le demandent, on doit synchroniser les autres panneaux
+    this.projet.option('autosync') && this.autoSyncNew( newP )
+  }
+
+
+  /**
+  * Appelée par la méthode `create` précédente, cette méthode
+  * permet d'initier la création d'un paragraphe {Parag}.
+  **/
+  new (options)
+  {
+    let newP = new Parag({id:Parag.newID(),contents:''})
+    if (this.hasCurrent()) {
+      options || ( options = {} )
+      options.before = this.selection.current.next
+    }
+    this.add(newP, options)
+    return newP
   }
 
   /**
@@ -521,7 +554,7 @@ class Parags
     // TODO Mais je n'aime pas trop ça… Il vaut mieux faire une méthode
     // qui les relis et laisser items retourner simplement la liste des items
     delete this._items
-    return this.items.map( p => p.as_data )
+    return this.items.map( p => p.data )
   }
 
   /**
@@ -551,7 +584,7 @@ class Parags
   **/
   get count ()
   {
-    if ( undefined === this._count ) { this._count = this.items.length }
+    this._count || (this._count = this.items.length)
     return this._count
   }
 
@@ -563,56 +596,13 @@ class Parags
 
   /** ---------------------------------------------------------------------
     *
-    *   CLASSE Parags
+    *   Méthodes de synchronisation
     *
   *** --------------------------------------------------------------------- */
-
-
-  /**
-  * Appelée pour créer un parag. Contrairement à la méthode `new`, qui
-  * instancie un paragraphe qui existe déjà (qui a déjà été créé), cette
-  * méthode crée un tout nouveau parag et, notamment, l'ajoute à la liste
-  * des `relatives`.
-  *
-  * C'est la méthode qui est appelée par la touche `n` hors mode d'édition
-  * depuis n'importe quel pano.
-  **/
-  static create ()
+  autoSyncNew (newParag)
   {
-    // On crée le paragraphe est on l'affiche
-    let newP = this.new({current:true, edited: true})
-    // On l'ajoute à la liste des relatives qui tient à jour la relation entre
-    // les paragraphes dans les différents panneaux
-    let iprojet = Projet.current
-    iprojet.relatives.addParag(newP)
+    console.log("La synchronisation automatique est demandée, on synchronise avec le paragraphe", newParag)
   }
-
-
-  /**
-  * Appelée par la touche 'n' en dehors du mode édition, cette méthode
-  * permet d'initier la création d'un paragraphe {Parag}.
-  **/
-  static new (options)
-  {
-    let newP = new Parag({id:Parag.newID(),contents:''})
-    if (Projet.current_panneau.parags.hasCurrent()) {
-      if (!options){options = {}}
-      options.before = Projet.current_panneau.parags.selection.current.next
-    }
-    // console.log('options:',options)
-    Projet.current_panneau.parags.add(newP, options)
-    return newP
-  }
-
-  // /**
-  // * @param {HTMLElement} odom L'objet DOM du parag dans le panneau
-  // * @return {Parag} L'instance Parag correspondante.
-  // * TODO Rendre cette méthode OBSOLETE en utilisatn celle du panneau
-  // **/
-  // static instanceFromElement( odom )
-  // {
-  //   return Parags.items[Number(odom.getAttribute('data-id'))]
-  // }
 
   /** ---------------------------------------------------------------------
     *

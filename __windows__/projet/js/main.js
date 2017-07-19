@@ -30,6 +30,7 @@ requirejs(
     , path.join(C.COMMON_JS_FOLDER,'tabulators_define.js')
     , PROJET_PAN_PATH
     , PROJET_RELS_PATH
+    , path.join(PROJET_JS_FOLDER, 'options.js')
   ]
 , function(
     log
@@ -44,6 +45,7 @@ requirejs(
   , Tabulator
   , PanProjet
   , Relatives
+  , ProjOpts
 ){
 
   global.log        = log
@@ -55,6 +57,10 @@ requirejs(
   global.Relatives  = Relatives
   global.Store      = Store
   global.Tabulator  = Tabulator
+  global.ProjetOptions = ProjOpts
+
+  global.ProjetUI   = require(path.join(PROJET_JS_FOLDER,'projet_ui.js'))
+  global.UILog      = ProjetUI.log.bind(ProjetUI)
 
   // On donne l'app à Store, pour qu'il sache où chercher les fichiers.
   Store._app = app
@@ -86,11 +92,14 @@ requirejs(
           Projet.UIprepare()
           Projet.load(data)
 
+          let curproj = Projet.current
+
+          curproj.options.build()
 
           // --------- T A B U L A T O R S -------------
 
           // On prépare les tabulators
-          let currentpan = Projet.current_panneau
+          let currentpan = curproj.current_panneau
           // DÉFINITION DE LA MAP DES TABULATORS
           Tabulator.Map = {
             "boutons-panneaux":{
@@ -101,8 +110,12 @@ requirejs(
                 'synchronize' : currentpan.synchronize.bind(currentpan)
               , 'export'      : currentpan.export.bind(currentpan)
               , 'print'       : currentpan.print.bind(currentpan)
-              , 'stats'       : Projet.current.afficherStatistiques.bind(Projet.current)
+              , 'stats'       : curproj.afficherStatistiques.bind(curproj)
               , 'cutreturn'   : currentpan.cutParagByReturn.bind(currentpan)
+              , default       : currentpan.defaultCommandMethod.bind(currentpan)
+            }
+            , 'options-projet':{
+              enter_method: curproj.define_options.bind(curproj)
             }
           }
           // Prépation des tabulateurs

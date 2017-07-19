@@ -28,14 +28,16 @@ let path    = require('path')
 global.Parag      = require_module(path.join('.','__windows__','_common_','js','Parag.js'))
 global.Projet     = require_module(path.join('.','__windows__','projet','js','projet_class.js'))
 global.PanProjet  = require_module(path.join('.','__windows__','projet','js','panprojet_class.js'))
+global.ProjetOptions  = require_module(path.join('.','__windows__','projet','js','options_class.js'))
 global.Parags     = require_module(path.join('.','__windows__','_common_','js','Parags.js'))
 global.Relatives  = require_module(path.join('.','__windows__','projet','js','relatives_class.js'))
+global.ProjetUI   = require_module(path.join('.','__windows__','projet','js','projet_ui.js'))
 global.Store      = require_module(path.join('.','lib','utils','store_class.js'))
 
 global.path       = path
 
 // Pour que les Parag(s) soient bien associés au panneau
-Projet.panneaux = {}
+// Projet.current.panneaux = {}
 
 
 /** ---------------------------------------------------------------------
@@ -139,10 +141,9 @@ global.resetAll = function ()
   projet || ( projet  = new Projet(PROJET_ID) )
   Projet.current = projet
   Parag._lastID = -1
-  panneau = new PanProjet(PANNEAU_ID)
-  Projet.panneaux || ( Projet.panneaux = {} )
-  Projet.panneaux[PANNEAU_ID] = panneau
-  Projet._current_panneau = panneau
+  projet.definePanneaux()
+  panneau = projet.panneau(PANNEAU_ID)
+  projet._current_panneau = panneau
 
   projet._modified  = false
   panneau._modified = false
@@ -158,8 +159,5 @@ global.resetAll = function ()
   // console.log('<- resetAll')
 }
 
-projet  = new Projet(PROJET_ID)
-Projet.current = projet
-panneau = new PanProjet(PANNEAU_ID)
-Projet.panneaux[PANNEAU_ID] = panneau
-Projet._current_panneau = panneau
+projet = new Projet(PROJET_ID)
+resetAll()

@@ -10,8 +10,6 @@ require(path.resolve(path.join('.','tests','ptests','support','unit','parags.js'
 const oof = {only_on_fail: true}
 
 
-resetAll()
-
 describe("les méthodes auxquelles répond le panneau",[
   , it("PanProjet#parags retourne une instance de Parags", ()=>{
     expect(panneau.parags).to.be.classOf('parags')
@@ -118,7 +116,7 @@ describe("La propriété #items",[
     resetAll()
     expect(panneau.container.innerHTML, 'le container du panneau').to.equal('', oof)
     expect(panneau.parags.count,'le nombre des items').to.equal(0, oof)
-    panneau.parags.items = [parag1, parag4, parag12]
+    panneau.parags.add([parag1, parag4, parag12])
     expect(panneau.parags.count,'le nombre des items').to.equal(3)
     expect(panneau.parags.items[2].id, 'l’ID du 3e item').to.equal(12)
   })
