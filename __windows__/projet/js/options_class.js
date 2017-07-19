@@ -66,7 +66,7 @@ class ProjetOptions
       , optionProp
       , spanb
       , bouton
-      , curval, newval
+      , curval, newval, statestr
     this._data || load()
     args.forEach( (arg) => {
       [rien, optionProp] = arg.split('-')
@@ -75,12 +75,20 @@ class ProjetOptions
       bouton  = this.getButton(arg)
       if ( bouton )
       {
-        curval = Number(bouton.getAttribute('value'))
-        newval = curval === 0 ? 1 : 0
-        spanb.innerHTML = ''
-        spanb.innerHTML = ProjetOptions.DATA[optionProp][newval]
+        curval    = Number(bouton.getAttribute('value'))
+        newval    = curval === 0 ? 1 : 0
+        statestr  = ProjetOptions.DATA[optionProp][newval]
+        spanb.innerHTML = statestr
         bouton.setAttribute('value', String(newval))
         this._data[optionProp] = newval
+        UILog(`Option '${statestr}' activée`)
+        // Les options qui doivent entrainer un changement immédiat
+        switch ( optionProp )
+        {
+          case 'autosave':
+            this[newval === 1 ? 'activateAutosave' : 'desactivateAutosave']()
+            break
+        }
       }
       else
       {

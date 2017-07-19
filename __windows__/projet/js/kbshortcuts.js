@@ -30,6 +30,8 @@ define(
       // console.log(evt)
       // if ( 'Meta' === evt.key ) { this.metaIsOn = true }
       // console.log('<- onkeydown')
+      const curProj = Projet.current
+
       switch (evt.key)
       {
         case 'k':
@@ -39,7 +41,8 @@ define(
           // les capter avant pour les faire agir.
           if ( evt.metaKey )
           {
-            Projet.current.current_panneau.moveCurrentDown(evt)
+            curProj.current_panneau.moveCurrentDown(evt)
+            curProj.current_panneau.moveCurrentDown(evt)
             return DOM.stopEvent(evt)
           }
           break
@@ -47,25 +50,31 @@ define(
         case 'ArrowUp':
           if ( evt.metaKey )
           {
-            Projet.current.current_panneau.moveCurrentUp(evt)
+            curProj.current_panneau.moveCurrentUp(evt)
+            curProj.current_panneau.moveCurrentUp(evt)
             return DOM.stopEvent(evt)
           }
           break
 
         case 's':
-          if( ! Projet.current.mode_edition )
+          if( ! curProj.mode_edition )
+          if( ! curProj.mode_edition )
           {
-            evt.metaKey && Projet.current.save()
+            evt.metaKey && curProj.saveAll()
+            evt.metaKey && curProj.saveAll()
             return DOM.stopEvent(evt)
           }
 
         case 'z':
           if ( evt.metaKey ) // CMD Z
           {
-            if ( 'function' === typeof Projet.current.cancelableMethod )
+            if ( 'function' === typeof curProj.cancelableMethod )
+            if ( 'function' === typeof curProj.cancelableMethod )
             {
-              Projet.current.cancelableMethod.call()
-              delete Projet.current.cancelableMethod
+              curProj.cancelableMethod.call()
+              curProj.cancelableMethod.call()
+              delete curProj.cancelableMethod
+              delete curProj.cancelableMethod
             }
           }
       }
@@ -80,12 +89,13 @@ define(
     **/
     static onkeyup (evt)
     {
-      let curpan = Projet.current.current_panneau
+      const curProj = Projet.current
+          , curpan  = curProj.current_panneau
 
       // console.log("[kbshortcuts] Projet.current.mode_edition = ",Projet.current.mode_edition)
       // console.log('[kbshortcuts] selection courante', curpan.parags.selection.current)
       // On ne passe à la suite que si l'on n'est plus en mode Édition
-      if ( Projet.current.mode_edition ){ return 'poursuivre' }
+      if ( curProj.mode_edition ){ return 'poursuivre' }
       switch ( evt.key )
       {
 
@@ -101,7 +111,7 @@ define(
           // mode non édition, on édite le paragraphe en question
           switch (true)
           {
-            case Projet.current.mode_double_panneaux :
+            case curProj.mode_double_panneaux :
               return Parags.setSelectedsAsRelatives()
             case curpan.hasCurrent() :
               return curpan.editCurrent.bind(curpan)()
@@ -126,7 +136,8 @@ define(
           curpan.removeCurrent.bind(curpan)()
           return DOM.stopEvent(evt)
         case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
-          return Parags.create()
+          // return Parags.create()
+          return curProj.current_panneau.parags.create()
         case 'o':
           alert("La fenêtre des outils n'est pas encore implémentée")
           break
