@@ -82,7 +82,7 @@ class Parags
   **/
   new (options)
   {
-    let newP = new Parag({id:Parag.newID(),contents:''})
+    let newP = new Parag({id:Parag.newID(),c:''})
     if (this.hasCurrent()) {
       options || ( options = {} )
       options.before = this.selection.current.next
@@ -128,6 +128,9 @@ class Parags
     let my = this
       , div
       , lastParag
+
+    my._dict || my.reset()
+
     argp.forEach( (iparag) => {
 
       // Paragraphe existant déjà
@@ -205,7 +208,7 @@ class Parags
   **/
   get selection ()
   {
-    !this._selection && ( this._selection = new ParagsSelection(this) )
+    this._selection || ( this._selection = new ParagsSelection(this) )
     return this._selection
   }
 
@@ -599,9 +602,16 @@ class Parags
     *   Méthodes de synchronisation
     *
   *** --------------------------------------------------------------------- */
+
+  /**
+  * Méthode appelée après la création d'un nouveau paragraphe, quand l'option
+  * de synchronisation automatique est activée.
+  * C'est elle qui lance la synchronisation du nouveau paragraphe.
+  **/
   autoSyncNew (newParag)
   {
     console.log("La synchronisation automatique est demandée, on synchronise avec le paragraphe", newParag)
+    newParag.sync()
   }
 
   /** ---------------------------------------------------------------------

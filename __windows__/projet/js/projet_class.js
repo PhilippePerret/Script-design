@@ -33,6 +33,11 @@ class Projet
     this._panneaulist || (this._panneaulist = ['data','personnages','notes','synopsis','scenier','treatment','manuscrit'])
     return this._panneaulist
   }
+  // Liste des panneaux qui peuvent être synchronisés les uns avec les autres
+  static get PANNEAUX_SYNC () {
+    this._panneauxSync || (this._panneauxSync = ['notes','synopsis','scenier','treatment','manuscrit'])
+    return this._panneauxSync
+  }
   static get PANNEAUX_DATA ()
   {
     this._panneauData || (

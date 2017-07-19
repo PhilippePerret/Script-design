@@ -32,9 +32,7 @@ class Parag
   static newID ()
   {
     // console.log("-> Parag.newID", this._lastID)
-    if (undefined === this._lastID) {
-      this._lastID = Projet.current.data_generales.last_parag_id || -1
-    }
+    this._lastID || (this._lastID = Projet.current.data_generales.last_parag_id || -1)
     ++ this._lastID
     // On enregistre toujours le nouveau dernier ID dans les données
     // du projet
@@ -62,14 +60,8 @@ class Parag
     this.id     = data.id // doit toujours exister
     this.data   = data
     this.projet = Projet.current
-    this.dispatch(data)
-    if ( this.id > Parag._lastID ) { Parag._lastID = this.id }
-    if ( ! this.panneau_id ) {
-      this.panneau_id = this.projet.current_panneau.id // = name
+    this.panneau_id || this.panneau_id = this.projet.current_panneau.id // = name
     }
-    this.selected = false // à true quand il est sélectionné
-    this.current  = false // à true quand c'est le paragraphe courant
-
     // Dans tous les cas, on ajoute l'instance à Parags.items afin de pouvoir
     // toujours récupérer un paragraphe, quel que soit son panneau, avec la
     // méthode `Parags.get(<id>)`
@@ -77,26 +69,30 @@ class Parag
   }
 
   /** ---------------------------------------------------------------------
+  *
   *   DATA Methods
   *
   * --------------------------------------------------------------------- */
-  dispatch (data)
-  {
-    for(let prop in data){
-      if(!data.hasOwnProperty(prop)){continue}
-      this[prop]=data[prop]
-    }
+  get contents    ()  { return this.data.c    }
+  set contents    (v) { this.data.c = v       }
+  get created_at  ()  { return this.data.ca   }
+  set created_at  (v) { this.data.ca = v      }
+  get duration    ()  { return this.data.d    }
+  set duration    (v) { this.data.d = v       }
+  get panneau_id  ()  { return this.data.pan  }
+  set panneau_id  (v) { this.data.pan = v     }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   Méthode de formatage
+    *
+  *** --------------------------------------------------------------------- */
+  get durationFormated () {
+    if(undefined === this.duration){return '---'}
+    return Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
   }
 
-  /**
-  * @return {Object} les données du parag pour enregistrement
-  **/
-  get as_data ()
-  {
-    // Pour le moment, on a juste à retourner les données
-    this.data.panneau_id = this.panneau_id
-    return this.data
-  }
+
 
   /**
   * @return {Array} de {Parag}, la liste des relatifs du parag courant
@@ -170,10 +166,74 @@ class Parag
     }
   }
 
-
+  /**
+  * Méthode appelée pour éditer le parag
+  **/
   edit ()
   {
     this.doEdit.bind(this)()
+  }
+
+  /**
+  * Méthode appelée pour synchroniser le parag dans les autres panneaux
+  **/
+  sync ()
+  {
+    let add_to, where
+    let panneau_ids
+    this.projet.busy = true // pour empêcher la sauvegarde
+
+
+    // Si c'est le seul parag de son panneau, on l'ajoute à la fin des
+    // autres panneaux
+    if(!this.previous && !this.next)
+    {
+      // ON doit ajouter à tous les panneaux à la fin
+      add_to = 'all'
+      where  = 'end'
+    }
+
+
+    switch (add_to)
+    {
+      case 'all':
+        panneau_ids = Projet.PANNEAUX_SYNC
+        break
+    }
+    let projet_relx = this.projet.relatives.data.relatives
+    console.log('ICI')
+    console.log('this.projet.data_relatives.relatives avant :', projet_relx)
+    if ( panneau_ids )
+    {
+      console.log('panneau_ids:',panneau_ids)
+      let defaultTexte = `[Relatif du PARAG#${this.id}]`
+      let newP
+      let thisrelatives
+      let pano, panlet
+      panneau_ids.forEach( (pan_id) => {
+        newP = new Parag({id: Parag.newID(), panneau_id: pan_id, c: defaultTexte})
+        console.log("Création du paragraphe:",newP)
+        pano    = this.projet.panneau(pan_id)
+        panlet  = Projet.PANNEAUX_DATA[pan_id].oneLetter
+        console.log(`Lettre du panneau ${pan_id}`,panlet)
+        pano.parags.add(newP)
+        pano.modified = true
+
+        // On doit ajouter la relation dans le paragraphe courant
+        projet_relx[String(newP.id)] = {}
+        projet_relx[String(newP.id)][panlet] = [this.id]
+        thisrelatives = projet_relx[String(this.id)]
+        thisrelatives[panlet] || ( thisrelatives[panlet] = [] )
+        console.log(`thisrelatives[${panlet}]`,thisrelatives[panlet])
+        thisrelatives[panlet].push(newP.id)
+        // On doit ajouter la relation dans le nouveau paragraphe
+      })
+    }
+    console.log('this.projet.data_relatives.relatives apres :', projet_relx)
+    console.log('APRÈS ICI')
+
+    // on peut débloquer le projet
+    this.projet.busy = false
   }
 
   /**
