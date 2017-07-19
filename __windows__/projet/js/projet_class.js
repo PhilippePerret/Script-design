@@ -311,7 +311,6 @@ class Projet
     if ( this.option('autosave') )
     {
       this.options.activateAutosave()
-      console.log("Sauvegarde automatiquement activée.")
     }
   }
 
@@ -455,6 +454,18 @@ class Projet
   get store_scenes      () {
     if(!this.id){throw new Error("Impossible de récupérer le fichier data des scènes : id est indéfini")}
     return new Store(`projets/${this.id}/scenes`)}
+
+  /**
+  * @return {String} Le dossier du projet dans les librairies.
+  * Normalement, on ne doit pas y avoir accès, mais pour des raisons de
+  * programmation, on permet de l'ouvrir avec une commande.
+  **/
+  get folder ()
+  {
+    this._folder || ( this._folder = this.store_data.folder )
+    return this._folder
+  }
+
   // Les données remontées des différents stores
   get data_generales    () { return this.store_data.data }
   get data_personnages  () { return this.store_personnages.data }
