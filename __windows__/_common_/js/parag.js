@@ -32,9 +32,7 @@ class Parag
   static newID ()
   {
     // console.log("-> Parag.newID", this._lastID)
-    if (undefined === this._lastID) {
-      this._lastID = Projet.current.data_generales.last_parag_id || -1
-    }
+    this._lastID || (this._lastID = Projet.current.data_generales.last_parag_id || -1)
     ++ this._lastID
     // On enregistre toujours le nouveau dernier ID dans les données
     // du projet
@@ -60,16 +58,10 @@ class Parag
   constructor (data)
   {
     this.id     = data.id // doit toujours exister
-    this.data   = data
     this.projet = Projet.current
-    this.dispatch(data)
-    if ( this.id > Parag._lastID ) { Parag._lastID = this.id }
-    if ( ! this.panneau_id ) {
-      this.panneau_id = this.projet.current_panneau.id // = name
-    }
-    this.selected = false // à true quand il est sélectionné
-    this.current  = false // à true quand c'est le paragraphe courant
-
+    this.panneau_id = data.panneau_id || this.projet.current_panneau.id
+    delete data.panneau_id
+    this.data   = data
     // Dans tous les cas, on ajoute l'instance à Parags.items afin de pouvoir
     // toujours récupérer un paragraphe, quel que soit son panneau, avec la
     // méthode `Parags.get(<id>)`
@@ -77,26 +69,48 @@ class Parag
   }
 
   /** ---------------------------------------------------------------------
+  *
   *   DATA Methods
   *
   * --------------------------------------------------------------------- */
-  dispatch (data)
-  {
-    for(let prop in data){
-      if(!data.hasOwnProperty(prop)){continue}
-      this[prop]=data[prop]
-    }
+  get contents    ()  { return this.data.c    }
+  set contents    (v) { this.data.c = v       }
+  get created_at  ()  { return this.data.ca   }
+  set created_at  (v) { this.data.ca = v      }
+  get duration    ()  { return this.data.d    }
+  set duration    (v) { this.data.d = v       }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   Méthode de formatage
+    *
+  *** --------------------------------------------------------------------- */
+  get durationFormated () {
+    if(undefined === this.duration){return '---'}
+    return Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
   }
 
   /**
-  * @return {Object} les données du parag pour enregistrement
+  * Le texte tel qu'il doit être affiché dans la page
+  *
+  * Peut-être qu'une méthode plus générale devra être instituée pour traiter l'affichage
+  * du paragraphe, notamment lorsqu'il y aura des balises propres au projet, comme les
+  * personnages, etc.
   **/
-  get as_data ()
-  {
-    // Pour le moment, on a juste à retourner les données
-    this.data.panneau_id = this.panneau_id
-    return this.data
+  get formatedContents () {
+    this._formated_contents || (
+      this._formated_contents = this.contents
+        ? Kramdown.parse(this.contents)
+        : ''
+    )
+    return this._formated_contents
   }
+
+  /** ---------------------------------------------------------------------
+    *
+    *     RELATIVES
+    *
+  *** --------------------------------------------------------------------- */
 
   /**
   * @return {Array} de {Parag}, la liste des relatifs du parag courant
@@ -170,10 +184,187 @@ class Parag
     }
   }
 
-
+  /**
+  * Méthode appelée pour éditer le parag
+  **/
   edit ()
   {
     this.doEdit.bind(this)()
+  }
+
+  /**
+  * Méthode appelée pour synchroniser le parag dans les autres panneaux
+  **/
+  sync ()
+  {
+    const my = this
+    this.projet.busy = true // pour empêcher la sauvegarde
+
+    let newParagSync
+      , pano
+      , parag_list = [this] // liste des parags qui seront associés
+      , nombre_parags = this.panneau.parags.count
+      , myindex       = this.index
+      , ipar, iparag
+      , paragAfter_id, paragAfter // le paragraphe avant lequel ajouter le parag synchronisé
+      , optionsAdd
+    Projet.PANNEAUX_SYNC.forEach( pan_id => {
+
+      // S'il s'agit du panneau du parag, on ne fait rien, évidemment
+      if ( pan_id === my.panneau_id ) { return true }
+
+      // puts(`* ÉTUDE DU PANNEAU ${pan_id} *`)
+      // Si le paragraphe courant est déjà en relation avec un paragraphe
+      // du panneau +pan_id+, il n'y a rien à faire
+      if ( my.relativeParagInPanneau(pan_id) ) { return true }
+
+      pano = my.projet.panneau(pan_id)
+
+      // On essaie de voir si un des paragraphes après est synchronisé
+      // avec le panneau en question
+      paragAfter = undefined
+
+      for(ipar = myindex+1; ipar < nombre_parags ; ++ipar){
+        iparag = my.panneau.parags.items[ipar]
+        if ( null !== (paragAfter_id = iparag.relativeParagInPanneau(pan_id, true)) )
+        {
+          // Un relatif est trouvé pour le paragraphe iparag, on va pouvoir
+          // placer le paragraphe synchronisé avant celui-là
+          paragAfter = Parags.get(Number(paragAfter_id))
+          break
+        }
+      }
+
+      if ( !paragAfter
+          && my.previous
+          && (paragAfter_id = my.previous.relativeParagInPanneau(pan_id, false))
+      )
+      {
+        // Aucun paragraphe valide n'a été trouvé après, on cherche dans les
+        // paragraphe avant
+        //
+        // Si le paragraphe juste avant le paragraphe à synchroniser a des
+        // relatifs dans le panneau, on place le nouveau paragraphe à synchroniser
+        // juste après tous les relatifs de ce paragraphe dans chaque panneau.
+        paragAfter = Parags.get( Number(paragAfter_id) ).next
+      }
+
+      // if ( !paragAfter )
+      // {
+      //   // On regarde si parmi les paragraphe avant, il y a un paragraphe
+      //   // synchronisé.
+      //   //  Si c'est le cas, on essaie de placer le nouveu paragraphe à autant
+      //   //  de paragraphes
+      //   //  Si ça n'est pas le cas, on essaie de placer le nouveau paragraphe
+      //   //  à autant de paragraphes de la fin
+      //   // NON : c'est trop compliqué pour un résultat pour le moins hasardeux
+      //   // On pourrait trouver plein de cas où ça ne fonctionne pas.
+      // }
+
+      // On passe ici quand le paragraphe n'est en relation avec aucun
+      // parag du panneau pan_id. Pour le synchroniser, il faut donc
+      // ajouter un paragraphe à ce panneau, en plaçant ce nouveau parag
+      // au bon endroit.
+      // Pour trouver l'endroit, on doit regarder les paragraphes avant et
+      // après le paragraphe à synchroniser.
+      // S'il n'y a pas de paragraphe après, on ajoute le paragraphe à la
+      // fin.
+      // S'il y a des paragraphes après, non synchronisés, on essaie de
+      // mettre les paragraphes synchronisés à autant de paragraphes de la
+      // fin.
+      // puts(`*** Création du paragraphe dans le panneau ${pan_id}`)
+      newParagSync = new Parag({
+          id: Parag.newID()
+        , c : `[Relatif du paragraphe PARAG#${my.id}]`
+        , ca: moment().format('YYMMDD')
+        , d : my.duration // par défaut, la même durée que ce parag
+      })
+      // puts("===/fin de création du paragraphe")
+
+      optionsAdd = {}
+      paragAfter && ( optionsAdd.before = paragAfter )
+      // if (paragAfter)
+      // {
+      //   puts(`On doit placer le parag #${newParagSync.id} avant le parag #${optionsAdd.before.id}`)
+      // }
+      pano.parags.add( newParagSync, optionsAdd )
+      pano.modified = true
+      // Ajout du paragraphe à la liste des paragraphes qui seront associés
+      // quand on les aura tous créés.
+      parag_list.push(newParagSync)
+    })
+
+    // En enfin, on procède à l'association de tous les paragraphes
+    // créés
+    // puts(`Paragraphes à associer : ${parag_list.map(p=>{return p.id})}`)
+    my.projet.relatives.associate(parag_list)
+
+    // on peut débloquer le projet
+    this.projet.busy = false
+  }
+
+  /**
+  * Méthode qui retourne le paragraphe avant lequel le paragraphe courant est
+  * en relation dans le panneau courant.
+  *
+  * Noter que cette méthode ne
+  *
+  * @param  {String} pan_id   L'ID du panneau (entier, donc 'manuscrit')
+  * @param {Boolean} firstOne Si true, on doit renvoyer le premier, sinon,
+  *                           on renvoie le dernier.
+  *
+  * @return {Number}  L'ID du paragraphe avant lequel insérer le nouveau
+  *                   paragraphe ou NULL s'il doit être inséré à la fin.
+  **/
+  relativeParagInPanneau ( pan_id, firstOne )
+  {
+    // La lettre correspondant au panneau
+    const oneLettreCol = Projet.PANNEAUX_DATA[pan_id].oneLetter
+    // puts(`oneLettreCol = ${oneLettreCol}`)
+
+    // Toutes les relatives du projet
+    // ------------------------------
+    const rels = this.projet.relatives.all
+    // if (! this.this_projet_relatives_marked )
+    // {
+    //   puts(`this.projet.relatives.all = ${JSON.stringify(this.projet.relatives.all)}`)
+    //   this.this_projet_relatives_marked = true
+    // }
+
+    // Relatifs du paragraphe courant
+    // ------------------------------
+    // C'est un Hash qui contient en clé les colonnes une-lettre et
+    // en valeur une liste
+    const rels_cur_parag = rels[String(this.id)]['r']
+    // puts(`rels[String(${this.id})]['r'] (rels_cur_parag) = ${JSON.stringify(rels[String(this.id)]['r'])}`)
+
+    // Si le paragraphe n'a pas de donnée concernant la colonne, on ajoute
+    // à la fin
+    if ( undefined === rels_cur_parag[oneLettreCol] ) {
+      // puts(`Pas de clé '${oneLettreCol}' dans ${JSON.stringify(rels[String(this.id)]['r'])}`)
+      return null
+    }
+    // Sinon, il y a des données, c'est-à-dire que le paragraphe est en
+    // relation avec des paragraphes de l'autre panneau.
+    // Mais il faut noter que les identifiants ne sont pas forcément dans l'ordre
+    // dans le plateau. Il faut les classer.
+    // puts(`Classement au début : ${rels_cur_parag[oneLettreCol]}`)
+    rels_cur_parag[oneLettreCol].sort((pid1,pid2)=>{
+      return Parags.get(pid1).index - Parags.get(pid2).index
+    })
+    // puts(`Classement après classement : ${rels_cur_parag[oneLettreCol]}`)
+
+    if ( firstOne )
+    {
+      // puts(`On retourne le premier parag : ${rels_cur_parag[oneLettreCol][0]}`)
+      return rels_cur_parag[oneLettreCol][0]
+    }
+    else
+    {
+      let nombre_rels = rels_cur_parag[oneLettreCol].length
+      // puts( `On retourne le dernier parag : ${rels_cur_parag[oneLettreCol][nombre_rels - 1]}`)
+      return rels_cur_parag[oneLettreCol][nombre_rels - 1]
+    }
   }
 
   /**
@@ -184,8 +375,6 @@ class Parag
   {
     // console.log('-> onChangeContents')
     this.contents = this.newContents
-    // console.log('On met le contents à ', this.contents)
-    this.data.contents = this.contents
     // pour forcer l'actualisation du contenu mis en forme
     delete this._formated_contents
     this.setModified()
@@ -197,8 +386,8 @@ class Parag
    */
   setModified ()
   {
+    this.updated_at = moment().format('YYMMDD')
     this.modified = true
-    this.data.updated_at = moment().format()
   }
   /** ---------------------------------------------------------------------
     *   EVENTS Méthodes
@@ -478,8 +667,17 @@ class Parag
   {
     if (evt && evt.metaKey) { return true }
     let o = this.divContents
+    let realContents
     o.contentEditable = 'true'
-    let realContents = this.contents.replace(/\n/g,'<br>')
+    try
+    {
+      realContents = this.contents.replace(/\n/g,'<br>')
+    }
+    catch(err)
+    {
+      console.log(`[doEdit] ERREUR avec parag#${this.id}`, err)
+      realContents = ''
+    }
     o.innerHTML = realContents
     o.focus()
 
@@ -533,26 +731,6 @@ class Parag
     this.newContents = c
   }
 
-  /**
-  * Le texte tel qu'il doit être affiché dans la page
-  *
-  * Peut-être qu'une méthode plus générale devra être instituée pour traiter l'affichage
-  * du paragraphe, notamment lorsqu'il y aura des balises propres au projet, comme les
-  * personnages, etc.
-  **/
-  get formatedContents () {
-    if (undefined === this._formated_contents){
-      if ( this.contents )
-      {
-        this._formated_contents = Kramdown.parse(this.contents)
-      }
-      else
-      {
-        this._formated_contents = ''
-      }
-    }
-    return this._formated_contents
-  }
 }
 
 module.exports = Parag

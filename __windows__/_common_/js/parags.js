@@ -4,6 +4,8 @@
   *   Gestion des évènements en tant qu'ensemble d'{Event}s.
   *
 *** --------------------------------------------------------------------- */
+let moment = require('moment')
+
 class Parags
 {
 
@@ -45,8 +47,7 @@ class Parags
   **/
   reset ()
   {
-    this.selection.current  && this.selection.unsetCurrent()
-    this.selection.count    && this.deselectAll()
+    this.selection.reset()
     this._items = []
     this._dict  = {}
     this._ids   = []
@@ -68,11 +69,14 @@ class Parags
   {
     // On crée le paragraphe est on l'affiche
     let newP = this.new({current:true, edited: true})
+    newP.created_at = moment().format('YYMMDD')
     // On l'ajoute à la liste des relatives qui tient à jour la relation entre
     // les paragraphes dans les différents panneaux
     this.projet.relatives.addParag(newP)
     // Si les options le demandent, on doit synchroniser les autres panneaux
-    this.projet.option('autosync') && this.autoSyncNew( newP )
+    this.projet.option('autosync') && newP.sync()
+    // On retourne le paragraphe créé
+    return newP
   }
 
 
@@ -82,7 +86,7 @@ class Parags
   **/
   new (options)
   {
-    let newP = new Parag({id:Parag.newID(),contents:''})
+    let newP = new Parag({id:Parag.newID(),c:''})
     if (this.hasCurrent()) {
       options || ( options = {} )
       options.before = this.selection.current.next
@@ -128,10 +132,18 @@ class Parags
     let my = this
       , div
       , lastParag
+
+    my._dict || my.reset()
+
     argp.forEach( (iparag) => {
 
       // Paragraphe existant déjà
       if ( undefined !== my._dict[iparag.id] ) { return }
+
+      // On définit la donnée panneau_id du paragraphe, qui n'est plus
+      // définit par défaut ou par les données (car c'est une donnée qui
+      // consomme et qui est inutile)
+      iparag.panneau_id = my.panneau.id
 
       // On ajoute la div du paragraphe dans le panneau HTML
       if (options.before)
@@ -205,7 +217,7 @@ class Parags
   **/
   get selection ()
   {
-    !this._selection && ( this._selection = new ParagsSelection(this) )
+    this._selection || ( this._selection = new ParagsSelection(this) )
     return this._selection
   }
 
@@ -596,16 +608,6 @@ class Parags
 
   /** ---------------------------------------------------------------------
     *
-    *   Méthodes de synchronisation
-    *
-  *** --------------------------------------------------------------------- */
-  autoSyncNew (newParag)
-  {
-    console.log("La synchronisation automatique est demandée, on synchronise avec le paragraphe", newParag)
-  }
-
-  /** ---------------------------------------------------------------------
-    *
     *   RELATIVES
     *
   *** --------------------------------------------------------------------- */
@@ -656,7 +658,7 @@ class Parags
     this._items[iparag.id] = iparag
   }
 
-  static items () { return this._items }
+  static get items () { return this._items }
 
   /**
   * Retourne l'instance Parag du paragraphe d'identifiant +parag_id+

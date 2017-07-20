@@ -15,11 +15,21 @@
         resetAll()
         panneau.parags.add([parag1, parag2, ... parag12])
 
+    @ Pour initialiser tous les panneaux et créer 40 paragraphes de
+      parag0 à parag39
+
+      resetAllPanneau()
+
     @ Pour sélectionner des paragraphes
 
         // (après avoir ajouté les paragraphes)
         panneau.parags.select(parag2)
         panneau.parags.select([parag10, parag2])
+
+
+    Tous les panneaux, si resetAllPanneaux() est utilisé, sont mis dans des
+    propriétés globales panneauNotes, panneauScenier, panneauManuscrit, etc.
+    en reprenant en suffixe l'ID du panneau titleisé.
 
 */
 let path    = require('path')
@@ -50,7 +60,7 @@ Object.defineProperties(PanProjet.prototype, {
   'container': {
     get: function(){
       if ( undefined === this._container ) {
-        this._container = DOM.create('div', {id:`panneau-contents-${PANNEAU_ID}`})
+        this._container = DOM.create('div', {id:`panneau-contents-${this.id}`})
       }
       return this._container
     }
@@ -59,19 +69,6 @@ Object.defineProperties(PanProjet.prototype, {
 
 global.projet
 global.panneau
-global.parag0
-global.parag1
-global.parag2
-global.parag3
-global.parag4
-global.parag5
-global.parag6
-global.parag7
-global.parag8
-global.parag9
-global.parag10
-global.parag11
-global.parag12
 
 global.PANNEAU_ID  = 'synopsis'
 global.PROJET_ID   = 'exemple'
@@ -84,40 +81,46 @@ global.PROJET_ID   = 'exemple'
 function createParag( params )
 {
   let now = moment().format()
-  let lastID
-  lastID = lastID ? lastID + 1 : 0
+
+  if (undefined === params.id) {
+    throw new Error("Il faut absolument définir l'identifiant du paragraphe, dans createParag (tests)")
+  }
 
   params || (params = {})
-  params.id || (params.id = lastID)
-  params.panneau_id = PANNEAU_ID
   params.contents || (params.contents = `Contenu du paragraphe #${params.id}`)
   params.data = {
-    id: params.id,
-    contents: params.contents,
-    created_at: now, updated_at: now
+      id: params.id
+    , c : params.contents
+    , ca: now, ua: now
+    , d : 60 // durée/longueur
   }
-  return new Parag(params)
+  let parag = new Parag(params)
+  // NOTER qu'on ne peut pas ajouter le paragraphe aux relatives ici, car
+  // on ne connait pas encore le panneau du paragraphe. C'est au moment
+  // d'ajouter le parag au panneau qu'on peut l'ajouter aux relatives
+  // projet.relatives.addParag( parag )
+
+  return parag
 }
 
-function init20Parags ()
+/**
+* Instancie +nombre+ de paragraphe (20 par défaut)
+*
+* @return le dernier ID utilisé, pour enregistrer dans la donnée du projet
+*         qui consigne le dernier ID utilisé.
+*
+* @produit de façon globale des parags de parag0 à parag<nombre> qui peuvent
+* être insérés dans les panneaux pour les tests.
+**/
+function init20Parags ( nombre )
 {
   let listeParags = []
-  for(var pid = 0 ; pid < 20 ; ++ pid){
+  nombre || (nombre = 20)
+  for(var pid = 0 ; pid < nombre ; ++ pid){
     listeParags.push(createParag({id: pid}))
+    eval(`global.parag${pid} = listeParags[${pid}];`)
   }
-  parag0  = listeParags[0]
-  parag1  = listeParags[1]
-  parag2  = listeParags[2]
-  parag3  = listeParags[3]
-  parag4  = listeParags[4]
-  parag5  = listeParags[5]
-  parag6  = listeParags[6]
-  parag7  = listeParags[7]
-  parag10 = listeParags[10]
-  parag11 = listeParags[11]
-  parag12 = listeParags[12]
-  // ...
-  parag19 = listeParags[19]
+  return pid
 }
 
 
@@ -135,26 +138,62 @@ global.getListeOfIds = function () {
   return arr
 }
 
+/** ---------------------------------------------------------------------
+  *
+  * Grande méthode qui initialise tout.
+  *
+*** --------------------------------------------------------------------- */
+global.resetAllPanneaux = function( params)
+{
+  params || ( params = {} )
+
+  // On va créer 40 paragraphes
+  params.nombre_parags || ( params.nombre_parags = 40 )
+
+  projet || ( projet  = new Projet(PROJET_ID) )
+  projet._modified = false
+  projet.option('autosync', 0)
+  projet.option('autosave', 0)
+  Projet.current = projet
+  delete projet._relatives
+  Parag._lastID = -1
+  projet.definePanneauxAsInstances()
+  Projet.PANNEAU_LIST.forEach( (pan_id) => {
+    let pan = projet.panneau(pan_id)
+    pan._modified = false
+    pan.container.innerHTML = ''
+    pan.parags.reset()
+    pan.parags._projet = projet
+    // On crée des propriétés globales pour faire `panneauNotes`
+    eval(`global.panneau${pan_id.titleize()} = projet.panneau('${pan_id}');`)
+  })
+  let lastid = init20Parags(params.nombre_parags)
+  projet.data_generales = { last_parag_id: lastid }
+  Parag._lastID = lastid
+}
+
 global.resetAll = function ()
 {
   // console.log('-> resetAll')
   projet || ( projet  = new Projet(PROJET_ID) )
   Projet.current = projet
   Parag._lastID = -1
-  projet.definePanneaux()
+  projet.definePanneauxAsInstances()
   panneau = projet.panneau(PANNEAU_ID)
   projet._current_panneau = panneau
 
   projet._modified  = false
+  projet.option('autosync', 0)
+  projet.option('autosave', 0)
   panneau._modified = false
 
   panneau.container.innerHTML = ''
   panneau.parags.reset()
   panneau.parags.selection.reset()
   panneau.parags._projet = projet
-  init20Parags()
+  let lastid = init20Parags()
   projet.data_generales = {
-    last_parag_id: 12
+    last_parag_id: lastid
   }
   // console.log('<- resetAll')
 }

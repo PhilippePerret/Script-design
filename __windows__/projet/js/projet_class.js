@@ -33,6 +33,11 @@ class Projet
     this._panneaulist || (this._panneaulist = ['data','personnages','notes','synopsis','scenier','treatment','manuscrit'])
     return this._panneaulist
   }
+  // Liste des panneaux qui peuvent être synchronisés les uns avec les autres
+  static get PANNEAUX_SYNC () {
+    this._panneauxSync || (this._panneauxSync = ['notes','synopsis','scenier','treatment','manuscrit'])
+    return this._panneauxSync
+  }
   static get PANNEAUX_DATA ()
   {
     this._panneauData || (
@@ -47,10 +52,10 @@ class Projet
         , 'p' : 'personnages'
         , 'scenier'     : {oneLetter: 's'}
         , 's' : 'scenier'
-        , 'synopsis'    : {oneLetter: 'y'}
-        , 'y' : 'synopsis'
         , 'treatment'   : {oneLetter: 't'}
         , 't' : 'treatment'
+        , 'synopsis'    : {oneLetter: 'y'}
+        , 'y' : 'synopsis'
       }
     )
     return this._panneauData
@@ -210,15 +215,16 @@ class Projet
   }
 
   panneau (pan_id) {
-    this._panneaux || this.definePanneaux()
+    this._panneaux || this.definePanneauxAsInstances()
     return this._panneaux[pan_id]
   }
   get panneaux () {
-    this._panneaux || this.definePanneaux()
+    this._panneaux || this.definePanneauxAsInstances()
     return this._panneaux
   }
 
-  definePanneaux ()
+  // Crée les instances panneaux pour le projet courant
+  definePanneauxAsInstances ()
   {
     let my = this
     // my._panneaux = {}
@@ -318,7 +324,7 @@ class Projet
    * Méthode appelée quand la sauvegarde automatique est enclenchée
    */
   doAutosave () {
-    if ( this.mode_edition ) { return false }
+    if ( this.mode_edition || this.busy ) { return false }
     this.checkModifiedState()
     this.modified && this.saveAll()
     return true
