@@ -53,7 +53,7 @@ PTests.options.one_line_describe = true
 // PTests.options.test_file = path.join('unit','Parags','remove_parag_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','move_parag_spec.js')
 // PTests.options.test_file = path.join('unit','Parags','parag_spec.js')
-PTests.options.test_file = path.join('unit','Parags','sync_spec.js')
+// PTests.options.test_file = path.join('unit','Parags','sync_spec.js')
 
 // Le dossier de tests à faire
 // Ce doit être le chemin relatif (sans './') depuis le dossier ./tests/ptests/

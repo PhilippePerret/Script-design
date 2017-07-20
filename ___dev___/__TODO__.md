@@ -30,12 +30,14 @@
 
 
                      /---- P3  
-           P1 ------/      NP <---- ?
-           NP              P4
+           P1 ------/ ---- P4   
+           NP              NP <---- ?
            P2              P5
                            P6
+                           NP <---- ? (1)
                            P7
                            NP <---- ?
+
 
                      /---- P3  
            P1 ------/      NP <---- ?
@@ -57,6 +59,7 @@
            P1              P4
            NP              P5
            P2              P6
+                           NP <---- (1)
                            P7
                            NP <----
 
@@ -98,9 +101,6 @@
     Principe : dès qu'un paragraphe est créé, il est automatiquement créé pour les
     autres panneaux.
     La méthode est en place, il faut voir comment l'implémenter
-    Il serait peut-être intéressant d'utiliser une propriété `busy` pendant
-    un processus comme celui-là pour empêcher les sauvegardes automatiques,
-    qui peuvent venir perturber le travail.
 
 * Travailler le pied de page
   - Rendre l'aide plus apparente dans le panneau projet (ligne du bas)

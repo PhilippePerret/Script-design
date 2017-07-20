@@ -47,8 +47,7 @@ class Parags
   **/
   reset ()
   {
-    this.selection.current  && this.selection.unsetCurrent()
-    this.selection.count    && this.deselectAll()
+    this.selection.reset()
     this._items = []
     this._dict  = {}
     this._ids   = []
@@ -75,7 +74,9 @@ class Parags
     // les paragraphes dans les différents panneaux
     this.projet.relatives.addParag(newP)
     // Si les options le demandent, on doit synchroniser les autres panneaux
-    this.projet.option('autosync') && this.autoSyncNew( newP )
+    this.projet.option('autosync') && newP.sync()
+    // On retourne le paragraphe créé
+    return newP
   }
 
 
@@ -138,6 +139,11 @@ class Parags
 
       // Paragraphe existant déjà
       if ( undefined !== my._dict[iparag.id] ) { return }
+
+      // On définit la donnée panneau_id du paragraphe, qui n'est plus
+      // définit par défaut ou par les données (car c'est une donnée qui
+      // consomme et qui est inutile)
+      iparag.panneau_id = my.panneau.id
 
       // On ajoute la div du paragraphe dans le panneau HTML
       if (options.before)
@@ -602,23 +608,6 @@ class Parags
 
   /** ---------------------------------------------------------------------
     *
-    *   Méthodes de synchronisation
-    *
-  *** --------------------------------------------------------------------- */
-
-  /**
-  * Méthode appelée après la création d'un nouveau paragraphe, quand l'option
-  * de synchronisation automatique est activée.
-  * C'est elle qui lance la synchronisation du nouveau paragraphe.
-  **/
-  autoSyncNew (newParag)
-  {
-    console.log("La synchronisation automatique est demandée, on synchronise avec le paragraphe", newParag)
-    newParag.sync()
-  }
-
-  /** ---------------------------------------------------------------------
-    *
     *   RELATIVES
     *
   *** --------------------------------------------------------------------- */
@@ -669,7 +658,7 @@ class Parags
     this._items[iparag.id] = iparag
   }
 
-  static items () { return this._items }
+  static get items () { return this._items }
 
   /**
   * Retourne l'instance Parag du paragraphe d'identifiant +parag_id+

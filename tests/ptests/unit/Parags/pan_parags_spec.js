@@ -207,11 +207,11 @@ describe("Ajout d'un paragraphe avec #add",[
       expect(parag10.current,'parag5.current').to.be.true
       expect(panneau.container,'panneau.container').to.not.have_tag('div',{'contenteditable':"true", id:'p-10'})
     })
-    , it("met le paragraphe en édition avec options.edited", ()=>{
-      panneau.parags.add(parag2, {edited: true})
-      expect(panneau.parags.selection.count,'selection.count').to.equal(3)
-      expect(panneau.container,'panneau.container').to.have_tag('div',{'contenteditable':"true", id:'p-2-contents'})
-    })
+    // , it("met le paragraphe en édition avec options.edited", ()=>{
+    //   panneau.parags.add(parag2, {edited: true})
+    //   expect(panneau.parags.selection.count,'selection.count').to.equal(3)
+    //   expect(panneau.container,'panneau.container').to.have_tag('div',{'contenteditable':"true", id:'p-2-contents'})
+    // })
   ])
   // ==== Les erreurs possibles ====
   , context("avec un paragraphe qui se trouve déjà dans le panneau",[
@@ -653,7 +653,6 @@ describe("Méthode Parags#moveCurrentUp",[
 describe("Méthode Parags#moveCurrentDown",[
   , context("avec un paragraphe après",[
     , it("déplace le paragraphe courant après", ()=>{
-      console.log(DELIMITER_START)
       resetAll()
       panneau.parags.add([parag12, parag10, parag5, parag4])
       panneau.parags.select(parag10)
@@ -663,15 +662,12 @@ describe("Méthode Parags#moveCurrentDown",[
       panneau.parags.moveCurrentDown()
       // ========= VÉRIFICATION =========
       expect(panneau.container,'panneau.container').to.have_tag('div',{class:'selected',id:'p-10'})
-      console.log("(2) getListeOfIds() = ",getListeOfIds())
       expect(getListeOfIds(),'la liste des parags').equal([12,5,10,4])
       // ========> TEST <=========
       panneau.parags.moveCurrentDown()
       // ========= VÉRIFICATION =========
       expect(panneau.container,'panneau.container').to.have_tag('div',{class:'selected',id:'p-10'})
-      console.log("getListeOfIds() = ",getListeOfIds())
       expect(getListeOfIds(),'la liste des parags').equal([12,5,4,10])
-      console.log(DELIMITER_END)
     })
   ])
   , context("sans paragraphe après",[

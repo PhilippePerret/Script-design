@@ -14,14 +14,16 @@ class Relatives
   *** --------------------------------------------------------------------- */
 
   /**
-  * Ajout d'un paragraphe, sans association
+  * Ajout d'un paragraphe, sans association, dans la donnée des
+  * relatives. Méthode appelée à la création du paragraphe pour qu'il soit
+  * pris en compte dans les relatives.
   **/
   addParag (iparag)
   {
     this.data.relatives[String(iparag.id)] = {
         "i" : iparag.id
       , "t" : Projet.PANNEAUX_DATA[iparag.panneau_id].oneLetter
-      , "r" : {}
+      , "r" : {} // les relatifs
     }
     // On réinitialise ses données relatives
     this.resetParag(iparag)
@@ -56,6 +58,12 @@ class Relatives
     this._data || ( this._data = this.store.data )
     return this._data
   }
+
+  /**
+  * Raccourci à data['relatives'] pour pouvoir faire :
+  *     `projet.relatives.all`
+  **/
+  get all () { return this.data.relatives }
 
   get defaultData () {
     return {
