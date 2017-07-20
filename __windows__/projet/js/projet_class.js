@@ -89,6 +89,7 @@ class Projet
   **/
   static loadPanneauByTabulator ( keys )
   {
+    // console.log('-> loadPanneauByTabulator avec:', keys)
     if ( keys.length == 1 )
     {
       this.loadPanneau(keys[0])
@@ -124,6 +125,7 @@ class Projet
   **/
   static loadPanneau (panneau_id, evt)
   {
+    // console.log(`-> Projet::loadPanneau(${panneau_id})`, evt)
     // Si on était en mode double panneau, il faut en sortir, même
     // si on va y revenir tout de suite
     this.desactiveAllCurrents()
@@ -146,7 +148,7 @@ class Projet
       this.current.alt_panneau.unsetModeDouble()
       this.current.current_panneau.unsetModeDouble()
     }
-    this.current.current_panneau || this.current.current_panneau.desactivate()
+    this.current.current_panneau && this.current.current_panneau.desactivate()
   }
 
 

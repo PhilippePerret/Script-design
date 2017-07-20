@@ -130,7 +130,6 @@ class PanProjet
   get modified () { return this._modified || false }
   set modified (v)
   {
-    console.log(`-> modified de panneau #${this.__ID} du projet #${this.projet.__ID}`)
     this._modified = !!v
     // Noter que dans les tests unitaires the.light se sera pas défini,
     // par défaut.
@@ -138,7 +137,6 @@ class PanProjet
     this.projet.modified = true
   }
   setupLight () {
-    console.log(`-> setupLight / modified = ${this.modified}`)
     this.light.innerHTML = this._modified ? '🔴' : '🔵'
   }
   get light () {

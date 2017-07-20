@@ -97,7 +97,7 @@ class Parag
   * du paragraphe, notamment lorsqu'il y aura des balises propres au projet, comme les
   * personnages, etc.
   **/
-  get formatedContents () {
+  get contentsFormated () {
     this._formated_contents || (
       this._formated_contents = this.contents
         ? Kramdown.parse(this.contents)
@@ -513,7 +513,7 @@ class Parag
     let
           div_id  = `p-${this.id}`
         , div     = DOM.create('div', {class:'p', id: div_id, 'data-id':String(this.id)})
-        , divCont = DOM.create('div',{class:'p-contents',id:`${div_id}-contents`,inner:this.formatedContents})
+        , divCont = DOM.create('div',{class:'p-contents',id:`${div_id}-contents`,inner:this.contentsFormated})
     // Ajout du contenu textuel
 
     div.appendChild(divCont)
@@ -706,7 +706,7 @@ class Parag
   {
     this.contentsHasChanged() && this.onChangeContents.bind(this)()
     this.divContents.contentEditable = 'false'
-    this.divContents.innerHTML = this.formatedContents
+    this.divContents.innerHTML = this.contentsFormated
     this.panneau.select(this) // on le remet toujours en courant
     this.projet.mode_edition = false
   }

@@ -192,7 +192,7 @@ class Tabulator
     {
       // <= Un bouton existe, portant cette lettre
       let bouton = this.buttons[keymin]
-      // console.log(`Bouton ${bouton.key} pressé`)
+      // console.log(`Bouton ${bouton.key} de tabulator#${this.id} pressé`)
       bouton.downed = true
     }
   }
@@ -248,6 +248,7 @@ class Tabulator
    */
   onEnter (evt)
   {
+    // console.log(`-> Tabulator#onEnter (${this.id}) `)
     let method
       , my = this
 
@@ -258,6 +259,7 @@ class Tabulator
     // choisis.
     if ( 'function' === typeof my.Map.enter_method ) {
 
+      // console.log('Methode enter_method utilisée')
       my.Map.enter_method.call(Projet, this.current_buttons.map(b =>{return b.data}))
 
     } else {
@@ -275,6 +277,7 @@ class Tabulator
         my.hasBeforeEach && my.Map.beforeEach.call()
 
         // === Exécution de la méthode de data ou de lettre ===
+        // console.log(`Bouton ${bouton.key} traité`)
         method = my.Map[bouton.data]
         if ( 'function' == typeof method ) { method.call() }
         else if ( my.hasDefaultMethod ) { my.defaultMethod.call(null,bouton.data) }
