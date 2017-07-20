@@ -217,7 +217,7 @@ class PanProjet
     }
     // La sauvegarde est asynchrone, on doit donc attendre qu'elle soit
     // faite pour poursuivre.
-    console.log(`-> sauvegarde (save) du panneau '${this.id}'`)
+    // console.log(`-> sauvegarde (save) du panneau '${this.id}'`)
     this.store.set(this.data2save)
     // console.log("<- save")
   }

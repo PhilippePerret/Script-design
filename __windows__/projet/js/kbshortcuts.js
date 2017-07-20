@@ -77,6 +77,13 @@ define(
               delete curProj.cancelableMethod
             }
           }
+          break
+        case 'Escape':
+          if ( curProj.mode_edition )
+          {
+            console.log("ESCAPE EN MODE D'ÉDITION")
+          }
+          return DOM.stopEvent(evt)
       }
     }
     /**
