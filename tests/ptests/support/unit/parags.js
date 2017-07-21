@@ -32,6 +32,7 @@
     en reprenant en suffixe l'ID du panneau titleisé.
 
 */
+try{
 let path    = require('path')
   , moment  = require('moment')
 
@@ -80,20 +81,17 @@ global.PROJET_ID   = 'exemple'
 **/
 function createParag( params )
 {
-  let now = moment().format()
+  let now = moment().format('YYMMDD')
 
   if (undefined === params.id) {
     throw new Error("Il faut absolument définir l'identifiant du paragraphe, dans createParag (tests)")
   }
 
-  params || (params = {})
-  params.contents || (params.contents = `Contenu du paragraphe #${params.id}`)
-  params.data = {
-      id: params.id
-    , c : params.contents
-    , ca: now, ua: now
-    , d : 60 // durée/longueur
-  }
+  params || ( params = {} )
+  params.c || (params.c = `Contenu du paragraphe #${params.id}`)
+  params.ca = now
+  params.ua = now
+  params.d  = 60 // durée/longueur
   let parag = new Parag(params)
   // NOTER qu'on ne peut pas ajouter le paragraphe aux relatives ici, car
   // on ne connait pas encore le panneau du paragraphe. C'est au moment
@@ -200,3 +198,8 @@ global.resetAll = function ()
 
 projet = new Projet(PROJET_ID)
 resetAll()
+
+}catch(err){
+  console.log(err)
+  puts("Une erreur s'est produite dans le support `ptests/support/parags.js` (voir en console)", 'warning')
+}

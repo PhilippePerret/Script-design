@@ -40,3 +40,18 @@ On peut envoyer des options à ces deux méthodes. Cf. `Methodes_attentes.md`.
   waitForVisible(<element>[, <options>])
 
 ```
+
+## Checker l'existence dans un élément
+
+On utiliser la propriété `in` des options. Par exemple :
+
+```js
+
+waitForVisible(<element>, {in: <container>})
+
+waitForVisible('div#p-1', {in: panneau.container})
+  .then ( () => {
+    ...
+  })
+  
+```

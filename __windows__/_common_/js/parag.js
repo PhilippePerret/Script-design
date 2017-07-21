@@ -665,7 +665,7 @@ class Parag
 
   doEdit (evt)
   {
-    if (evt && evt.metaKey) { return true }
+    if ( evt && evt.metaKey ) { return true }
     let o = this.divContents
     let realContents
     o.contentEditable = 'true'
@@ -676,6 +676,7 @@ class Parag
     catch(err)
     {
       console.log(`[doEdit] ERREUR avec parag#${this.id}`, err)
+      console.log(`[doEdit] Le parag#{this.id} contient (data) :`,this.data)
       realContents = ''
     }
     o.innerHTML = realContents

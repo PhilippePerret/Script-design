@@ -1,10 +1,23 @@
 # Les méthodes d'attente
 
-
+* [`waitFor`](#waitmethode_for)
 * [`waitForVisible`](#waitmethode_forvisible)
 * [`waitForNotVisible`](#waitmethode_fornotvisible)
 * [`waitForTrue`](#waitmethode_fortrue)
 * [`waitForFalse`](#waitmethode_forfalse)
+
+
+## `waitFor` {#waitmethode_for}
+
+Permet d'attendre un certain nombre de secondes (flottant possible.)
+
+```js
+
+  waitFor(12.5 /* attend 12 secondes et demi */)
+    .then( () => {
+      ...
+    })
+```
 
 ## `waitForVisible` {#waitmethode_forvisible}
 

@@ -57,9 +57,11 @@ class PanProjet
     alert("Pour le moment, je ne sais pas encore exporter un panneau.")
   }
 
+  // On synchronise les paragraphes du panneau
   synchronize ()
   {
-    alert("Pour le moment, je ne sais pas encore synchroniser un panneau.")
+    this.parags.items.forEach( (iparag) => iparag.sync() )
+    UILog("Synchronisation de tous les parags de ce panneau effectuée.")
   }
 
   cutParagByReturn ()
