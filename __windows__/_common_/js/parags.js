@@ -74,7 +74,9 @@ class Parags
     // les paragraphes dans les différents panneaux
     this.projet.relatives.addParag(newP)
     // Si les options le demandent, on doit synchroniser les autres panneaux
-    this.projet.option('autosync') && newP.sync()
+    this.projet.option('autosync') && ( newP.sync_after_save = true )
+    // On informe à titre indicatif
+    UILog(`Création du paragraphe #${newP.id}`)
     // On retourne le paragraphe créé
     return newP
   }

@@ -75,10 +75,12 @@ class Parag
   * --------------------------------------------------------------------- */
   get contents    ()  { return this.data.c    }
   set contents    (v) { this.data.c = v       }
-  get created_at  ()  { return this.data.ca   }
-  set created_at  (v) { this.data.ca = v      }
   get duration    ()  { return this.data.d    }
   set duration    (v) { this.data.d = v       }
+  get created_at  ()  { return this.data.ca   }
+  set created_at  (v) { this.data.ca = v      }
+  get updated_at  ()  { return this.data.ua   }
+  set updated_at  (v) { this.data.ua = v      }
 
   /** ---------------------------------------------------------------------
     *
@@ -192,26 +194,53 @@ class Parag
     this.doEdit.bind(this)()
   }
 
+  syncAllPanneaux()
+  {
+    const my    = this
+        , proj  = this.projet
+    my.i_panneau_sync || ( my.i_panneau_sync = 0 )
+    let pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
+    if ( pan_id )
+    {
+      if ( proj.panneau(pan_id).loaded ) {
+        my.syncInPanneau(pan_id)
+      } else {
+        // On charge le panneau puis on lance la méthode de synchronisation
+        proj.panneau(pan_id).load( this.syncInPanneau.bind(this) )
+      }
+    }
+    else
+    {
+      //
+      // On achève la synchronisation
+      //
+      // En enfin, on procède à l'association de tous les paragraphes
+      // créés
+      // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
+      proj.relatives.associate(this.parags2sync_list)
+      proj.busy = false
+      delete this.i_panneau_sync
+    }
+  }
   /**
-  * Méthode appelée pour synchroniser le parag dans les autres panneaux
+  * Méthode qui synchronise le paragraphe courant dans le panneau pan_id
   **/
-  sync ()
+  syncInPanneau(pan_id)
   {
     const my = this
-    this.projet.busy = true // pour empêcher la sauvegarde
-
+    console.log("Synchronisation avec le panneau", pan_id)
     let newParagSync
       , pano
-      , parag_list = [this] // liste des parags qui seront associés
       , nombre_parags = this.panneau.parags.count
       , myindex       = this.index
-      , ipar, iparag
-      , paragAfter_id, paragAfter // le paragraphe avant lequel ajouter le parag synchronisé
+      , ipar
+      , iparag
+      , paragAfter_id
+      , paragAfter // le paragraphe avant lequel ajouter le parag synchronisé
       , optionsAdd
-    Projet.PANNEAUX_SYNC.forEach( pan_id => {
 
-      // S'il s'agit du panneau du parag, on ne fait rien, évidemment
-      if ( pan_id === my.panneau_id ) { return true }
+    // S'il s'agit du panneau du parag, on ne fait rien, évidemment
+    if ( pan_id !== my.panneau_id ) {
 
       // puts(`* ÉTUDE DU PANNEAU ${pan_id} *`)
       // Si le paragraphe courant est déjà en relation avec un paragraphe
@@ -220,16 +249,12 @@ class Parag
 
       pano = my.projet.panneau(pan_id)
 
-      // On essaie de voir si un des paragraphes après est synchronisé
-      // avec le panneau en question
       paragAfter = undefined
 
       for(ipar = myindex+1; ipar < nombre_parags ; ++ipar){
         iparag = my.panneau.parags.items[ipar]
         if ( null !== (paragAfter_id = iparag.relativeParagInPanneau(pan_id, true)) )
         {
-          // Un relatif est trouvé pour le paragraphe iparag, on va pouvoir
-          // placer le paragraphe synchronisé avant celui-là
           paragAfter = Parags.get(Number(paragAfter_id))
           break
         }
@@ -240,39 +265,9 @@ class Parag
           && (paragAfter_id = my.previous.relativeParagInPanneau(pan_id, false))
       )
       {
-        // Aucun paragraphe valide n'a été trouvé après, on cherche dans les
-        // paragraphe avant
-        //
-        // Si le paragraphe juste avant le paragraphe à synchroniser a des
-        // relatifs dans le panneau, on place le nouveau paragraphe à synchroniser
-        // juste après tous les relatifs de ce paragraphe dans chaque panneau.
         paragAfter = Parags.get( Number(paragAfter_id) ).next
       }
 
-      // if ( !paragAfter )
-      // {
-      //   // On regarde si parmi les paragraphe avant, il y a un paragraphe
-      //   // synchronisé.
-      //   //  Si c'est le cas, on essaie de placer le nouveu paragraphe à autant
-      //   //  de paragraphes
-      //   //  Si ça n'est pas le cas, on essaie de placer le nouveau paragraphe
-      //   //  à autant de paragraphes de la fin
-      //   // NON : c'est trop compliqué pour un résultat pour le moins hasardeux
-      //   // On pourrait trouver plein de cas où ça ne fonctionne pas.
-      // }
-
-      // On passe ici quand le paragraphe n'est en relation avec aucun
-      // parag du panneau pan_id. Pour le synchroniser, il faut donc
-      // ajouter un paragraphe à ce panneau, en plaçant ce nouveau parag
-      // au bon endroit.
-      // Pour trouver l'endroit, on doit regarder les paragraphes avant et
-      // après le paragraphe à synchroniser.
-      // S'il n'y a pas de paragraphe après, on ajoute le paragraphe à la
-      // fin.
-      // S'il y a des paragraphes après, non synchronisés, on essaie de
-      // mettre les paragraphes synchronisés à autant de paragraphes de la
-      // fin.
-      // puts(`*** Création du paragraphe dans le panneau ${pan_id}`)
       newParagSync = new Parag({
           id: Parag.newID()
         , c : `[Relatif du paragraphe PARAG#${my.id}]`
@@ -283,24 +278,95 @@ class Parag
 
       optionsAdd = {}
       paragAfter && ( optionsAdd.before = paragAfter )
-      // if (paragAfter)
-      // {
-      //   puts(`On doit placer le parag #${newParagSync.id} avant le parag #${optionsAdd.before.id}`)
-      // }
+      console.log(`[Synchronisation] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
       pano.parags.add( newParagSync, optionsAdd )
       pano.modified = true
       // Ajout du paragraphe à la liste des paragraphes qui seront associés
       // quand on les aura tous créés.
-      parag_list.push(newParagSync)
-    })
+      this.parags2sync_list.push(newParagSync)
 
-    // En enfin, on procède à l'association de tous les paragraphes
-    // créés
-    // puts(`Paragraphes à associer : ${parag_list.map(p=>{return p.id})}`)
-    my.projet.relatives.associate(parag_list)
+    } // fin de si ça n'est pas le panneau courant
 
-    // on peut débloquer le projet
-    this.projet.busy = false
+    // À la fin, on peut passer au panneau suivant, ou arrêter
+    this.syncAllPanneaux()
+  }
+  /**
+  * Méthode appelée pour synchroniser le parag dans les autres panneaux
+  *
+  * C'est une méthode asynchrone car il faut peut-être charger le panneau
+  * qui va recevoir le nouvel élément.
+  **/
+  sync ()
+  {
+    console.log(`-> sync() du parag#${this.id}`)
+    this.projet.busy = true         // pour empêcher la sauvegarde
+    this.parags2sync_list = [this]  // liste des parags qui seront associés
+    this.syncAllPanneaux()
+
+    // let newParagSync
+    //   , pano
+    //   , this.parags2sync_list = [this] // liste des parags qui seront associés
+    //   , nombre_parags = this.panneau.parags.count
+    //   , myindex       = this.index
+    //   , ipar, iparag
+    //   , paragAfter_id, paragAfter // le paragraphe avant lequel ajouter le parag synchronisé
+    //   , optionsAdd
+    // Projet.PANNEAUX_SYNC.forEach( pan_id => {
+    //
+    //   // S'il s'agit du panneau du parag, on ne fait rien, évidemment
+    //   if ( pan_id === my.panneau_id ) { return true }
+    //
+      // // puts(`* ÉTUDE DU PANNEAU ${pan_id} *`)
+      // // Si le paragraphe courant est déjà en relation avec un paragraphe
+      // // du panneau +pan_id+, il n'y a rien à faire
+      // if ( my.relativeParagInPanneau(pan_id) ) { return true }
+      //
+      // pano = my.projet.panneau(pan_id)
+      //
+      // paragAfter = undefined
+      //
+      // for(ipar = myindex+1; ipar < nombre_parags ; ++ipar){
+      //   iparag = my.panneau.parags.items[ipar]
+      //   if ( null !== (paragAfter_id = iparag.relativeParagInPanneau(pan_id, true)) )
+      //   {
+      //     paragAfter = Parags.get(Number(paragAfter_id))
+      //     break
+      //   }
+      // }
+      //
+      // if ( !paragAfter
+      //     && my.previous
+      //     && (paragAfter_id = my.previous.relativeParagInPanneau(pan_id, false))
+      // )
+      // {
+      //   paragAfter = Parags.get( Number(paragAfter_id) ).next
+      // }
+      //
+      // newParagSync = new Parag({
+      //     id: Parag.newID()
+      //   , c : `[Relatif du paragraphe PARAG#${my.id}]`
+      //   , ca: moment().format('YYMMDD')
+      //   , d : my.duration // par défaut, la même durée que ce parag
+      // })
+      // // puts("===/fin de création du paragraphe")
+      //
+      // optionsAdd = {}
+      // paragAfter && ( optionsAdd.before = paragAfter )
+      // console.log(`[Synchronisation] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
+      // pano.parags.add( newParagSync, optionsAdd )
+      // pano.modified = true
+      // // Ajout du paragraphe à la liste des paragraphes qui seront associés
+      // // quand on les aura tous créés.
+      // this.parags2sync_list.push(newParagSync)
+    // })
+
+    // // En enfin, on procède à l'association de tous les paragraphes
+    // // créés
+    // // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
+    // my.projet.relatives.associate(this.parags2sync_list)
+    //
+    // // on peut débloquer le projet
+    // this.projet.busy = false
   }
 
   /**
@@ -370,6 +436,10 @@ class Parag
   /**
   * Méthode appelée quand on blur le champ contents pour actualiser
   * le contenu du paragraphe **et que la valeur a changé**
+  *
+  * À la création du paragraphe, c'est cette méthode qui crée
+  * les paragraphes synchronisés si le paragraphe a réellement
+  * été créé (this.sync_after_save à true).
   **/
   onChangeContents ()
   {
@@ -378,6 +448,11 @@ class Parag
     // pour forcer l'actualisation du contenu mis en forme
     delete this._formated_contents
     this.setModified()
+    if ( this.sync_after_save )
+    {
+      this.sync()
+      delete this.sync_after_save
+    }
     this.panneau.modified = true
   }
 

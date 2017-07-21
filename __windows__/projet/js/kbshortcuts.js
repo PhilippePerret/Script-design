@@ -66,6 +66,14 @@ define(
             return DOM.stopEvent(evt)
           }
 
+        case 'Q':
+        case 'q':
+          if (evt.metaKey) // CMD Q
+          if (curProj.modified)
+          {
+            if(!confirm("Le projet est modifié. Si vous quittez maintenant, les nouveautés seront perdues.\n\nConfirmez-vous la fin ?")){ return DOM.stopEvent(evt) }
+          }
+          return true
         case 'z':
           if ( evt.metaKey ) // CMD Z
           {

@@ -191,11 +191,24 @@ class PanProjet
   /**
   * Procède au chargement des données de ce panneau/élément narratif
   **/
-  load ()
+  load ( callback_method )
   {
     // console.log("-> PanProjet#load")
     let my = this
-    my.data = my.store.data
+    my.data = ''
+    my.store.getData(my.loadWithStream.bind(my), my.onEndStreaming.bind(my))
+    my.afterLoadingCallback = callback_method
+    // console.log("<- PanProjet#load")
+  }
+  loadWithStream ( chunk )
+  {
+    this.data += chunk
+  }
+  onEndStreaming ()
+  {
+    let my = this
+    my.data = JSON.parse(my.data)
+    // console.log(my.data)
     for( let prop in my.data ) {
       my[prop] = my.data[prop]
     }
@@ -205,8 +218,14 @@ class PanProjet
     // moment, il n'y en a pas.
     this.data.parags && this.displayParags()
     this.loaded = true
-    // console.log("<- PanProjet#load")
+
+    // S'il faut appeler une méthode après le chargement (ce qui arrive par
+    // exemple pour la synchronisation des paragraphes)
+    'function' === typeof( my.afterLoadingCallback) && my.afterLoadingCallback.call(my)
+
   }
+
+
   /**
   * Procède à la sauvegarde des données actuelles
   **/

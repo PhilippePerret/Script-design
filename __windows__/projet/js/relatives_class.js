@@ -55,7 +55,7 @@ class Relatives
 
   get data ()
   {
-    this._data || ( this._data = this.store.data )
+    this._data || ( this._data = this.store.data || this.defaultData )
     return this._data
   }
 
