@@ -706,6 +706,17 @@ class Parag
   undoEdit (evt)
   {
     this.contentsHasChanged() && this.onChangeContents.bind(this)()
+    this.endEdit()
+  }
+
+  /**
+  * Sortir du champ contents en mode édition
+  * Soit cette méthode est appelée par `undoEdit` lorsque l'édition a été
+  * faite complètement, soit on passe directement ici pour une annulation de
+  * l'édition avec ESCAPE.
+  **/
+  endEdit (evt)
+  {
     this.divContents.contentEditable = 'false'
     this.divContents.innerHTML = this.contentsFormated
     this.panneau.select(this) // on le remet toujours en courant

@@ -31,6 +31,7 @@ define(
       // if ( 'Meta' === evt.key ) { this.metaIsOn = true }
       // console.log('<- onkeydown')
       const curProj = Projet.current
+      const curPan  = curProj.current_panneau
 
       switch (evt.key)
       {
@@ -41,8 +42,8 @@ define(
           // les capter avant pour les faire agir.
           if ( evt.metaKey )
           {
-            curProj.current_panneau.moveCurrentDown(evt)
-            curProj.current_panneau.moveCurrentDown(evt)
+            curPan.moveCurrentDown(evt)
+            curPan.moveCurrentDown(evt)
             return DOM.stopEvent(evt)
           }
           break
@@ -50,8 +51,8 @@ define(
         case 'ArrowUp':
           if ( evt.metaKey )
           {
-            curProj.current_panneau.moveCurrentUp(evt)
-            curProj.current_panneau.moveCurrentUp(evt)
+            curPan.moveCurrentUp(evt)
+            curPan.moveCurrentUp(evt)
             return DOM.stopEvent(evt)
           }
           break
@@ -81,7 +82,8 @@ define(
         case 'Escape':
           if ( curProj.mode_edition )
           {
-            console.log("ESCAPE EN MODE D'ÉDITION")
+            let curParag = curPan.parags.selection.current
+            curParag.endEdit.call(curParag, evt)
           }
           return DOM.stopEvent(evt)
       }
