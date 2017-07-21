@@ -68,7 +68,7 @@ class Parags
   create ()
   {
     // On crée le paragraphe est on l'affiche
-    let newP = this.new({current:true, edited: true})
+    let newP = this.new()
     newP.created_at = moment().format('YYMMDD')
     // On l'ajoute à la liste des relatives qui tient à jour la relation entre
     // les paragraphes dans les différents panneaux
@@ -77,6 +77,9 @@ class Parags
     this.projet.option('autosync') && ( newP.sync_after_save = true )
     // On informe à titre indicatif
     UILog(`Création du paragraphe #${newP.id}`)
+    // On l'édite pour le modifier
+    this.select(newP)
+    newP.edit()
     // On retourne le paragraphe créé
     return newP
   }
@@ -89,6 +92,7 @@ class Parags
   new (options)
   {
     let newP = new Parag({id:Parag.newID(),c:''})
+    console.log("ID du nouveau parag", newP.id)
     if (this.hasCurrent()) {
       options || ( options = {} )
       options.before = this.selection.current.next
@@ -123,7 +127,6 @@ class Parags
   add ( argp, options )
   {
     options || ( options = {} )
-    options.edited && ( options.selected = true )
 
     // S'il faut tout réinitialiser
     options.reset && this.reset()
@@ -183,8 +186,6 @@ class Parags
 
       lastParag = iparag
     })
-
-    options.edited && lastParag.edit()
 
   }
 

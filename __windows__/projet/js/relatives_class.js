@@ -49,7 +49,8 @@ class Relatives
   save ()
   {
     this.data.updated_at = moment().format()
-    this.store.set( this.data )
+    this.store._data = this.data
+    this.store.save()
     this.modified = false
   }
 

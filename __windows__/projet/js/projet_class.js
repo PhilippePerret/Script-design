@@ -107,17 +107,17 @@ class Projet
   {
     // Désactiver les panneaux courants (if any)
     this.desactiveAllCurrents()
-    let cur = this.current
+    let curProj = this.current
 
-    cur._current_panneau = this.panneaux[pan2_id]
-    cur.current_panneau.activate()
-    cur.current_panneau.setModeDouble('right')
+    curProj._current_panneau = curProj.panneau(pan2_id)
+    curProj.current_panneau.activate()
+    curProj.current_panneau.setModeDouble('right')
 
-    cur.alt_panneau = this.panneaux[pan1_id]
-    cur.alt_panneau.activate()
-    cur.alt_panneau.setModeDouble('left')
+    curProj.alt_panneau = curProj.panneau(pan1_id)
+    curProj.alt_panneau.activate()
+    curProj.alt_panneau.setModeDouble('left')
 
-    cur.mode_double_panneaux = true
+    curProj.mode_double_panneaux = true
   }
 
   /**
@@ -279,7 +279,7 @@ class Projet
     this.set_updated_at()
 
     this.observeEditableFields()
-    this.prepareSuivantOptions()
+    this.options.load(this.prepareSuivantOptions.bind(this))
   }
 
 
@@ -316,10 +316,13 @@ class Projet
   **/
   prepareSuivantOptions ()
   {
+    console.log('-> Projet#prepareSuivantOptions')
     if ( this.option('autosave') )
     {
+      console.log('   * activation de l’autosave')
       this.options.activateAutosave()
     }
+    console.log('<- Projet#prepareSuivantOptions')
   }
 
   /**

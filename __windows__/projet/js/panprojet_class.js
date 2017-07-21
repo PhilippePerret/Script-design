@@ -193,12 +193,15 @@ class PanProjet
   **/
   load ( callback_method )
   {
-    // console.log("-> PanProjet#load")
+    console.log("-> PanProjet#load", this.id)
     let my = this
     my.data = ''
-    my.store.getData(my.loadWithStream.bind(my), my.onEndStreaming.bind(my))
     my.afterLoadingCallback = callback_method
-    // console.log("<- PanProjet#load")
+    my.store.getData(my.loadWithStream.bind(my), my.onEndStreaming.bind(my))
+    if ( callback_method ) {
+      console.log("Une fonction callback sera à jouer.", callback_method)
+    }
+    console.log("<- PanProjet#load (async)", this.id)
   }
   loadWithStream ( chunk )
   {
@@ -206,8 +209,16 @@ class PanProjet
   }
   onEndStreaming ()
   {
-    let my = this
-    my.data = JSON.parse(my.data)
+    const my = this
+    console.log(`-> onEndStreaming du panneau#${this.id}`)
+    if (my.data && my.data != '')
+    {
+      my.data = JSON.parse(my.data)
+    }
+    else
+    {
+      my.data = my.defaultData
+    }
     // console.log(my.data)
     for( let prop in my.data ) {
       my[prop] = my.data[prop]
@@ -221,7 +232,14 @@ class PanProjet
 
     // S'il faut appeler une méthode après le chargement (ce qui arrive par
     // exemple pour la synchronisation des paragraphes)
-    'function' === typeof( my.afterLoadingCallback) && my.afterLoadingCallback.call(my)
+    if ( my.afterLoadingCallback )
+    {
+      console.log('[onEndStreaming] my.afterLoadingCallback est défini')
+    }
+    if( 'function' === typeof my.afterLoadingCallback ) {
+      console.log("Je joue la méthode afterLoadingCallback")
+      my.afterLoadingCallback.call(my)
+    }
 
   }
 
@@ -238,9 +256,11 @@ class PanProjet
     }
     // La sauvegarde est asynchrone, on doit donc attendre qu'elle soit
     // faite pour poursuivre.
-    // console.log(`-> sauvegarde (save) du panneau '${this.id}'`)
-    this.store.set(this.data2save)
-    // console.log("<- save")
+    console.log(`-> PanProjet#save sauvegarde du panneau '${this.id}'`, this.data2save)
+    // console.log("<- save"))
+    this.store._data = this.data2save
+    this.store.save(false)
+    console.log("<- PanProjet#save")
   }
   /**
   * Méthode appelée lorsque la sauvegarde est terminée, avec succès
@@ -265,7 +285,7 @@ class PanProjet
   {
     let now = moment().format()
     return {
-        name        : this.name
+        name        : this.id
       , prefs       : this.prefs
       , parags      : this.parags_as_data
       , updated_at  : now
@@ -279,8 +299,8 @@ class PanProjet
   **/
   get defaultData () {
     return {
-        name    : this.name
-      , id      : this.name
+        name    : this.id
+      , id      : this.id
       , prefs   : this.prefs
       , parags  : []
     }

@@ -139,9 +139,9 @@ class ProjetOptions
   * Si le fichier est options n'existe pas encore, la méthode met {}
   * à la donnée _data.
   **/
-  load ()
+  load ( callback )
   {
-    this._data = this.store_options.data
+    this._data = this.store_options.getData(null, callback)
   }
 
   /**

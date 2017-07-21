@@ -32,7 +32,14 @@ class Parag
   static newID ()
   {
     // console.log("-> Parag.newID", this._lastID)
-    this._lastID || (this._lastID = Projet.current.data_generales.last_parag_id || -1)
+    if( undefined === this._lastID)
+    {
+      if ( undefined === Projet.current.data_generales.last_parag_id ) {
+        this._lastID = -1
+      } else {
+        this._lastID = Projet.current.data_generales.last_parag_id
+      }
+    }
     ++ this._lastID
     // On enregistre toujours le nouveau dernier ID dans les données
     // du projet
@@ -196,17 +203,20 @@ class Parag
 
   syncAllPanneaux()
   {
+    console.log('-> syncAllPanneaux')
     const my    = this
         , proj  = this.projet
     my.i_panneau_sync || ( my.i_panneau_sync = 0 )
     let pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
+    console.log("pan_id:", pan_id)
     if ( pan_id )
     {
       if ( proj.panneau(pan_id).loaded ) {
         my.syncInPanneau(pan_id)
       } else {
         // On charge le panneau puis on lance la méthode de synchronisation
-        proj.panneau(pan_id).load( this.syncInPanneau.bind(this) )
+        console.log("--> On doit charger le panneau", pan_id)
+        proj.panneau(pan_id).load( this.syncInPanneau.bind(this, pan_id) )
       }
     }
     else
@@ -217,6 +227,7 @@ class Parag
       // En enfin, on procède à l'association de tous les paragraphes
       // créés
       // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
+      console.log("Fin de la synchronisation de tous les panneaux synchronisables.")
       proj.relatives.associate(this.parags2sync_list)
       proj.busy = false
       delete this.i_panneau_sync
@@ -228,7 +239,7 @@ class Parag
   syncInPanneau(pan_id)
   {
     const my = this
-    console.log("Synchronisation avec le panneau", pan_id)
+    console.log("Synchronisation du panneau", pan_id)
     let newParagSync
       , pano
       , nombre_parags = this.panneau.parags.count
@@ -302,71 +313,6 @@ class Parag
     this.projet.busy = true         // pour empêcher la sauvegarde
     this.parags2sync_list = [this]  // liste des parags qui seront associés
     this.syncAllPanneaux()
-
-    // let newParagSync
-    //   , pano
-    //   , this.parags2sync_list = [this] // liste des parags qui seront associés
-    //   , nombre_parags = this.panneau.parags.count
-    //   , myindex       = this.index
-    //   , ipar, iparag
-    //   , paragAfter_id, paragAfter // le paragraphe avant lequel ajouter le parag synchronisé
-    //   , optionsAdd
-    // Projet.PANNEAUX_SYNC.forEach( pan_id => {
-    //
-    //   // S'il s'agit du panneau du parag, on ne fait rien, évidemment
-    //   if ( pan_id === my.panneau_id ) { return true }
-    //
-      // // puts(`* ÉTUDE DU PANNEAU ${pan_id} *`)
-      // // Si le paragraphe courant est déjà en relation avec un paragraphe
-      // // du panneau +pan_id+, il n'y a rien à faire
-      // if ( my.relativeParagInPanneau(pan_id) ) { return true }
-      //
-      // pano = my.projet.panneau(pan_id)
-      //
-      // paragAfter = undefined
-      //
-      // for(ipar = myindex+1; ipar < nombre_parags ; ++ipar){
-      //   iparag = my.panneau.parags.items[ipar]
-      //   if ( null !== (paragAfter_id = iparag.relativeParagInPanneau(pan_id, true)) )
-      //   {
-      //     paragAfter = Parags.get(Number(paragAfter_id))
-      //     break
-      //   }
-      // }
-      //
-      // if ( !paragAfter
-      //     && my.previous
-      //     && (paragAfter_id = my.previous.relativeParagInPanneau(pan_id, false))
-      // )
-      // {
-      //   paragAfter = Parags.get( Number(paragAfter_id) ).next
-      // }
-      //
-      // newParagSync = new Parag({
-      //     id: Parag.newID()
-      //   , c : `[Relatif du paragraphe PARAG#${my.id}]`
-      //   , ca: moment().format('YYMMDD')
-      //   , d : my.duration // par défaut, la même durée que ce parag
-      // })
-      // // puts("===/fin de création du paragraphe")
-      //
-      // optionsAdd = {}
-      // paragAfter && ( optionsAdd.before = paragAfter )
-      // console.log(`[Synchronisation] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
-      // pano.parags.add( newParagSync, optionsAdd )
-      // pano.modified = true
-      // // Ajout du paragraphe à la liste des paragraphes qui seront associés
-      // // quand on les aura tous créés.
-      // this.parags2sync_list.push(newParagSync)
-    // })
-
-    // // En enfin, on procède à l'association de tous les paragraphes
-    // // créés
-    // // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
-    // my.projet.relatives.associate(this.parags2sync_list)
-    //
-    // // on peut débloquer le projet
-    // this.projet.busy = false
   }
 
   /**
