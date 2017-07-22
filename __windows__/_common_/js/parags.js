@@ -124,7 +124,7 @@ class Parags
   *
   * Note : on observe aussi ce paragraphe.
   **/
-  add ( argp, options )
+  add ( argp, options, methodeAfterDisplay )
   {
     options || ( options = {} )
 
@@ -142,6 +142,8 @@ class Parags
 
     argp.forEach( (iparag) => {
 
+      methodeAfterDisplay && (iparag.methodeAfterDisplay = methodeAfterDisplay)
+
       // Paragraphe existant déjà
       if ( undefined !== my._dict[iparag.id] ) { return }
 
@@ -153,10 +155,12 @@ class Parags
       // On ajoute la div du paragraphe dans le panneau HTML
       if (options.before)
       {
+        console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
         my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv)
       }
       else
       {
+        console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
         my.panneau.container.appendChild(iparag.mainDiv)
       }
 

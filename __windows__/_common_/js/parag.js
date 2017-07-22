@@ -105,9 +105,12 @@ class Parag
   **/
   updateDisplay ()
   {
+    console.log(`Parag#${this.id} -> updateDisplay()`)
     if ( this.divContents )
     {
-      // this.divContents.innerHTML = this.contentsFormated
+      console.log("           Le divContents existe. Je l'actualise.")
+      this.divContents.innerHTML = ''
+      this.divContents.innerHTML = this.contentsFormated
     }
   }
   /** ---------------------------------------------------------------------
@@ -124,14 +127,18 @@ class Parag
   * personnages, etc.
   **/
   get contentsFormated () {
+    console.log(`Parag#${this.id} -> contentsFormated()`)
     if ( ! this._formated_contents )
     {
-      this.formateContents() // peut être asynchrone
+      if ( ! this.formated ) { this.formateContents() /* peut être asynchrone */ }
+      else { this._formated_contents = `[Parag#${this.id} mal formaté]` }
+      this.formated = true
     }
     return this._formated_contents
   }
 
   get contentsFormatedSansTags () {
+    console.log(`Parag#${this.id} -> contentsFormatedSansTags()`)
     this._formcontsanstags || (
       this._formcontsanstags =
           this.contentsFormated
@@ -144,6 +151,7 @@ class Parag
 
 
   as_link (options) {
+    console.log(`Parag#${this.id} -> as_link()`)
     options       || ( options = {} )
     options.titre || ( options.titre = `#${this.id}`)
     return  '<a href="#"'
@@ -173,6 +181,7 @@ class Parag
   **/
   formateContents ()
   {
+    console.log(`Parag#${this.id} -> formateContents()`)
     if ( ! this.contents ) { return '' }
     let c = Kramdown.parse(this.contents)
 
@@ -184,9 +193,9 @@ class Parag
     // missing_parags_list pour le charger plus tard et on met en attendant
     // une marque __Pxxx__ à remplacer après le chargement des paragraphes.
     let missing_parags_list = []
-    let p
+      , p
     c = c.replace(/PARAG#([0-9]+)/g, (found, pid) => {
-      p = Parags.get(Number(pid))
+      p = Parags.get( Number(pid) )
       if ( undefined !== p )
       {
         return p.as_link({relative: true})
@@ -201,13 +210,19 @@ class Parag
         // ATTENTION : Il faut vraiment définit this._formated_contents AVANT
         // de traiter les missings_parags car la méthode loadAndReplaceMarks
         // se sert de la valeur de this._formated_contents
-    if ( missing_parags_list.length )
+    if ( missing_parags_list.length > 0 )
     {
       // <= des paragraphes n'étaient pas chargés, on a mis des marques
       //    marques à la place, qu'on va remplacées une fois qu'elles
       //    seront.
       this.missing_parags_ids = missing_parags_list
       this.loadAndReplaceMarks()
+    }
+    else if ( this.methodeAfterDisplay )
+    {
+      console.log("Je dois jouer la méthode after display")
+      //  this.methodeAfterDisplay.call()
+      setTimeout(this.methodeAfterDisplay, 2000)
     }
     return c // cf. contentsFormated()
   }
@@ -220,7 +235,7 @@ class Parag
   **/
   loadAndReplaceMarks ()
   {
-    console.log("-> loadAndReplaceMarks")
+    console.log(`Parag#${this.id} -> loadAndReplaceMarks()`)
     console.log('[loadAndReplaceMarks] this.missing_parags_ids = ', this.missing_parags_ids)
     const my = this
     let pid, p, re, pano
@@ -246,20 +261,28 @@ class Parag
         //    Note : les relatives nous donne l'information très simplement
         pano = my.projet.relatives.all[String(pid)]['t']
         pano = my.projet.panneau(Projet.PANNEAUX_DATA[pano])
+        console.log(`[loadAndReplaceMarks] --> panneau(${pano.id}).load()`)
         pano.load(() => {
-          let my = Parags.get(this.id)
-          my.traiteMarkParagAndGoOn.bind(my)(pid)
+          let myp = Parags.get(this.id)
+          myp.traiteMarkParagAndGoOn.bind(myp)(pid)
         })
       }
     }
     else
     {
       // <= Il n'y a plus de paragraphes manquant à traiter
-      console.log("Fin du traitement des paragraphes manquants")
+      console.log(`Parag#${this.id} Fin du traitement des paragraphes manquants`)
       delete my.missing_parags_ids
-      my._contents_formated = my.provisoireContents
+      my._formated_contents = my.provisoireContents
+      console.log(`contents_formated final du parag#${this.id}`, my._formated_contents)
+      my.updateDisplay()
       delete my.provisoireContents
-      // TODO il faut modifier le texte dans le document
+      // Si une méthode doit être appelée après l'affichage du paragraphe
+      // on doit l'appeler
+      if ( my.methodeAfterDisplay ) {
+        my.methodeAfterDisplay.call()
+        delete my.methodeAfterDisplay
+      }
     }
   }
   /**
@@ -271,6 +294,10 @@ class Parag
   {
     let my = this
     iparag || ( iparag = Parags.get(pid) )
+    if ( ! iparag )
+    {
+      console.log(`IMPOSSIBLE DE TROUVER LE PARAG #${pid} dans Parags.items`,Parags.items)
+    }
     console.log('REMPLACEMENT')
     console.log("DE", `<__P${pid}__/>`)
     console.log("PAR", iparag.as_link({relative:true}))

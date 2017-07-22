@@ -197,20 +197,23 @@ class PanProjet
     let my = this
     my.data = ''
     my.afterLoadingCallback = callback_method
-    my.store.getData(my.loadWithStream.bind(my), my.onEndStreaming.bind(my))
-    if ( callback_method ) {
-      console.log("Une fonction callback sera à jouer.", callback_method)
-    }
-    console.log("<- PanProjet#load (async)", this.id)
+    my.store.getData( my.loadWithStream.bind(my), my.onEndStreaming.bind(my) )
+    console.log(
+      "<- PanProjet#load (async, avant la fin du chargement)",
+      this.id
+    )
   }
   loadWithStream ( chunk )
   {
+    console.log("\n\n\nCHUNK", chunk)
     this.data += chunk
   }
   onEndStreaming ()
   {
-    const my = this
-    console.log(`-> onEndStreaming du panneau#${this.id}`)
+    const my    = this
+    console.log(`-> onEndStreaming du panneau#${my.id}`)
+    this.loaded = true
+    console.log('[onEndStreaming] my.data =', my.data)
     if (my.data && my.data != '')
     {
       my.data = JSON.parse(my.data)
@@ -228,7 +231,6 @@ class PanProjet
     // relève les parags dans l'interface (pour enregistrement) et, pour le
     // moment, il n'y en a pas.
     this.data.parags && this.displayParags()
-    this.loaded = true
 
     // S'il faut appeler une méthode après le chargement (ce qui arrive par
     // exemple pour la synchronisation des paragraphes)
@@ -343,10 +345,31 @@ class PanProjet
   **/
   displayParags ()
   {
-    this.parags.add(
-      this.data.parags.map(hparag=>{return new Parag( hparag )}),
-      {reset: true}
-    )
+    console.log(`PanProjet#${this.id} -> displayParags()`)
+    this.displayAllParags(this.id == this.projet.current_panneau.id)
+  }
+  displayAllParags ( is_panneau_courant )
+  {
+    console.log(`PanProjet#${this.id} -> instancieAllParags()`)
+    const my = this
+    if ( undefined === my.parags2add_list )
+    {
+      console.log(`[displayParags] Définition de my.parags2add_list`)
+      my.parags.reset()
+      my.parags2display_list  = my.data.parags.map( hp => { return new Parag(hp) } )
+    }
+    if ( is_panneau_courant && my.parags2display_list.length )
+    {
+      console.log(`[displayParags] Affichage du parag #${my.parags2display_list[0].id} dans le panneau courant`)
+      this.parags.add(my.parags2display_list.shift(), undefined, my.displayAllParags.bind(my, true))
+      // this.parags.add(my.parags2display_list.shift(), undefined)
+    }
+    else
+    {
+      console.log("[displayParags] Fin de l'affichage de tous les paragraphes")
+      delete my.parags2display_list
+    }
+
   }
 
   /**
