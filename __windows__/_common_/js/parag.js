@@ -81,23 +81,40 @@ class Parag
   *
   * --------------------------------------------------------------------- */
   get contents    ()  { return this.data.c    }
-  set contents    (v) { this.data.c = v       }
+  set contents    (v) { this.data.c = v ; this.reset()  }
   get duration    ()  { return this.data.d    }
-  set duration    (v) { this.data.d = v       }
+  set duration    (v) { this.data.d = v ; this.reset()  }
   get created_at  ()  { return this.data.ca   }
   set created_at  (v) { this.data.ca = v      }
   get updated_at  ()  { return this.data.ua   }
   set updated_at  (v) { this.data.ua = v      }
 
+  // Pour forcer le "recalcul" de toutes les propriétés volatiles à
+  // construire.
+  reset ()
+  {
+    delete this._formated_contents
+    delete this._formcontsanstags
+    delete this._formated_duration
+    this.updateDisplay()
+  }
+
+  /**
+  * Cette méthode actualise l'affichage du paragraphe s'il existe dans son
+  * conteneur.
+  **/
+  updateDisplay ()
+  {
+    if ( this.divContents )
+    {
+      // this.divContents.innerHTML = this.contentsFormated
+    }
+  }
   /** ---------------------------------------------------------------------
     *
     *   Méthode de formatage
     *
   *** --------------------------------------------------------------------- */
-  get durationFormated () {
-    if(undefined === this.duration){return '---'}
-    return Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
-  }
 
   /**
   * Le texte tel qu'il doit être affiché dans la page
@@ -107,14 +124,163 @@ class Parag
   * personnages, etc.
   **/
   get contentsFormated () {
-    this._formated_contents || (
-      this._formated_contents = this.contents
-        ? Kramdown.parse(this.contents)
-        : ''
-    )
+    if ( ! this._formated_contents )
+    {
+      this.formateContents() // peut être asynchrone
+    }
     return this._formated_contents
   }
 
+  get contentsFormatedSansTags () {
+    this._formcontsanstags || (
+      this._formcontsanstags =
+          this.contentsFormated
+            .replace(/<(.*?)>/g, '')
+            .replace(/"/, "\\\"")
+            .trim()
+    )
+    return this._formcontsanstags
+  }
+
+
+  as_link (options) {
+    options       || ( options = {} )
+    options.titre || ( options.titre = `#${this.id}`)
+    return  '<a href="#"'
+          + `  onclick="return showParag(${this.id})"`
+          + '  class="p-al"'
+          + `  title="${this.contentsFormatedSansTags}">${options.titre}</a>`
+              // Class 'p-al' pour 'parag as link'
+  }
+
+  get durationFormated () {
+    if ( ! this._formated_duration ) {
+      if(undefined === this.duration){
+        this._formated_duration = '---'
+      } else {
+        this._formated_duration = Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
+      }
+    }
+    return this._formated_duration
+  }
+
+  /**
+  * Méthode qui formate le contenu à afficher du paragraphe
+  *
+  * @return {String} Le contenu formaté
+  * @produit this._formated_contents
+  *
+  **/
+  formateContents ()
+  {
+    if ( ! this.contents ) { return '' }
+    let c = Kramdown.parse(this.contents)
+
+    // === Les balises PARAG#xxx ===
+    // Pour mettre la liste des paragraphes qui n'ont pas été trouvés
+    // de côté.
+    // Si le paragraphe existe (i.e. est déjà chargé), on met directement
+    // son lien d'affichage, sinon, on conserve l'identifiant dans la liste
+    // missing_parags_list pour le charger plus tard et on met en attendant
+    // une marque __Pxxx__ à remplacer après le chargement des paragraphes.
+    let missing_parags_list = []
+    let p
+    c = c.replace(/PARAG#([0-9]+)/g, (found, pid) => {
+      p = Parags.get(Number(pid))
+      if ( undefined !== p )
+      {
+        return p.as_link({relative: true})
+      }
+      else
+      {
+        missing_parags_list.push(pid)
+        return `<__P${pid}__/>`
+      }
+    })
+    this._formated_contents = c
+        // ATTENTION : Il faut vraiment définit this._formated_contents AVANT
+        // de traiter les missings_parags car la méthode loadAndReplaceMarks
+        // se sert de la valeur de this._formated_contents
+    if ( missing_parags_list.length )
+    {
+      // <= des paragraphes n'étaient pas chargés, on a mis des marques
+      //    marques à la place, qu'on va remplacées une fois qu'elles
+      //    seront.
+      this.missing_parags_ids = missing_parags_list
+      this.loadAndReplaceMarks()
+    }
+    return c // cf. contentsFormated()
+  }
+
+  /**
+  * Méthode qui prend en argument une liste d'identifiant de paragraphes
+  * non chargés, qui les charges, puis qui remplace dans les textes affichés
+  * les marques __Pxxx__ par les liens correspondants vers les paragraphes
+  * correspondants.
+  **/
+  loadAndReplaceMarks ()
+  {
+    console.log("-> loadAndReplaceMarks")
+    console.log('[loadAndReplaceMarks] this.missing_parags_ids = ', this.missing_parags_ids)
+    const my = this
+    let pid, p, re, pano
+
+    my.provisoireContents || ( my.provisoireContents = my._formated_contents )
+
+    if ( pid = Number(this.missing_parags_ids.pop()) )
+    {
+      // <= Il reste encore des paragraphes manquants
+      // => On traite le dernier.
+      // On essaie toujours de récupérer le paragraphe car il a peut-être
+      // été chargé par le chargement du paragraphe précédent
+      if ( p = Parags.get(pid) )
+      {
+        // <= Le paragraphe a été chargé entre temps
+        // => On peut l'utiliser tout de suite et passer à la suite
+        my.traiteMarkParagAndGoOn(pid, p)
+      }
+      else
+      {
+        // <= Le paragraphe n'est toujours pas chargé
+        // => Il faut charger son panneau pour l'obtenir
+        //    Note : les relatives nous donne l'information très simplement
+        pano = my.projet.relatives.all[String(pid)]['t']
+        pano = my.projet.panneau(Projet.PANNEAUX_DATA[pano])
+        pano.load(() => {
+          let my = Parags.get(this.id)
+          my.traiteMarkParagAndGoOn.bind(my)(pid)
+        })
+      }
+    }
+    else
+    {
+      // <= Il n'y a plus de paragraphes manquant à traiter
+      console.log("Fin du traitement des paragraphes manquants")
+      delete my.missing_parags_ids
+      my._contents_formated = my.provisoireContents
+      delete my.provisoireContents
+      // TODO il faut modifier le texte dans le document
+    }
+  }
+  /**
+  * Méthode utile à la précédente, pour modifier les marques __Pxxx__ dans
+  * le texte formaté du paragraphe, lorsque des marques PARAG#xxx ont été
+  * trouvées, mais que ces paragraphes n'étaient pas encore chargés.
+  **/
+  traiteMarkParagAndGoOn (pid, iparag )
+  {
+    let my = this
+    iparag || ( iparag = Parags.get(pid) )
+    console.log('REMPLACEMENT')
+    console.log("DE", `<__P${pid}__/>`)
+    console.log("PAR", iparag.as_link({relative:true}))
+    console.log('DANS', my.provisoireContents)
+    my.provisoireContents = my.provisoireContents
+          .replace(`<__P${pid}__/>`, iparag.as_link({relative:true}))
+    console.log("my.provisoireContents = ", my.provisoireContents)
+    // On poursuit avec le prochain paragraphe manquant qu'il faut charger
+    my.loadAndReplaceMarks()
+  }
   /** ---------------------------------------------------------------------
     *
     *     RELATIVES
@@ -434,7 +600,7 @@ class Parag
   **/
   get container ()
   {
-    this._container || (this._container = this.panneau.container)
+    this._container || ( this._container = this.panneau.container )
     return this._container
   }
   /**

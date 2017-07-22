@@ -14,9 +14,6 @@ afterAll( () => {
   PTests.options.one_line_describe = oldoptionsOneLinevalue
 })
 
-// On charge le module `relatives.js`
-const Relatives = require_module('./__windows__/projet/js/relatives_class.js')
-
 // Méthode dont on se sert pour définir les données relatives actuelles
 Relatives.prototype.setDataTest = function(d)
 {
@@ -31,7 +28,7 @@ Object.defineProperties(Relatives,{
 
 // On stub les méthodes qui doivent l'être
 Relatives.prototype.save = function(){
-  puts("Normalement, enregistrement de la donnée data")
+  puts("Simulation de l'enregistrement de la donnée data")
 }
 
 // ON moke la classe Projet

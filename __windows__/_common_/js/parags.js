@@ -92,7 +92,7 @@ class Parags
   new (options)
   {
     let newP = new Parag({id:Parag.newID(),c:''})
-    console.log("ID du nouveau parag", newP.id)
+    // console.log("ID du nouveau parag", newP.id)
     if (this.hasCurrent()) {
       options || ( options = {} )
       options.before = this.selection.current.next

@@ -8,7 +8,7 @@ require(path.resolve(path.join('.','tests','ptests','support','unit','parags.js'
 
 let newP, pid
 
-describe("Pour savoir si la méthode Parag#index fonctionne",[
+describe("Parag#index",[
   , it("retourne l'index du paragraphe", ()=>{
     resetAll()
     panneau.parags.add([parag1,parag2,parag3,parag4,parag5])
