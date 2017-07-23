@@ -1,4 +1,5 @@
-let moment = require('moment')
+let moment  = require('moment')
+  , fs      = require('fs')
 /** ---------------------------------------------------------------------
   *   class PanProjet
   *   ---------------
@@ -133,14 +134,15 @@ class PanProjet
   set modified (v)
   {
     this._modified = !!v
-    // Noter que dans les tests unitaires the.light se sera pas défini,
-    // par défaut.
-    this.section && this.setupLight()
+    // // Noter que dans les tests unitaires the.light se sera pas défini,
+    // // par défaut.
+    // this.section && this.setupLight()
     this.projet.modified = true
   }
-  setupLight () {
-    this.light.innerHTML = this._modified ? '🔴' : '🔵'
-  }
+  // Je ne mets plus la lumière
+  // setupLight () {
+  //   this.light.innerHTML = this._modified ? '🔴' : '🔵'
+  // }
   get light () {
     this._light || (this._light = this.section.getElementsByClassName('statelight')[0])
     return this._light
@@ -245,6 +247,59 @@ class PanProjet
 
   }
 
+  /**
+  * Procède à la sauvegarde des données paragraphe
+  **/
+  save_parags ()
+  {
+    console.log('-> PanProjet#save_parags')
+    const my = this
+    if ( this.modified )
+    {
+
+      // this.store_parags._data = this.parags.as_data_infile()
+      // this.store_parags.save()
+      my.saving = true
+      my.saved  = false
+      let fileExists = fs.existsSync(my.parags_file_path)
+      let flgs = fileExists ? 'r+' : 'w'
+      let wstream = fs.createWriteStream(my.parags_file_path)
+      wstream.on('finish', function () {
+        my.saved  = true
+        my.saving = false
+        my.onFinishSaveParags()
+      })
+      if ( true /* fileExists */ )
+      {
+        my.parags.items.forEach( (iparag) => {
+          console.log('[PanProjet#save_parags] Écriture dans le fichier du parag', iparag.id)
+          wstream.write(
+            iparag.dataline_infile,
+            {
+              flags: flgs,
+              start: iparag.startPos
+            }
+          )
+        })
+      }
+      else
+      {
+        console.log("[PanProjet#save_parags] ON SAUVEGARDE TOUT D'UN COUP.")
+        let c = my.parags.items.map( p => {return p.dataline_infile} ).join('')
+        wstream.write( c )
+      }
+      wstream.end()
+    }
+    else
+    {
+      UILog(`Le panneau ${this.name} n'est pas modifié.`)
+    }
+    console.log('<- PanProjet#save_parags')
+  }
+  onFinishSaveParags ()
+  {
+    console.log("Il faut implémenter la méthode de fin de sauvegarde. Pour le moment, je garde la même.")
+  }
 
   /**
   * Procède à la sauvegarde des données actuelles
@@ -289,11 +344,12 @@ class PanProjet
     return {
         name        : this.id
       , prefs       : this.prefs
-      , parags      : this.parags_as_data
+      , parags_ids  : this.parags._ids
       , updated_at  : now
       , created_at  : this.created_at || now
     }
   }
+
 
   /**
   * @return {Object} Les données par défaut pour le panneau. C'est celle qui
@@ -301,10 +357,10 @@ class PanProjet
   **/
   get defaultData () {
     return {
-        name    : this.id
-      , id      : this.id
-      , prefs   : this.prefs
-      , parags  : []
+        name        : this.id
+      , id          : this.id
+      , prefs       : this.prefs
+      , parags_ids  : []
     }
   }
 
@@ -333,11 +389,6 @@ class PanProjet
   * Cette méthode sert après l'enregistrement du panneau.
   **/
   setAllParagsUnmodified () { this.parags.setUnmodified('all') }
-
-  /**
-  * @return {Array} les données du paragraphe du panneau.
-  **/
-  get parags_as_data () { return this.parags.as_data }
 
   /**
   * Méthode appelée après le load, permettant d'afficher les paragraphes
@@ -384,12 +435,19 @@ class PanProjet
 
   /**
   * @return {String} Le path du fichier JSON contenant les données du panneau
+  * SAUF les paragraphes depuis l'enregistrement en longueurs fixes
   **/
   get store_path ()
   {
     this._store_path || (this._store_path = path.join('projets',this.projet.id,this.name))
     return this._store_path
   }
+
+  /**
+  * @return {String} Le path du fichier TEXT contenant tous les paragraphes
+  * en longueur fixe (appartient à tout le projet).
+  **/
+  get parags_file_path () { return this.projet.parags_file_path }
 
 }// /fin class PanProjet
 

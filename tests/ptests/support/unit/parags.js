@@ -45,6 +45,11 @@ global.Relatives  = require_module(path.join('.','__windows__','projet','js','re
 global.ProjetUI   = require_module(path.join('.','__windows__','projet','js','projet_ui.js'))
 global.Store      = require_module(path.join('.','lib','utils','store_class.js'))
 
+ProjetUI.log = function(mess,t){
+  puts("Message UILog : " + mess)
+}
+global.UILog      = ProjetUI.log.bind(ProjetUI)
+
 global.path       = path
 
 // Pour que les Parag(s) soient bien associés au panneau
@@ -88,10 +93,10 @@ function createParag( params )
   }
 
   params || ( params = {} )
-  params.c || (params.c = `Contenu du paragraphe #${params.id}`)
-  params.ca = now
-  params.ua = now
-  params.d  = 60 // durée/longueur
+  params.contents || (params.contents = `Contenu du paragraphe #${params.id}`)
+  params.created_at = now
+  params.updated_at = now
+  params.duration  = 60 // durée/longueur
   let parag = new Parag(params)
   // NOTER qu'on ne peut pas ajouter le paragraphe aux relatives ici, car
   // on ne connait pas encore le panneau du paragraphe. C'est au moment

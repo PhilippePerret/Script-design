@@ -9,6 +9,7 @@
   *
 *** --------------------------------------------------------------------- */
 let path        = require('path')
+  , fs          = require('fs')
   , moment      = require('moment')
   // , requirejs   = require('requirejs')
   , Kramdown    = require(path.join(C.LIB_UTILS_FOLDER,'kramdown_class.js'))
@@ -24,6 +25,41 @@ class Parag
     *
   *** --------------------------------------------------------------------- */
 
+  static get DATA ()
+  {
+    this.__data || (
+      this.__data = {
+        // length: Longueur de la donnée dans le fichier
+        // Types
+        // -----
+        // n: number, s:string, b:boolean
+        //
+        // Le type 'e' suit le type 'd', date, mais seulement YYMMJJ
+          'id'          :   {length: 8  , type: 'n'   }
+        , 'panneau_let' :   {length: 1  , type: 's'   }
+        , 'contents'    :   {length: 512, type: 's'   }
+        , 'duration'    :   {length: 12 , type: 'n'   }
+        , 'created_at'  :   {length: 6  , type: 'e'   }
+        , 'updated_at'  :   {length: 6  , type: 'e'   }
+      }
+    )
+    return this.__data
+  }
+
+  /**
+  * Retourne la longueur exacte d'une donnée de paragraphe dans le fichier
+  * de tous les paragraphes.
+  **/
+  static get dataLengthInFile ()
+  {
+    if ( undefined === this._dataLengthInFile )
+    {
+      let n = 0, p
+      for(p in this.DATA){ n += this.DATA[p].length + 1 }
+      this._dataLengthInFile = n + 2 /* +2 = les deux retours chariots de la fin */
+    }
+    return this._dataLengthInFile
+  }
   /**
   * @return {Number} Un nouvel identifiant pour un paragraphe. C'est un ID
   * absolu et universel qui doit être fourni, unique à tous les panneaux
@@ -66,9 +102,9 @@ class Parag
   {
     this.id     = data.id // doit toujours exister
     this.projet = Projet.current
-    this.panneau_id = data.panneau_id || this.projet.current_panneau.id
-    delete data.panneau_id
-    this.data   = data
+    this.panneau_id   = data.panneau_id || this.projet.current_panneau.id
+    this.panneau_let  = Projet.PANNEAUX_DATA[this.panneau_id].oneLetter
+    for(let p in data){if(data.hasOwnProperty(p)){this[p] = data[p]}}
     // Dans tous les cas, on ajoute l'instance à Parags.items afin de pouvoir
     // toujours récupérer un paragraphe, quel que soit son panneau, avec la
     // méthode `Parags.get(<id>)`
@@ -80,14 +116,22 @@ class Parag
   *   DATA Methods
   *
   * --------------------------------------------------------------------- */
-  get contents    ()  { return this.data.c    }
-  set contents    (v) { this.data.c = v ; this.reset()  }
-  get duration    ()  { return this.data.d    }
-  set duration    (v) { this.data.d = v ; this.reset()  }
-  get created_at  ()  { return this.data.ca   }
-  set created_at  (v) { this.data.ca = v      }
-  get updated_at  ()  { return this.data.ua   }
-  set updated_at  (v) { this.data.ua = v      }
+  get contents    ()  { return this._contents    }
+  set contents    (v) { this._contents = v ; this.reset()  }
+  get duration    ()  { return this._duration    }
+  set duration    (v) { this._duration = v ; this.reset()  }
+  get created_at  ()  { return this._created_at   }
+  set created_at  (v) { this._created_at = v ; this.reset() }
+  get updated_at  ()  { return this._updated_at   }
+  set updated_at  (v) { this._updated_at = v ; this.reset() }
+  get panneau_id  ()  { return this._panneau_id   }
+  set panneau_id  (v) { this._panneau_id = v      }
+  get panneau_let ()  {return this._panneau_let}
+  set panneau_let (v) {this._panneau_let = v      }
+  // Données volatiles
+
+  // NOTE Pour le fichier à données de longueur fixe, il faut définir
+  // la nouvelle propriété dans Parag.DATA ci-dessus
 
   // Pour forcer le "recalcul" de toutes les propriétés volatiles à
   // construire.
@@ -96,9 +140,141 @@ class Parag
     delete this._formated_contents
     delete this._formcontsanstags
     delete this._formated_duration
+    // Toutes les méthodes qui consigne dans le fichier
+    delete this._contents_infile
+    delete this._duration_infile
+    delete this._created_at_infile
+    delete this._updated_at_infile
     this.updateDisplay()
   }
 
+  /** ---------------------------------------------------------------------
+    *
+    *   Méthodes qui permettent d'enregistrer les données paragraphe
+    *   dans le fichier à longueur unique.
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * Méthode principale qui retourne la ligne de donnée à enregistrer dans
+  * le fichier de données en longueur pour ce paragraphe.
+  *
+  * Noter qu'il peut y avoir des retours chariot et autre.
+  **/
+  get dataline_infile ()
+  {
+    let d = '', p
+    for(p in Parag.DATA) { d += this.xBytesData(p) }
+    d += "\n\n"
+    return d
+  }
+
+  /**
+  * Lit la valeur de la donnée du paragraphe dans le fichier
+  *
+  * @return {String} La donnée brute, non parsée
+  **/
+  read_infile ( callback )
+  {
+    this.loaded = false
+    this.parsed = false
+    let rstream = fs.createReadStream(this.panneau.parags_file_path,{
+        encoding  : 'utf8'
+      , start     : this.startPos
+      , end       : this.endPos
+    })
+    rstream
+      .on('data', this.parse_data_infile.bind(this))
+      .on('end', ()=>{
+        this.loaded = true
+      })
+  }
+
+  /**
+  * Méthode qui récupère la valeur brute de la donnée dans le fichier à
+  * longueur fixe et qui la parse pour renseigner toutes les données du
+  * paragraphe.
+  **/
+  parse_data_infile ( datainfile )
+  {
+    // console.log("Je dois parser la donnée ",datainfile)
+    const my = this
+    let prop, dProp, len, val, typ
+    let pos = 0
+    for(prop in Parag.DATA)
+    {
+      dProp = Parag.DATA[prop]
+      len = dProp.length
+      typ = datainfile.substr(pos, 1)
+      val = datainfile.substr(pos+1, len).trim()
+      pos += len + 1
+      // Transformation de la valeur
+      switch(typ)
+      {
+        case 'e': // date YYMMDD
+          val = val // pour le moment
+          break
+        case 'n':
+          val = Number(val.trim())
+          break
+        case 'b':
+          val = val == '1' ? true : false
+      }
+      this[`_${prop}`] = val
+      // console.log(`Propriété '${prop}' mise à `, this[prop])
+    }
+    this.parsed = true
+  }
+
+  /**
+  * Retourne la position du paragraphe dans le fichier contenant tous les
+  * paragraphes.
+  **/
+  get startPos ()
+  {
+    this._startPos || ( this._startPos = this.id * Parag.dataLengthInFile )
+    return this._startPos
+  }
+
+  get endPos ()
+  {
+    this._endpos || ( this._endpos = this.startPos + Parag.dataLengthInFile - 1)
+    return this._endpos
+  }
+
+  /**
+  * Méthode qui "longuarise" une donnée pour l'enregistrer dans le fichier
+  * par longueur.
+  *
+  * @return {String}  La valeur à enregistrer dans le fichier, de la bonne
+  *                   longeur et avec en première lettre le type de la
+  *                   donnée.
+  *
+  * @param {String} p Nom de la propriété, par exemple 'id' ou 'contents'
+  *                   Elle doit correspondre à une entrée dans Parag.DATA
+  **/
+  xBytesData(p)
+  {
+    let d = Parag.DATA[p]
+    let v = this[p]
+    let t = d.type
+    if ( t == 'b' ){
+      v = v ? '1' : '0'
+    } else {
+      v = String(v)
+      let dif = d.length - v.length
+      let suf = ''
+      for(var i = 0; i < dif; ++i){ suf += ' '}
+      v = suf + v
+    }
+    return t + v // le type en une lettre et la valeur de la donnée
+  }
+
+  /** ---------------------------------------------------------------------
+    *
+    * / Fin des méthode pour le fichier à longueur unique
+    *
+  *** --------------------------------------------------------------------- */
   /**
   * Cette méthode actualise l'affichage du paragraphe s'il existe dans son
   * conteneur.

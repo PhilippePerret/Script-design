@@ -1,7 +1,7 @@
 let res = null
 
-c = "Je suis lié au PARAG#12"
+c = "    12"
 
-res = c.replace("PARAG#12", "douzième")
+res = Number(c) + 3
 
 console.log(res)

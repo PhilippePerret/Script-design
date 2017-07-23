@@ -458,13 +458,26 @@ class Projet
   // Les différents stores du projet
   get store_data        () {
     if(!this.id){throw new Error("Impossible de récupérer le fichier data : id est indéfini")}
-    return new Store(`projets/${this.id}/data`) }
+    return new Store(`projets/${this.id}/data`)
+  }
   get store_personnages () {
     if(!this.id){throw new Error("Impossible de récupérer le fichier data des personnages : id est indéfini")}
-    return new Store(`projets/${this.id}/personnages`)}
+    return new Store(`projets/${this.id}/personnages`)
+  }
   get store_scenes      () {
     if(!this.id){throw new Error("Impossible de récupérer le fichier data des scènes : id est indéfini")}
-    return new Store(`projets/${this.id}/scenes`)}
+    return new Store(`projets/${this.id}/scenes`)
+  }
+
+  /**
+  * @return {String} Le path du fichier TEXT contenant tous les paragraphes
+  * en longueur fixe.
+  **/
+  get parags_file_path ()
+  {
+    this._parags_file_path || (this._parags_file_path = path.join(Store.user_data_folder,'projets',this.id,'PARAGS.txt'))
+    return this._parags_file_path
+  }
 
   /**
   * @return {String} Le dossier du projet dans les librairies.
