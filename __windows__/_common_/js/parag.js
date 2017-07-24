@@ -9,10 +9,11 @@
   *
 *** --------------------------------------------------------------------- */
 let path        = require('path')
-  , fs          = require('fs')
+  // , fs          = require('fs')
   , moment      = require('moment')
   // , requirejs   = require('requirejs')
-  , Kramdown    = require(path.join(C.LIB_UTILS_FOLDER,'kramdown_class.js'))
+  // , Kramdown    = require(path.join(C.LIB_UTILS_FOLDER,'kramdown_class.js'))
+  , Kramdown    = require(path.resolve(path.join('.','lib','utils','kramdown_class.js')))
 
 // let Kramdown
 // requirejs([path.join(C.LIB_UTILS_FOLDER,'kramdown.js')], (K)=>{Kramdown=K})
@@ -32,15 +33,16 @@ class Parag
         // length: Longueur de la donnée dans le fichier
         // Types
         // -----
-        // n: number, s:string, b:boolean
+        // n: number, s:string, u:unicode, b:boolean
         //
         // Le type 'e' suit le type 'd', date, mais seulement YYMMJJ
-          'id'          :   {length: 8  , type: 'n'   }
-        , 'panneau_let' :   {length: 1  , type: 's'   }
-        , 'contents'    :   {length: 512, type: 's'   }
-        , 'duration'    :   {length: 12 , type: 'n'   }
-        , 'created_at'  :   {length: 6  , type: 'e'   }
-        , 'updated_at'  :   {length: 6  , type: 'e'   }
+        //
+          'id'          : {length: 8  , type: 'n' }
+        , 'panneau_let' : {length: 1  , type: 's' }
+        , 'ucontents'   : {length: 512, type: 's' }
+        , 'duration'    : {length: 12 , type: 'n' }
+        , 'created_at'  : {length: 6  , type: 'e' }
+        , 'updated_at'  : {length: 6  , type: 'e' }
       }
     )
     return this.__data
@@ -60,6 +62,7 @@ class Parag
     }
     return this._dataLengthInFile
   }
+
   /**
   * @return {Number} Un nouvel identifiant pour un paragraphe. C'est un ID
   * absolu et universel qui doit être fourni, unique à tous les panneaux
@@ -102,13 +105,16 @@ class Parag
   {
     this.id     = data.id // doit toujours exister
     this.projet = Projet.current
-    this.panneau_id   = data.panneau_id || this.projet.current_panneau.id
-    this.panneau_let  = Projet.PANNEAUX_DATA[this.panneau_id].oneLetter
     for(let p in data){if(data.hasOwnProperty(p)){this[p] = data[p]}}
     // Dans tous les cas, on ajoute l'instance à Parags.items afin de pouvoir
     // toujours récupérer un paragraphe, quel que soit son panneau, avec la
     // méthode `Parags.get(<id>)`
     Parags.add(this)
+    // S'il est dans un panneau, on l'ajoute
+    if ( this.panneau )
+    {
+      this.panneau.parags.add(this)
+    }
   }
 
   /** ---------------------------------------------------------------------
@@ -118,6 +124,14 @@ class Parag
   * --------------------------------------------------------------------- */
   get contents    ()  { return this._contents    }
   set contents    (v) { this._contents = v ; this.reset()  }
+  get ucontents   () {
+    this._ucontents || (this._ucontents = this.contents.toUnicode()) // ma méthode String
+    return this._ucontents
+  }
+  set ucontents (v){
+    this._ucontents = v
+    this._contents  = JSON.parse(`"${v.trim()}"`)
+  }
   get duration    ()  { return this._duration    }
   set duration    (v) { this._duration = v ; this.reset()  }
   get created_at  ()  { return this._created_at   }
@@ -126,8 +140,19 @@ class Parag
   set updated_at  (v) { this._updated_at = v ; this.reset() }
   get panneau_id  ()  { return this._panneau_id   }
   set panneau_id  (v) { this._panneau_id = v      }
-  get panneau_let ()  {return this._panneau_let}
-  set panneau_let (v) {this._panneau_let = v      }
+  get panneau_let ()  {
+    if (undefined === this._panneau_let && this.panneau_id )
+    {
+      this._panneau_let = Projet.PANNEAUX_DATA[this.panneau_id].oneLetter
+    }
+    return this._panneau_let
+  }
+  set panneau_let (v) {
+    // La méthode est appelée quand on récupère le parag dans le fichier
+    // de données car c'est la colonne qui est enregistrée.
+    this._panneau_let = v
+    this._panneau_id = Projet.PANNEAUX_DATA[v]
+  }
   // Données volatiles
 
   // NOTE Pour le fichier à données de longueur fixe, il faut définir
@@ -140,11 +165,6 @@ class Parag
     delete this._formated_contents
     delete this._formcontsanstags
     delete this._formated_duration
-    // Toutes les méthodes qui consigne dans le fichier
-    delete this._contents_infile
-    delete this._duration_infile
-    delete this._created_at_infile
-    delete this._updated_at_infile
     this.updateDisplay()
   }
 
@@ -176,18 +196,7 @@ class Parag
   **/
   read_infile ( callback )
   {
-    this.loaded = false
-    this.parsed = false
-    let rstream = fs.createReadStream(this.panneau.parags_file_path,{
-        encoding  : 'utf8'
-      , start     : this.startPos
-      , end       : this.endPos
-    })
-    rstream
-      .on('data', this.parse_data_infile.bind(this))
-      .on('end', ()=>{
-        this.loaded = true
-      })
+    this.panneau.parags.readParag(this.id, this.parse_data_infile.bind(this))
   }
 
   /**
@@ -221,8 +230,13 @@ class Parag
           val = val == '1' ? true : false
       }
       this[`_${prop}`] = val
+
       // console.log(`Propriété '${prop}' mise à `, this[prop])
     }
+    // Traitement spécial de la valeur contents, dont les caractères
+    // spéciaux ont été transformés en caractères unicode
+    this.ucontents = this._ucontents // pour forcer this.contents
+
     this.parsed = true
   }
 
@@ -234,12 +248,6 @@ class Parag
   {
     this._startPos || ( this._startPos = this.id * Parag.dataLengthInFile )
     return this._startPos
-  }
-
-  get endPos ()
-  {
-    this._endpos || ( this._endpos = this.startPos + Parag.dataLengthInFile - 1)
-    return this._endpos
   }
 
   /**
@@ -281,10 +289,11 @@ class Parag
   **/
   updateDisplay ()
   {
+    if ( ! this.panneau ) { return false }
     console.log(`Parag#${this.id} -> updateDisplay()`)
     if ( this.divContents )
     {
-      console.log("           Le divContents existe. Je l'actualise.")
+      console.log("Le divContents existe. Je l'actualise.")
       this.divContents.innerHTML = ''
       this.divContents.innerHTML = this.contentsFormated
     }
@@ -433,15 +442,9 @@ class Parag
       else
       {
         // <= Le paragraphe n'est toujours pas chargé
-        // => Il faut charger son panneau pour l'obtenir
-        //    Note : les relatives nous donne l'information très simplement
-        pano = my.projet.relatives.all[String(pid)]['t']
-        pano = my.projet.panneau(Projet.PANNEAUX_DATA[pano])
-        console.log(`[loadAndReplaceMarks] --> panneau(${pano.id}).load()`)
-        pano.load(() => {
-          let myp = Parags.get(this.id)
-          myp.traiteMarkParagAndGoOn.bind(myp)(pid)
-        })
+        // => Il faut charger son le paragraphe (pas besoin de charger son
+        //    panneau, maintenant)
+        Parags.readParag(pid, myp.traiteMarkParagAndGoOn.bind(myp)(pid))
       }
     }
     else

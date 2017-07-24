@@ -16,11 +16,15 @@
     "test-unit": "NODE_ENV=test mocha tests/unit/utils/**/*_spec.js",
     "ptests": "./ptests.sh",
     "test": "./ptests.sh",
-    "test-integration": "NODE_ENV=test mocha tests/integration/projets/**/*_spec.js"
+    "test-integration": "NODE_ENV=test mocha tests/integration/projets/**/*_spec.js",
+    "mocha": "./node_modules/.bin/mocha ./tests/mocha/**/*_spec.js"
   },
   "author": "Philippe perret <philippe.perret@yahoo.fr>",
   "license": "ISC",
   "devDependencies": {
+    "jsdom": "^11.1.0",
+    "mocha": "^3.4.2",
+    "mocha-jsdom": "^1.1.0",
     "spectron": "^3.6.4"
   }
 }

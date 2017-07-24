@@ -49,8 +49,9 @@ PTests.options.one_line_describe = true
 
 // PTests.options.test_file = path.join('unit','Projet','options_spec.js')
 // PTests.options.test_file = path.join('unit','Projet','save_spec.js')
+PTests.options.test_file = path.join('unit','Projet','save_parags_spec.js')
 
-PTests.options.test_file = path.join('unit','PanProjet','save_spec.js')
+// PTests.options.test_file = path.join('unit','PanProjet','save_spec.js')
 
 // PTests.options.test_file = path.join('unit','Parag','parag_spec.js')
 // PTests.options.test_file = path.join('unit','Parag','save_spec.js')

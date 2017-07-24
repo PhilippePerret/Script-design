@@ -113,7 +113,7 @@ class PanProjet
   * @return {HTMLElement} Le container dans le DOM des éléments du pan-projet
   **/
   get container () {
-    this._container || (this._container=DOM.get(`panneau-${this.id}-contents`))
+    this._container || (this._container = DOM.get(`panneau-${this.id}-contents`))
     return this._container
   }
   /**
@@ -263,14 +263,14 @@ class PanProjet
       my.saved  = false
       let fileExists = fs.existsSync(my.parags_file_path)
       let flgs = fileExists ? 'r+' : 'w'
-      let wstream = fs.createWriteStream(my.parags_file_path)
-      wstream.on('finish', function () {
-        my.saved  = true
-        my.saving = false
-        my.onFinishSaveParags()
-      })
-      if ( true /* fileExists */ )
+      if ( fileExists )
       {
+        let wstream = fs.createWriteStream(my.parags_file_path)
+        wstream.on('finish', function () {
+          my.saved  = true
+          my.saving = false
+          my.onFinishSaveParags()
+        })
         my.parags.items.forEach( (iparag) => {
           console.log('[PanProjet#save_parags] Écriture dans le fichier du parag', iparag.id)
           wstream.write(
@@ -281,14 +281,13 @@ class PanProjet
             }
           )
         })
+        wstream.end()
       }
       else
       {
         console.log("[PanProjet#save_parags] ON SAUVEGARDE TOUT D'UN COUP.")
-        let c = my.parags.items.map( p => {return p.dataline_infile} ).join('')
-        wstream.write( c )
+        this.projet.save_parags()
       }
-      wstream.end()
     }
     else
     {

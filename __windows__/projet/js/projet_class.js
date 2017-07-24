@@ -9,7 +9,7 @@
 
 */
 let
-      ipc     = require('electron').ipcRenderer
+      fs      = require('fs')
     , moment  = require('moment')
 
 moment.locale('fr')
@@ -349,10 +349,26 @@ class Projet
   {
     let my = this
       , pan
+
+    my.saving = true
+    my.saved  = false
+
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
       pan = my.panneau(pan_id)
-      pan.modified && pan.save.bind(pan)()
+      pan.modified && pan.save.bind(pan)() // pas les paragraphes
     })
+    this.saveParags( () => {
+      my.saving = false
+      my.saved  = true
+    })
+  }
+
+  /**
+  * Raccourci pour appeler la méthode de sauvegarde des paragraphes
+  **/
+  saveParags ( callback )
+  {
+    Parags.save( this, callback )
   }
 
   onChangeData (o)

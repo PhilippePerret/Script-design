@@ -7,6 +7,9 @@
   *   instance <projet>#options
   *
 *** --------------------------------------------------------------------- */
+let fs = require('fs')
+let path = require('path')
+
 class ProjetOptions
 {
   static get DATA () {
@@ -141,7 +144,15 @@ class ProjetOptions
   **/
   load ( callback )
   {
-    this._data = this.store_options.getData(null, callback)
+    if ( fs.existsSync(this.store_path) )
+    {
+      this._data = this.store_options.getData(null, callback)
+    }
+    else
+    {
+      this._data = {}
+      if ('function' == typeof callback){ callback.call() }
+    }
   }
 
   /**
@@ -167,6 +178,11 @@ class ProjetOptions
   get store_options     () {
     this._store_options || (this._store_options = new Store(`projets/${this.projet.id}/options`) )
     return this._store_options
+  }
+
+  get store_path () {
+    this._store_path || ( this._store_path = path.join(Store.user_data_folder,'projets',this.projet.id,'options.json') )
+    return this._store_path
   }
 
   /**
