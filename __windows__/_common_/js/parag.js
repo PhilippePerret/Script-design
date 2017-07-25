@@ -26,6 +26,13 @@ class Parag
     *
   *** --------------------------------------------------------------------- */
 
+  /**
+  * Définition des DATA du PARAG telles qu'elles seront enregistrées dans
+  * le fichier PARAGS.txt à longueur fixe.
+  *
+  * Ce fichier permet d'atteindre n'importe quel paragraphe en connaissant
+  * sont ID.
+  **/
   static get DATA ()
   {
     this.__data || (

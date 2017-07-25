@@ -11,10 +11,9 @@ const plugin = function plugin(chai, utils) {
     const self = this
     // console.log('this = ', this)
     var obj = utils.flag(self, 'object') // => HTMLElement
-
+    if ( ! obj ) { throw new Error('Actual is null.') }
     attrs.tag = tag
     let resultat = DOMTest.actualTagContainsExpect(obj, attrs)
-    // console.log('resultat',resultat)
     if ( resultat.success )
     {
       return true
@@ -39,9 +38,8 @@ const plugin = function plugin(chai, utils) {
         }
       }
       var expAsStr = `${nombre_fois}<${tag}${attrsStr}>${texte}`
-
+      resultat.error = String(resultat.error).replace(/_ACTUAL_/g, expAsStr)
       throw new Error(resultat.error)
-      // throw new Error(`${resultat.error} dans ${asSource} (search for ${expAsStr})`)
     }
   })
 }

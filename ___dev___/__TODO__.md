@@ -1,3 +1,5 @@
+* Maintenant que les parags sont enregistrés dans un unique fichier, il faut définir et tenir à jour la méthode `parags_ids` des panneaux, qui liste les identifiants de leurs paragraphes.
+
 * Remplacer les balises PARAG#<id> par un lien qui affiche au survol le texte du paragraphe.
 
 * Prévoir à la fin du paragraphe un espace pour indiquer plein de choses et notamment le

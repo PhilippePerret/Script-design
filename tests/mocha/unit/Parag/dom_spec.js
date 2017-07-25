@@ -5,10 +5,12 @@ describe('Parag', function () {
     it('répond', function(){
       expect(parag0).to.respondsTo('build')
     });
-    it.only('retourne le code voulu', function(){
+    it('retourne un élément DOM valide pour le paragraphe', function(){
       res = parag0.build()
-      expect(res).to.haveTag('div', {id: 'p-0', class:'p', count:2})
-    });
-
-  });
-});
+      expect(res).to.haveTag('div', {id: 'p-0', class:'p', 'data-id': '0'})
+      // res = parag0.build().querySelector('div#p-0')
+      res = res.querySelector('div#p-0-contents')
+      expect(res).to.haveTag('div', {id:'p-0-contents', class:'p-contents', text: parag0.contents})
+    })
+  })
+})
