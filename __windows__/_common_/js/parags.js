@@ -559,7 +559,7 @@ class Parags
   setUnmodified ( argp )
   {
     if ( undefined === argp || 'all' === argp ) {
-      argp = this._items
+      argp = this._items || []
     }
     else {
       argp = this.realArgs(argp)

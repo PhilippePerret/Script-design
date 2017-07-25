@@ -21,7 +21,9 @@ class PanProjet
 
   constructor (name, projet)
   {
-    if(!projet){throw(new Error("Un panneau doit obligatoirement être initialisé avec son projet, maintenant."))}
+    if(!name){throw(new Error("Il faut fournir l'identifiant du panneau à initialiser."))}
+    if(Projet.PANNEAU_LIST.indexOf(name) < 0){throw(new Error(`'${name}' n'est pas un identifiant de panneau valide.`))}
+    if(!projet){throw(new Error("Un panneau doit obligatoirement être initialisé avec son projet."))}
     this.__ID   = PanProjet.newID()
     this.id     = name
     this.name   = name // p.e. 'data', ou 'scenier'
@@ -31,11 +33,38 @@ class PanProjet
     this.actif  = false
     // Mis à true quand les données du panneau ont été chargées (qu'elles
     // existent ou non)
-    this.loaded = false
-    this.projet = projet
+    this.loaded   = false
+    this.loading  = false
+    this.projet   = projet
   }
 
   /* --- Public --- */
+
+  /**
+  * Ajouter un parag au panneau, comme la méthode parags.add, mais
+  * marque le panneau modifié.
+  *
+  * @param {Parag|Array} aparags Une instance Parag ou une liste
+  *                              d'instances.
+  * @param {Object|Null} options  Options pour l'ajout. Cf. Parags.add
+  **/
+  add (aparags, options) {
+    if ( !Array.isArray(aparags) ) { aparags = [aparags]}
+    if ( !aparags[0] || aparags[0].constructor.name != 'Parag'){
+      throw new Error("Il faut fournir un Parag en premier argument de `add`.")
+    }
+    this.parags.add(aparags, options)
+    this.modified = true
+  }
+
+  /**
+  * Racourci
+  * @return {Array} Liste des identifiants du panneau
+  **/
+  get parags_ids () { return this.parags._ids }
+  set parags_ids (v) {
+    throw new Error("PanProjet#parags_ids ne doit pas être atteint directement. Utiliser `add`.")
+  }
 
   /**
   * Les méthodes appelées par le menu des commandes
@@ -82,25 +111,24 @@ class PanProjet
     *   DATA
     *
   *** --------------------------------------------------------------------- */
-
   /**
   * Pour activer/désactiver le panneau, c'est-à-dire le mettre en panneau
   * courant, affiché dans l'interface.
   **/
-  activate () {
+  activate ( callback ) {
     // console.log("-> activate panneau")
-    this.loaded || this.load()
-    DOM.addClass(`panneau-${this.id}`,'actif')
-    // Le panneau pouvant être enregistré alors qu'un autre est activé,
-    // il faut vérifier sa marque à son activation.
-    this.setupLight()
-    this.actif = true
+    this.loaded || this.load( (err) => {
+      if (err) { throw err }
+      DOM.addClass(this.section,'actif')
+      this.actif = true
+      callback && callback.call()
+    })
   }
   desactivate () {
     // Avant de désactiver le panneau, on déselectionne les sélections
     // et la marque de paragraphe courant.
     this.parags.selection.reset()
-    DOM.removeClass(`panneau-${this.id}`,'actif')
+    DOM.removeClass(this.section,'actif')
     // On supprime aussi l'annulation possible
     delete this.projet.cancelableMethod
     // Puis on marque que le panneau n'est plus actif.
@@ -113,7 +141,7 @@ class PanProjet
   * @return {HTMLElement} Le container dans le DOM des éléments du pan-projet
   **/
   get container () {
-    this._container || (this._container = DOM.get(`panneau-${this.id}-contents`))
+    this._container || (this._container = DOM.get(`${this.dom_id}-contents`))
     return this._container
   }
   /**
@@ -121,8 +149,13 @@ class PanProjet
   **/
   get section ()
   {
-    this._section || (this._section = DOM.get(`panneau-${this.name}`))
+    this._section || ( this._section = DOM.get(this.dom_id) )
     return this._section
+  }
+
+  get dom_id () {
+    this._dom_id || ( this._dom_id = `panneau-${this.id}` )
+    return this._dom_id
   }
 
   /** ---------------------------------------------------------------------
@@ -134,18 +167,7 @@ class PanProjet
   set modified (v)
   {
     this._modified = !!v
-    // // Noter que dans les tests unitaires the.light se sera pas défini,
-    // // par défaut.
-    // this.section && this.setupLight()
     this.projet.modified = true
-  }
-  // Je ne mets plus la lumière
-  // setupLight () {
-  //   this.light.innerHTML = this._modified ? '🔴' : '🔵'
-  // }
-  get light () {
-    this._light || (this._light = this.section.getElementsByClassName('statelight')[0])
-    return this._light
   }
 
   setModeDouble (cote)
@@ -195,27 +217,22 @@ class PanProjet
   **/
   load ( callback_method )
   {
-    console.log("-> PanProjet#load", this.id)
+    // console.log("-> PanProjet#load", this.id)
     let my = this
     my.data = ''
     my.afterLoadingCallback = callback_method
     my.store.getData( my.loadWithStream.bind(my), my.onEndStreaming.bind(my) )
-    console.log(
-      "<- PanProjet#load (async, avant la fin du chargement)",
-      this.id
-    )
   }
   loadWithStream ( chunk )
   {
-    console.log("\n\n\nCHUNK", chunk)
     this.data += chunk
   }
   onEndStreaming ()
   {
     const my    = this
-    console.log(`-> onEndStreaming du panneau#${my.id}`)
+    // console.log(`-> onEndStreaming du panneau#${my.id}`)
     this.loaded = true
-    console.log('[onEndStreaming] my.data =', my.data)
+    // console.log('[onEndStreaming] my.data =', my.data)
     if (my.data && my.data != '')
     {
       my.data = JSON.parse(my.data)
@@ -229,101 +246,46 @@ class PanProjet
       my[prop] = my.data[prop]
     }
     // S'il y a des paragraphes, il faut les afficher
-    // Attention, ici, on ne peut pas faire `this.parags`, car cette méthode
-    // relève les parags dans l'interface (pour enregistrement) et, pour le
-    // moment, il n'y en a pas.
-    this.data.parags && this.displayParags()
+    this.data.pids && this.data.pids.length && this.displayParags()
 
     // S'il faut appeler une méthode après le chargement (ce qui arrive par
     // exemple pour la synchronisation des paragraphes)
     if ( my.afterLoadingCallback )
     {
-      console.log('[onEndStreaming] my.afterLoadingCallback est défini')
+      // console.log('[onEndStreaming] my.afterLoadingCallback est défini')
     }
     if( 'function' === typeof my.afterLoadingCallback ) {
-      console.log("Je joue la méthode afterLoadingCallback")
+      // console.log("Je joue la méthode afterLoadingCallback")
       my.afterLoadingCallback.call(my)
     }
 
   }
 
   /**
-  * Procède à la sauvegarde des données paragraphe
-  **/
-  save_parags ()
-  {
-    console.log('-> PanProjet#save_parags')
-    const my = this
-    if ( this.modified )
-    {
-
-      // this.store_parags._data = this.parags.as_data_infile()
-      // this.store_parags.save()
-      my.saving = true
-      my.saved  = false
-      let fileExists = fs.existsSync(my.parags_file_path)
-      let flgs = fileExists ? 'r+' : 'w'
-      if ( fileExists )
-      {
-        let wstream = fs.createWriteStream(my.parags_file_path)
-        wstream.on('finish', function () {
-          my.saved  = true
-          my.saving = false
-          my.onFinishSaveParags()
-        })
-        my.parags.items.forEach( (iparag) => {
-          console.log('[PanProjet#save_parags] Écriture dans le fichier du parag', iparag.id)
-          wstream.write(
-            iparag.dataline_infile,
-            {
-              flags: flgs,
-              start: iparag.startPos
-            }
-          )
-        })
-        wstream.end()
-      }
-      else
-      {
-        console.log("[PanProjet#save_parags] ON SAUVEGARDE TOUT D'UN COUP.")
-        this.projet.save_parags()
-      }
-    }
-    else
-    {
-      UILog(`Le panneau ${this.name} n'est pas modifié.`)
-    }
-    console.log('<- PanProjet#save_parags')
-  }
-  onFinishSaveParags ()
-  {
-    console.log("Il faut implémenter la méthode de fin de sauvegarde. Pour le moment, je garde la même.")
-  }
-
-  /**
   * Procède à la sauvegarde des données actuelles
   **/
-  save ()
+  save ( callback )
   {
+    const my = this
     // console.log("-> save")
-    if ( ! this.modified )
+    if ( ! my.modified )
     {
-      alert(`Le panneau ${this.projet.id}/${this.name} n'est pas marqué modifié, normalement, je ne devrais pas avoir à le sauver.`)
+      alert(`Le panneau ${my.projet.id}/${my.name} n'est pas marqué modifié, normalement, je ne devrais pas avoir à le sauver.`)
     }
     // La sauvegarde est asynchrone, on doit donc attendre qu'elle soit
     // faite pour poursuivre.
-    console.log(`-> PanProjet#save sauvegarde du panneau '${this.id}'`, this.data2save)
+    // console.log(`-> PanProjet#save sauvegarde du panneau '${this.id}'`, this.data2save)
     // console.log("<- save"))
-    this.store._data = this.data2save
-    this.store.save(false)
-    console.log("<- PanProjet#save")
+    my.store._data = my.data2save
+    my.store.save(false, my.onFinishSave.bind(my, callback) )
+    // console.log("<- PanProjet#save")
   }
   /**
   * Méthode appelée lorsque la sauvegarde est terminée, avec succès
   *
   * Elle est appelée par la class Store, dans Store#save
   **/
-  onFinishSave ()
+  onFinishSave (callback)
   {
     // console.log("-> onFinishSave")
     // Si nécessaire, on procède à la sauvegarde des relatives
@@ -331,6 +293,7 @@ class PanProjet
     this.setAllParagsUnmodified()
     this.modified = false
     this.projet.checkModifiedState()
+    if ( callback ) { callback.call() }
     // console.log("<- onFinishSave")
   }
 
@@ -343,7 +306,7 @@ class PanProjet
     return {
         name        : this.id
       , prefs       : this.prefs
-      , parags_ids  : this.parags._ids
+      , pids        : this.parags._ids
       , updated_at  : now
       , created_at  : this.created_at || now
     }
@@ -356,10 +319,10 @@ class PanProjet
   **/
   get defaultData () {
     return {
-        name        : this.id
-      , id          : this.id
-      , prefs       : this.prefs
-      , parags_ids  : []
+        name    : this.id
+      , id      : this.id
+      , prefs   : this.prefs
+      , pids    : []
     }
   }
 
@@ -373,16 +336,6 @@ class PanProjet
     return this._parags
   }
 
-  // Attention, les deux méthodes parags et parags= ne sont pas du tout les
-  // même. La méthode `parags=` ci-dessous permet de répondre au chargement
-  // lorsque les données sont dispatchées dans le panneau alors que la méthode
-  // `parags` retourne une instance Parags qui permet de gérer les parags.
-  // Cette méthode ne sert plus nom plus à ajouter les paragraphes à
-  // parags
-  set parags ( hparags ) {
-    // this.parags.items = hparags
-  }
-
   /**
   * Marque tous les paragraphes comme non modifiés.
   * Cette méthode sert après l'enregistrement du panneau.
@@ -393,31 +346,37 @@ class PanProjet
   * Méthode appelée après le load, permettant d'afficher les paragraphes
   * courants.
   **/
-  displayParags ()
+  displayParags ( callback )
   {
-    console.log(`PanProjet#${this.id} -> displayParags()`)
-    this.displayAllParags(this.id == this.projet.current_panneau.id)
+    // console.log(`PanProjet#${this.id} -> displayParags()`)
+    this.displayAllParags(this.id == this.projet.current_panneau.id, callback)
   }
-  displayAllParags ( is_panneau_courant )
+
+  /**
+  * Méthode en boucle qui procède à l'affichage de tous les paragraphes,
+  * les uns après les autres.
+  **/
+  displayAllParags ( is_panneau_courant, callback )
   {
-    console.log(`PanProjet#${this.id} -> instancieAllParags()`)
+    // console.log(`PanProjet#${this.id} -> instancieAllParags()`)
     const my = this
     if ( undefined === my.parags2add_list )
     {
-      console.log(`[displayParags] Définition de my.parags2add_list`)
       my.parags.reset()
-      my.parags2display_list  = my.data.parags.map( hp => { return new Parag(hp) } )
+      // Noter que maintenant, ci-dessous, le paragraphe est seulement initialisé
+      // avec son identifiant et le projet (note on pourrait ajouter le panneau, aussi)
+      my.parags2display_list  = my.data.pids.map( pid => { return new Parag({id: pid, projet: my.projet}) } )
     }
     if ( is_panneau_courant && my.parags2display_list.length )
     {
-      console.log(`[displayParags] Affichage du parag #${my.parags2display_list[0].id} dans le panneau courant`)
+      // Pour la boucle asynchrone
       this.parags.add(my.parags2display_list.shift(), undefined, my.displayAllParags.bind(my, true))
-      // this.parags.add(my.parags2display_list.shift(), undefined)
     }
     else
     {
-      console.log("[displayParags] Fin de l'affichage de tous les paragraphes")
+      // console.log("[displayParags] Fin de l'affichage de tous les paragraphes")
       delete my.parags2display_list
+      if ( callback ) { callback.call() }
     }
 
   }

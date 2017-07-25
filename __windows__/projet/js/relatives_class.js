@@ -46,12 +46,16 @@ class Relatives
     *   Méthodes fonctionnelle
     *
   *** --------------------------------------------------------------------- */
-  save ()
+  save ( callback )
   {
-    this.data.updated_at = moment().format()
-    this.store._data = this.data
-    this.store.save()
-    this.modified = false
+    const my = this
+    my.data.updated_at = moment().format()
+    my.store._data = my.data
+    my.store.save(false, (err) => {
+      if (err) { throw err }
+      my.modified = false
+      if ( callback ) { callback.call() }
+    } )
   }
 
   get data ()

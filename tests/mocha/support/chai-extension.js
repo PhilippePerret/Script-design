@@ -7,6 +7,24 @@ const Assertion = require('chai').Assertion
 const DOMTest   = require('./Dom')
 
 const plugin = function plugin(chai, utils) {
+  Assertion.addMethod('haveClass', function assertion(classes){
+    const self = this
+    const obj = utils.flag(self, 'object') // => HTMLElement
+    if (!obj || !(obj.constructor.name.startsWith('HTML'))){
+      throw new Error('Actual should be an HTML Element.')
+    }
+    if (! Array.isArray(classes)){classes = [classes]}
+    if ( 'string' !== typeof classes[0] ){
+      throw new Error('Class should be a String')
+    }
+    let objClasses = obj.className.split(' ')
+    for (let classe of classes ){
+      if ( objClasses.indexOf(classe) < 0 ){
+        throw new Error(`${obj} doesn't own class '${classe}'`)
+      }
+    }
+    return true
+  })
   Assertion.addMethod('haveTag', function assertion(tag, attrs){
     const self = this
     // console.log('this = ', this)

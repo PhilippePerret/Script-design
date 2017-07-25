@@ -345,7 +345,7 @@ class Projet
   * avoir plus de deux panneaux modifiés en même temps, en tout cas en
   * mode de sauvegarde automatique.
   **/
-  saveAll ()
+  saveAll ( callback )
   {
     let my = this
       , pan
@@ -353,6 +353,7 @@ class Projet
     my.saving = true
     my.saved  = false
 
+    // TODO Il faudra que ça se fasse en asynchrone, ensuite
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
       pan = my.panneau(pan_id)
       pan.modified && pan.save.bind(pan)() // pas les paragraphes
@@ -360,6 +361,7 @@ class Projet
     this.saveParags( () => {
       my.saving = false
       my.saved  = true
+      if ( callback ) { callback.call() }
     })
   }
 
@@ -551,7 +553,9 @@ class Projet
     my.readNextParag(fd)
   }
 
-
+  /**
+  * Méthode appelée quand on change de donnée par l'interface
+  **/
   onChangeData (o)
   {
     let

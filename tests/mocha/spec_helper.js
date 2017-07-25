@@ -62,6 +62,12 @@ global.USER_DATA_PATH = path.join(require('os').homedir(),'Library','Application
 
 
 Object.defineProperties(PanProjet.prototype, {
+  'section': {
+    get: function(){
+      this._section || (this._section = DOM.create('div', {id: `panneau-${this.id}`}))
+      return this._section
+    }
+  },
   'container': {
     get: function(){
       if ( undefined === this._container ) {
@@ -136,11 +142,8 @@ resetCurrentProjet = function( params )
   // console.log("Nouveau projet __ID : %d", projet.__ID)
   // On met toujours le projet en projet courant
   Projet.current = projet
-  // On détruit son fichier de donnée s'il existe
-  if (fs.existsSync(projet.parags_file_path)){
-    fs.unlinkSync(projet.parags_file_path)
-  }
   projet._modified = false
+
   params.options || (params.options = {})
   params.options.autosync || (params.options['autosync'] = 0)
   params.options.autosave || (params.options['autosave'] = 0)
@@ -152,7 +155,7 @@ resetCurrentProjet = function( params )
 }
 global.resetAllPanneaux = function( params)
 {
-  params || ( params = {} )
+  let now = moment().format()
 
   // On va créer 40 paragraphes
   params.nombre_parags || ( params.nombre_parags = 40 )
@@ -160,6 +163,8 @@ global.resetAllPanneaux = function( params)
   projet.definePanneauxAsInstances()
   Projet.PANNEAU_LIST.forEach( (pan_id) => {
     let pan = projet.panneau(pan_id)
+    // On détruit le fichier de données s'il existe
+    if ( fs.existsSync(pan.store.path) ) { fs.unlink(pan.store.path)}
     pan._modified = false
     pan.container.innerHTML = ''
     pan.parags.reset()
@@ -167,8 +172,34 @@ global.resetAllPanneaux = function( params)
     // On crée des propriétés globales pour faire `panneauNotes`
     eval(`global.panneau${pan_id.titleize()} = projet.panneau('${pan_id}');`)
   })
+
+  // On définit les données général du projet, dans le panneau Data
+  let h = {
+      'title'         : "Exemple pour tests"
+    , 'summary'       : "Le résumé du projet donné en exemple."
+    , 'author'        : ["Phil", "Marion", "Ernest"]
+    , 'created_at'    : now
+    , 'updated_at'    : now
+    , 'last_parag_id' : 0
+  }
+  projet.data_generales = h
+  panneauData.store._data = h
+  panneauData.store.save(true)
+
 }
 
+function resetAllParags (params) {
+  let pth
+  // On détruit le fichier des parags s'il existe
+  pth = projet.parags_file_path
+  if ( fs.existsSync(pth) ) { fs.unlinkSync(pth) }
+  // Il faut détruire le fichier des relatives
+  pth = projet.relatives.store.path
+  if (fs.existsSync(pth)) {fs.unlinkSync(pth)}
+  // On crée autant de paragraphes que voulu (20 par défaut)
+  let lastid = initXParags( params.nombre_parags )
+  return lastid
+}
 /**
 * @param  {Object} params
 *   params.nombre_parags      Nombre de paragraphes à construire
@@ -176,9 +207,10 @@ global.resetAllPanneaux = function( params)
 **/
 global.initTests = function ( params )
 {
+  params || ( params = {} )
   resetCurrentProjet( params )
   resetAllPanneaux( params )
-  let lastid = initXParags()
+  let lastid = resetAllParags( params )
   projet.data_generales = { last_parag_id: lastid }
   Parag._lastID = lastid
   // console.log("=== RÉINITIALISATION DES TESTS ===")
