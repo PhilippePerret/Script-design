@@ -5,30 +5,81 @@
   $ ./node_modules/.bin/mocha ./tests/mocha/unit/** / *_spec.js (supprimer espaces)
 
 */
-let path      = require('path')
-let assert    = require('assert')
-
+// Tout le support de test
+let path   = require('path')
 require(path.resolve(path.join('.','tests','mocha','support','all_tests.js')))
 
 initTests()
 
 describe("Projet#saveParags", () => {
-  it('should do something', () => {
-    assert.equal(2+2, 4, "L'addition est bonne")
-  })
-  , it("répond", ()=>{
+  it("répond", function(){
     assert.equal(typeof projet.saveParags, 'function')
   })
-  , it("permet d'enregistrer tous les paragraphes", ()=>{
+  it("permet d'enregistrer tous les paragraphes", function(done){
     panneauNotes.parags.add([parag0, parag1, parag2, parag3])
     parag0._modified = true
     parag1._modified = true
     parag2._modified = true
     parag3._modified = true
+    // ======== PRÉVÉRIFICATION ===========
+    expect(fs.existsSync(projet.parags_file_path)).not.to.equal(true)
+    expect(parag0._modified).to.be.true
+    expect(parag3._modified).to.be.true
     // =========> TESTS <=========
     projet.saveParags( () => {
-      console.log("J'AI FINI DE TESTER LA SAUVEGARDE")
+      // Après la sauvegarde
       assert.equal(projet.saved_parags_count, 4)
+      expect(projet.saved_parags_count).to.equal(4)
+      done()
     })
   })
+  it("tous les paragraphes sont enregistrés dans un fichier de données", function(){
+    expect(fs.existsSync(projet.parags_file_path)).to.equal(true)
+  })
+  it("le fichier de données fait la bonne taille", function(){
+    c = fs.readFileSync(projet.parags_file_path, {encoding:'utf8'})
+    expect(c.length).to.equal(4 * Parag.dataLengthInFile)
+  })
+  it("dans le fichier, une donnée est composée correctement", function(){
+    c = fs.readFileSync(projet.parags_file_path, {encoding:'utf8'})
+    // On va étudier la deuxième donnée
+    c = c.substr(Parag.dataLengthInFile, Parag.dataLengthInFile)
+    // console.log(`Data '${c}'`)
+    s = c.substring(0,1) ; c = c.substr(1, c.length)
+    expect(s).to.equal('n') // type Number
+    // = ID =
+    s = c.substr(0, Parag.DATA['id'].length) ; c = c.substr(Parag.DATA['id'].length, c.length)
+    s = Number(s.trim())
+    expect(s).to.equal(1)
+    // = PANNEAU =
+    s = c.substr(0,1) ; c = c.substr(1, c.length)
+    expect(s).to.equal('s') // type String
+    s = c.substr(0,1) ; c = c.substr(1, c.length)
+    expect(s).to.equal('n') // panneau Note
+    // = CONTENTS =
+    s = c.substr(0,1) ; c = c.substr(1, c.length)
+    expect(s).to.equal('s') // type String
+    s = c.substr(0, Parag.DATA['ucontents'].length) ; c = c.substr(Parag.DATA['ucontents'].length, c.length)
+    expect(s.trim()).to.equal('Contenu du paragraphe #1')
+    // = DURÉE =
+    s = c.substr(0,1) ; c = c.substr(1, c.length)
+    expect(s).to.equal('n') // type Number
+    s = c.substr(0, Parag.DATA['duration'].length) ; c = c.substr(Parag.DATA['duration'].length, c.length)
+    expect(Number(s.trim())).to.equal(60)
+    // = DATE =
+    let now = moment().format('YYMMDD')
+    s = c.substr(0,1) ; c = c.substr(1, c.length)
+    expect(s).to.equal('e') // type Number
+
+  })
+  it('les paragraphes sont marqués non modifiés', function(){
+    expect(parag0._modified).to.be.false
+    expect(parag1._modified).to.be.false
+  });
+
+  it('pour provoquer une erreur', function(){
+    log("Un essai tout à fait personnel", 'ok')
+    throw new Error("Je provoque une erreur.")
+  });
+
 })

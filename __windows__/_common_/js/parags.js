@@ -712,6 +712,7 @@ class Parags
     const my = this
     fs.write(fd, iparag.dataline_infile, iparag.posStart, 'utf8', (err, sizew, writen) => {
       if (err){ throw err }
+      iparag.modified = false
       this.projet.saved_parags_count += 1
       // console.log("Longueur copiée dans le fichier", sizew)
       // On passe au paragraphe suivant

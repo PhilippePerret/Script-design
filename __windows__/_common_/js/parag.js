@@ -118,6 +118,16 @@ class Parag
   }
 
   /** ---------------------------------------------------------------------
+    *
+    * STATE Methods
+    *
+  *** --------------------------------------------------------------------- */
+  get modified () { return this._modified || false }
+  set modified (v){
+    this._modified = v
+    this.panneau && ( this.panneau.modified )
+  }
+  /** ---------------------------------------------------------------------
   *
   *   DATA Methods
   *

@@ -1,6 +1,8 @@
 global.path   = require('path')
-let moment    = require('moment')
-let fs        = require('fs')
+global.moment = require('moment')
+global.fs     = require('fs')
+global.assert = require('assert')
+global.expect = require('chai').expect
 
 // Ne semble pas fonctionner…
 // global.jsdom  = require('mocha-jsdom')
@@ -113,16 +115,19 @@ resetCurrentProjet = function( params )
 {
   params || (params = {})
   projet || ( projet  = new Projet(params.projet_id || PROJET_ID) )
+  // On met toujours le projet en projet courant
+  Projet.current = projet
+  // On détruit son fichier de donnée s'il existe
   if (fs.existsSync(projet.parags_file_path)){
     fs.unlinkSync(projet.parags_file_path)
   }
   projet._modified = false
   params.options || (params.options = {})
-  params.options['autosync'] = 0
-  // TODO POURSUIVRE ICI LES OPTIONS EN PARAMÈTRE (LES DISTRIBUER)
-  projet.option('autosync', 0)
-  projet.option('autosave', 0)
-  Projet.current = projet
+  params.options.autosync || (params.options['autosync'] = 0)
+  params.options.autosave || (params.options['autosave'] = 0)
+  for(var p in params.options){
+    if (params.options.hasOwnProperty(p)){projet.option(p, params.options[p])}
+  }
   delete projet._relatives
   Parag._lastID = -1
 
@@ -146,12 +151,52 @@ global.resetAllPanneaux = function( params)
   })
 }
 
-
-global.initTests = function ()
+/**
+* @param  {Object} params
+*   params.nombre_parags      Nombre de paragraphes à construire
+*                             Défaut : 40, de parag0 à parag39
+**/
+global.initTests = function ( params )
 {
-  resetCurrentProjet()
-  resetAllPanneaux()
+  resetCurrentProjet( params )
+  resetAllPanneaux( params )
   let lastid = initXParags( 20 )
   projet.data_generales = { last_parag_id: lastid }
   Parag._lastID = lastid
 }
+
+/**
+* Pour écrire des messages en vert ou en rouge dans la console
+*
+* @usage
+*
+*   myLog("Le message en vert", 'ok' / * ou 'green' ou 'vert' * /)
+*   myLog("Le message en rouge", 'red' / * ou 'rouge' ou 'error' * /)
+*
+* Note : ce message n'a aucune incidence sur les tests.
+**/
+global.myLog = function(message, type)
+{
+  let temp
+  switch(type)
+  {
+    case 'green':
+    case 'vert':
+    case 'ok':
+      temp = '[32m%s[0m'
+      break
+    case 'red':
+    case 'rouge':
+    case 'error':
+      temp = '[31m%s[0m'
+      break
+    default:
+      temp = '%s'
+  }
+  console.log(temp, message)
+}
+
+before(function(){
+})
+after(function(){
+})
