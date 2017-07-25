@@ -179,7 +179,7 @@ class Parag
   // construire.
   reset ()
   {
-    delete this._formated_contents
+    delete this._contents_formated
     delete this._formcontsanstags
     delete this._formated_duration
     this.updateDisplay()
@@ -340,13 +340,13 @@ class Parag
   **/
   get contentsFormated () {
     // console.log(`Parag#${this.id} -> contentsFormated()`)
-    if ( ! this._formated_contents )
+    if ( ! this._contents_formated )
     {
       if ( ! this.formated ) { this.formateContents() /* peut être asynchrone */ }
-      else { this._formated_contents = `[Parag#${this.id} mal formaté]` }
+      else { this._contents_formated = `[Parag#${this.id} mal formaté]` }
       this.formated = true
     }
-    return this._formated_contents
+    return this._contents_formated
   }
 
   get contentsFormatedSansTags () {
@@ -354,8 +354,11 @@ class Parag
     this._formcontsanstags || (
       this._formcontsanstags =
           this.contentsFormated
+            .replace(/[\n\r]/g,' ')
+            .replace(/\t/g, ' ')
             .replace(/<(.*?)>/g, '')
-            .replace(/"/, "\\\"")
+            .replace(/"/g, "\\\"")
+            .replace(/  +/g, ' ') // deux espaces ou + par une espace
             .trim()
     )
     return this._formcontsanstags
@@ -367,9 +370,9 @@ class Parag
     options       || ( options = {} )
     options.titre || ( options.titre = `#${this.id}`)
     return  '<a href="#"'
-          + `  onclick="return showParag(${this.id})"`
-          + '  class="p-al"'
-          + `  title="${this.contentsFormatedSansTags}">${options.titre}</a>`
+          + ` onclick="return showParag(${this.id})"`
+          + ' class="p-al"'
+          + ` title="${this.contentsFormatedSansTags}">${options.titre}</a>`
               // Class 'p-al' pour 'parag as link'
   }
 
@@ -388,7 +391,7 @@ class Parag
   * Méthode qui formate le contenu à afficher du paragraphe
   *
   * @return {String} Le contenu formaté
-  * @produit this._formated_contents
+  * @produit this._contents_formated
   *
   **/
   formateContents ()
@@ -418,10 +421,11 @@ class Parag
         return `<__P${pid}__/>`
       }
     })
-    this._formated_contents = c
-        // ATTENTION : Il faut vraiment définit this._formated_contents AVANT
+    c = c.trim()
+    this._contents_formated = c
+        // ATTENTION : Il faut vraiment définir this._contents_formated AVANT
         // de traiter les missings_parags car la méthode loadAndReplaceMarks
-        // se sert de la valeur de this._formated_contents
+        // se sert de la valeur de this._contents_formated
     if ( missing_parags_list.length > 0 )
     {
       // <= des paragraphes n'étaient pas chargés, on a mis des marques
@@ -450,7 +454,7 @@ class Parag
     const my = this
     let pid, p, re, pano
 
-    my.provisoireContents || ( my.provisoireContents = my._formated_contents )
+    my.provisoireContents || ( my.provisoireContents = my._contents_formated )
 
     if ( pid = Number(this.missing_parags_ids.pop()) )
     {
@@ -477,8 +481,8 @@ class Parag
       // <= Il n'y a plus de paragraphes manquant à traiter
       console.log(`Parag#${this.id} Fin du traitement des paragraphes manquants`)
       delete my.missing_parags_ids
-      my._formated_contents = my.provisoireContents
-      console.log(`contents_formated final du parag#${this.id}`, my._formated_contents)
+      my._contents_formated = my.provisoireContents
+      console.log(`contents_formated final du parag#${this.id}`, my._contents_formated)
       my.updateDisplay()
       delete my.provisoireContents
       // Si une méthode doit être appelée après l'affichage du paragraphe
@@ -789,7 +793,7 @@ class Parag
     // console.log('-> onChangeContents')
     this.contents = this.newContents
     // pour forcer l'actualisation du contenu mis en forme
-    delete this._formated_contents
+    delete this._contents_formated
     this.setModified()
     if ( this.sync_after_save )
     {
