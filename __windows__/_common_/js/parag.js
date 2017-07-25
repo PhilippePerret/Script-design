@@ -125,7 +125,7 @@ class Parag
   get modified () { return this._modified || false }
   set modified (v){
     this._modified = v
-    this.panneau && ( this.panneau.modified )
+    this.panneau && ( this.panneau.modified = true )
   }
   /** ---------------------------------------------------------------------
   *
@@ -204,9 +204,13 @@ class Parag
   *
   * @return {String} La donnée brute, non parsée
   **/
-  read_infile ( callback )
+  read ( callback )
   {
-    this.panneau.parags.readParag(this.id, this.parse_data_infile.bind(this))
+    // console.log('-> Parag#read')
+    this.after_read_callback = callback
+    this.parsed   = false
+    this.reading  = true
+    this.projet.readParags(this.id, this.parse_data_infile.bind(this))
   }
 
   /**
@@ -216,8 +220,9 @@ class Parag
   **/
   parse_data_infile ( datainfile )
   {
-    // console.log("Je dois parser la donnée ",datainfile)
+    // console.log('-> Parag#parse_data_infile')
     const my = this
+    my.reading = false
     let prop, dProp, len, val, typ
     let pos = 0
     for(prop in Parag.DATA)
@@ -226,6 +231,7 @@ class Parag
       len = dProp.length
       typ = datainfile.substr(pos, 1)
       val = datainfile.substr(pos+1, len).trim()
+      // console.log('prop %s len %d type %s valeur %s', prop, len, typ, val)
       pos += len + 1
       // Transformation de la valeur
       switch(typ)
@@ -248,6 +254,10 @@ class Parag
     this.ucontents = this._ucontents // pour forcer this.contents
 
     this.parsed = true
+
+    if('function' == typeof this.after_read_callback){
+      this.after_read_callback.call()
+    }
   }
 
   /**
@@ -322,7 +332,7 @@ class Parag
   * personnages, etc.
   **/
   get contentsFormated () {
-    console.log(`Parag#${this.id} -> contentsFormated()`)
+    // console.log(`Parag#${this.id} -> contentsFormated()`)
     if ( ! this._formated_contents )
     {
       if ( ! this.formated ) { this.formateContents() /* peut être asynchrone */ }
@@ -333,7 +343,7 @@ class Parag
   }
 
   get contentsFormatedSansTags () {
-    console.log(`Parag#${this.id} -> contentsFormatedSansTags()`)
+    // console.log(`Parag#${this.id} -> contentsFormatedSansTags()`)
     this._formcontsanstags || (
       this._formcontsanstags =
           this.contentsFormated
@@ -346,7 +356,7 @@ class Parag
 
 
   as_link (options) {
-    console.log(`Parag#${this.id} -> as_link()`)
+    // console.log(`Parag#${this.id} -> as_link()`)
     options       || ( options = {} )
     options.titre || ( options.titre = `#${this.id}`)
     return  '<a href="#"'
@@ -376,7 +386,7 @@ class Parag
   **/
   formateContents ()
   {
-    console.log(`Parag#${this.id} -> formateContents()`)
+    // console.log(`Parag#${this.id} -> formateContents()`)
     if ( ! this.contents ) { return '' }
     let c = Kramdown.parse(this.contents)
 
@@ -415,9 +425,7 @@ class Parag
     }
     else if ( this.methodeAfterDisplay )
     {
-      console.log("Je dois jouer la méthode after display")
-      //  this.methodeAfterDisplay.call()
-      setTimeout(this.methodeAfterDisplay, 2000)
+       this.methodeAfterDisplay.call()
     }
     return c // cf. contentsFormated()
   }

@@ -5,11 +5,7 @@
   $ ./node_modules/.bin/mocha ./tests/mocha/unit/** / *_spec.js (supprimer espaces)
 
 */
-// Tout le support de test
-let path   = require('path')
-require(path.resolve(path.join('.','tests','mocha','support','all_tests.js')))
-
-initTests()
+require('../../spec_helper.js')
 
 describe("Projet#saveParags", () => {
   it("répond", function(){
@@ -76,10 +72,11 @@ describe("Projet#saveParags", () => {
     expect(parag0._modified).to.be.false
     expect(parag1._modified).to.be.false
   });
-
-  it('pour provoquer une erreur', function(){
-    log("Un essai tout à fait personnel", 'ok')
-    throw new Error("Je provoque une erreur.")
+  it('tous les panneaux sont marqués non modifiés', function(){
+    Projet.PANNEAU_LIST.forEach( panid => {
+      expect(projet.panneau(panid)._modified, `Le panneau '${panid}' devrait être marqué non modifié.`).to.be.false
+    })
   });
+
 
 })

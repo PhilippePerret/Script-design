@@ -1,6 +1,4 @@
-// Tout le support de test
-let path   = require('path')
-require(path.resolve(path.join('.','tests','mocha','support','all_tests.js')))
+require('../../spec_helper.js')
 
 describe('Parag', function () {
   describe('propriétés', function () {

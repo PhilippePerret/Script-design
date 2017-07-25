@@ -1,8 +1,26 @@
+/*
+
+  Support pour les tests MOCHA unitaires
+  --------------------------------------
+
+  Cette ligne doit être ajoutée à chaque test mocha :
+
+    require('../../spec_helper.js')
+    // Régler la profondeur si nécessaire
+
+  Noter qu'il est inutile d'appeller resetTests() au début du fichier puisque
+  c'est fait automatiquement au chargement de cette librairie.
+
+*/
 global.path   = require('path')
 global.moment = require('moment')
 global.fs     = require('fs')
 global.assert = require('assert')
-global.expect = require('chai').expect
+const chai    = require('chai')
+global.expect = chai.expect
+
+const myChaiExtension = require('./support/chai-extension')
+chai.use(myChaiExtension)
 
 // Ne semble pas fonctionner…
 // global.jsdom  = require('mocha-jsdom')
@@ -114,7 +132,8 @@ function initXParags ( nombre )
 resetCurrentProjet = function( params )
 {
   params || (params = {})
-  projet || ( projet  = new Projet(params.projet_id || PROJET_ID) )
+  projet  = new Projet(params.projet_id || PROJET_ID)
+  // console.log("Nouveau projet __ID : %d", projet.__ID)
   // On met toujours le projet en projet courant
   Projet.current = projet
   // On détruit son fichier de donnée s'il existe
@@ -128,7 +147,6 @@ resetCurrentProjet = function( params )
   for(var p in params.options){
     if (params.options.hasOwnProperty(p)){projet.option(p, params.options[p])}
   }
-  delete projet._relatives
   Parag._lastID = -1
 
 }
@@ -160,10 +178,14 @@ global.initTests = function ( params )
 {
   resetCurrentProjet( params )
   resetAllPanneaux( params )
-  let lastid = initXParags( 20 )
+  let lastid = initXParags()
   projet.data_generales = { last_parag_id: lastid }
   Parag._lastID = lastid
+  // console.log("=== RÉINITIALISATION DES TESTS ===")
 }
+global.initTest   = initTests
+global.resetTests = initTests
+global.resetTest  = initTests
 
 /**
 * Pour écrire des messages en vert ou en rouge dans la console
@@ -196,7 +218,13 @@ global.myLog = function(message, type)
   console.log(temp, message)
 }
 
-before(function(){
+before(function () {
+  this.jsdom = require('jsdom-global')()
 })
-after(function(){
+
+after(function () {
+  this.jsdom()
 })
+
+
+resetTests()
