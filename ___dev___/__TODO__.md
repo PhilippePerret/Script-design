@@ -1,10 +1,18 @@
+* Méthode `addNotNew` à poursuivre
+  L'utiliser pour le load du panneau
+
+* Reprendre le load des panneaux, faire une liste de toutes les instanciations, puis l'envoyer
+  à parags.add avec l'option display = false
+
+* next et previous des parags doivent pouvoir fonctionner aussi quand les parags ne sont pas chargés (loaded = false). Il suffit de tester dans _ids des parags du panneau
+
 * Synchronisation
   Maintenant, la synchronisation, quand le panneau n'est pas chargée, doit juste
   consister en :
     - créer un nouveau paragraphe dans le fichier
     - ajouter l'id dans la propriété `pids` du panneau (sans avoir à le construire
       entièrement).
-      
+
 * Remplacer les balises PARAG#<id> par un lien qui affiche au survol le texte du paragraphe.
 
 * Prévoir à la fin du paragraphe un espace pour indiquer plein de choses et notamment le

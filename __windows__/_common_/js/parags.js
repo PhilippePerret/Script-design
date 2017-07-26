@@ -112,7 +112,43 @@ class Parags
   }
 
   /**
-  * Méthode ajoutant un paragraphe au pan-projet courant, par exemple au
+  * Ajoute un parag connu au panneau, lorsque ce parag a déjà été
+  * introduit dans le panneau.
+  * C'est la méthode utilisée après la création des instances paragraphes
+  * au chargement des paragraphes du panneau.
+  *
+  * @param {Parag|Array} argp Soit le parag soit la liste de parags
+  * @param {Object} options Les options, dont :
+  *     options.reset     Si true, tout est remis à "zéro"
+  *     options.display   Si true, les paragraphes sont affichés.
+  *                       Default: false
+  **/
+  addNotNew ( argp, options, callback )
+  {
+    const my = this
+
+    options || ( options = {} )
+
+    // S'il faut tout réinitialiser
+    if (options.reset || ! my._dict) { my.reset() }
+
+    Array.isArray(argp) || ( argp = [argp] )
+
+    argp.forEach( (iparag) => {
+
+      my._dict[iparag.id] = iparag
+      my._items.push(iparag)
+      my._ids.push(iparag.id)
+      ++ my._count
+
+      options.display && my.panneau.container.appendChild(iparag.mainDiv)
+
+    })
+
+  }
+
+  /**
+  * Méthode ajoutant un NOUVEAU paragraphe au pan-projet courant, par exemple au
   * synopsis ou au scénier.
   * Cet ajout consiste à ajouter le paragraphe au document affiché et à
   * l'ajouter dans la liste des paragraphes du panneau (s'il ne s'y trouve
@@ -136,19 +172,19 @@ class Parags
   **/
   add ( argp, options, methodeAfterDisplay )
   {
-    options || ( options = {} )
 
-    // S'il faut tout réinitialiser
-    options.reset && this.reset()
-
-    Array.isArray(argp) || ( argp = [argp] )
-
-    // On répète pour chaque paragraphe
     let my = this
       , div
       , lastParag
 
-    my._dict || my.reset()
+    options || ( options = {} )
+
+    // S'il faut tout réinitialiser
+    if (options.reset || ! my._dict) { this.reset() }
+
+    Array.isArray(argp) || ( argp = [argp] )
+
+    /*  On répète pour chaque paragraphe  */
 
     argp.forEach( (iparag) => {
 
@@ -158,11 +194,13 @@ class Parags
       if ( undefined !== my._dict[iparag.id] ) { return }
 
       // On définit la donnée panneau_id du paragraphe, qui n'est plus
-      // définit par défaut ou par les données (car c'est une donnée qui
-      // consomme et qui est inutile)
+      // définie par défaut
+
       iparag.panneau_id = my.panneau.id
 
-      // On ajoute la div du paragraphe dans le panneau HTML
+      // On ajoute la div du paragraphe dans le panneau HTML à l'endroit
+      // voulu.
+
       if (options.before)
       {
         // console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
@@ -188,14 +226,18 @@ class Parags
       }
       my._dict[iparag.id] = iparag
 
-      // Il faut aussi ajouter une donnée relative pour ce paragraphe
+      /* Ajout d'une donnée relative pour ce parag */
+
       my.projet.relatives.addParag(iparag)
 
-      // On augmente le nombre de paragraphe du panneau
+      /* Incrémentation du nombre de parags du panneau */
+
       my._count ++
 
       // Noter que seule l'option selected pourra être appliquée
-      // à tous les parags fournis, pas l'option current.
+      // à tous les parags fournis, pas l'option current, qui sera
+      // uniquement appliquée au dernier
+
       options.selected && my.selection.add( iparag )
 
       lastParag = iparag

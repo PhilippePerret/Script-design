@@ -27,15 +27,49 @@ class PanProjet
     this.__ID   = PanProjet.newID()
     this.id     = name
     this.name   = name // p.e. 'data', ou 'scenier'
+    this.projet   = projet
+    this.reset()
+  }
+
+  /**
+  * Réinitialisation complète du panneau
+  *
+  * La méthode est appelée à l'instanciation mais aussi au cours des
+  * tests
+  **/
+  reset ()
+  {
     // Mis à true quand le panneau est le panneau courant. Sert notamment à
     // savoir si des actualisations se font "par derrière" et donc ne doivent
     // pas être reflétées dans le panneau.
-    this.actif  = false
-    // Mis à true quand les données du panneau ont été chargées (qu'elles
-    // existent ou non)
-    this.loaded   = false
-    this.loading  = false
-    this.projet   = projet
+    this.actif      = false
+
+    // Mis à true quand les données des PARAGS du panneau ont été chargées
+    this.loaded     = false
+    this.loading    = false
+
+    // Mis à true quand les données du panneau ont été chargées, qu'elles
+    // existent ou non.
+    this.dataLoaded = false
+
+    // Mis à true quand les paragraphes ont été affichés
+    this.paragsDisplayed = false
+
+    /*  Réinitialisation complète de sa donnée Parags */
+
+    this.parags.reset()
+
+    /*  Destruction de certaines propriétés volatiles */
+
+    delete this._container
+    delete this._section
+    delete this._dom_id
+    delete this._prefs
+    delete this._parags
+    delete this._store
+
+    this._modified = false
+
   }
 
   /* --- Public --- */
@@ -123,13 +157,37 @@ class PanProjet
   * courant, affiché dans l'interface.
   **/
   activate ( callback ) {
+
+    // Dans tous les cas, on active le panneau
+    DOM.addClass(this.section,'actif')
+    this.actif = true
+
     // console.log("-> activate panneau")
-    this.loaded || this.load( (err) => {
-      if (err) { throw err }
-      DOM.addClass(this.section,'actif')
-      this.actif = true
-      callback && callback.call()
-    })
+    if ( this.dataLoaded && this.loaded ) {
+      if ( ! paragsDisplayed )
+      {
+        // <= Toutes les données ont été chargées, mais les parags n'ont
+        //    pas été affichés.
+        // => Il faut afficher les parags
+        this.paragsDisplay( callback )
+      }
+      else
+      {
+        // <= Toutes les données ont été chargées et les parags ont déjà
+        //    été affichés.
+        // => Il suffit d'activer le panneau. Peut-être que plus tard il y
+        //    aura des actualisations à faire.
+      }
+    }
+    else
+    {
+      // <= Les données ou les parags n'ont pas été chargées
+      // => Il faut tout charger.
+      this.load( (err) => {
+        if (err) { throw err }
+        callback && callback.call()
+      })
+    }
   }
   desactivate () {
     // Avant de désactiver le panneau, on déselectionne les sélections
@@ -164,6 +222,7 @@ class PanProjet
     this._dom_id || ( this._dom_id = `panneau-${this.id}` )
     return this._dom_id
   }
+
 
   /** ---------------------------------------------------------------------
     *
@@ -220,11 +279,41 @@ class PanProjet
   *** --------------------------------------------------------------------- */
 
   /**
-  * Procède au chargement des données de ce panneau/élément narratif
+  * Procède au chargement des paragraphes et des données si nécessaire
+  *
   **/
   load ( callback_method )
   {
-    // console.log("-> PanProjet#load", this.id)
+    const my = this
+
+    if ( false === my.dataLoaded ) {
+      return this.loadData( my.load.bind(my, callback_method) )
+    }
+
+    // S'il y a des paragraphes, et que ce panneau est le panneau
+    // courant, alors il faut afficher les paragraphes
+    if (  my.projet.current_panneau.id == my.id
+          && this.data.pids
+          && this.data.pids.length )
+    {
+
+       this.displayParags(callback_method)
+
+    } else if ( 'function' === typeof callback_method ) {
+
+      callback_method.call()
+
+    }
+
+  }
+
+
+  /**
+  * Procède au chargement des données de ce panneau/élément narratif
+  **/
+  loadData ( callback_method )
+  {
+    console.log("-> PanProjet#loadData de panneau '%s'", this.id)
     let my = this
     my.data = ''
     my.afterLoadingCallback = callback_method
@@ -236,10 +325,9 @@ class PanProjet
   }
   onEndStreaming ()
   {
+    console.log('-> PanProjet#onEndStreaming du panneau "%s"', this.id)
     const my    = this
-    // console.log(`-> onEndStreaming du panneau#${my.id}`)
-    this.loaded = true
-    // console.log('[onEndStreaming] my.data =', my.data)
+
     if (my.data && my.data != '')
     {
       my.data = JSON.parse(my.data)
@@ -248,23 +336,45 @@ class PanProjet
     {
       my.data = my.defaultData
     }
-    // console.log(my.data)
-    for( let prop in my.data ) {
-      my[prop] = my.data[prop]
-    }
-    // S'il y a des paragraphes, il faut les afficher
-    this.data.pids && this.data.pids.length && this.displayParags()
+    // console.log('[PanProjet#onEndStreaming] Panneau "%s" / my.data définies', this.id)
 
-    // S'il faut appeler une méthode après le chargement (ce qui arrive par
-    // exemple pour la synchronisation des paragraphes)
-    if ( my.afterLoadingCallback )
-    {
-      // console.log('[onEndStreaming] my.afterLoadingCallback est défini')
-    }
+    /*  On dispatche toutes les données du panneau */
+
+    for( let prop in my.data ) { my[prop] = my.data[prop] }
+    // console.log('[PanProjet#onEndStreaming] Panneau "%s" / my.data dispatchées', this.id)
+
+    /*  On crée les instances de parags
+
+        (mais sans les ajouter encore au panneau, ce qui sera
+         fait uniquement si c'est nécessaire)
+    */
+    // console.log('[PanProjet#onEndStreaming] Panneau "%s" / pids', my.id, my.data.pids)
+
+    const projet  = my.projet
+    const panid   = my.id
+    let instances = my.data.pids.map( pid => {
+      return new Parag( {id: pid, projet: projet, panneau_id: panid })
+    })
+    // console.log('[PanProjet#onEndStreaming] Panneau "%s" / instances créées', this.id)
+
+    /*  Ajoute les parags au panneau (sans les afficher)
+        Note : même s'il n'y a pas de parags, on le fait, pour le reset */
+
+    my.parags.addNotNew( instances, {reset: true, display: false} )
+    // console.log('[PanProjet#onEndStreaming] Panneau "%s" / Instances introduites dans le panneau', this.id)
+
+    /*  Pour indiquer que les données ont été chargées  */
+
+    this.dataLoaded = true
+
+    /*  Fonction de callback si elle est définie  */
+
     if( 'function' === typeof my.afterLoadingCallback ) {
-      // console.log("Je joue la méthode afterLoadingCallback")
-      my.afterLoadingCallback.call(my)
+      // console.log('[PanProjet#onEndStreaming] Panneau "%s" / Appel de la méthode de callback', this.id)
+      my.afterLoadingCallback.call()
     }
+
+    console.log('<- PanProjet#onEndStreaming du panneau "%s"', this.id)
 
   }
 
@@ -369,10 +479,7 @@ class PanProjet
     const my = this
     if ( undefined === my.parags2add_list )
     {
-      my.parags.reset()
-      // Noter que maintenant, ci-dessous, le paragraphe est seulement initialisé
-      // avec son identifiant et le projet (note on pourrait ajouter le panneau, aussi)
-      my.parags2display_list  = my.data.pids.map( pid => { return new Parag({id: pid, projet: my.projet}) } )
+      my.parags2display_list = my.parags.items.slice(0,-1) // pour faire une copie
     }
     if ( is_panneau_courant && my.parags2display_list.length )
     {
@@ -381,6 +488,11 @@ class PanProjet
     }
     else
     {
+
+      // Quand tous les parags ont été affichés
+
+      this.paragsDisplayed = true
+
       // console.log("[displayParags] Fin de l'affichage de tous les paragraphes")
       delete my.parags2display_list
       if ( callback ) { callback.call() }

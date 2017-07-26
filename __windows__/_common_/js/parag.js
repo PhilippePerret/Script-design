@@ -338,13 +338,12 @@ class Parag
   * du paragraphe, notamment lorsqu'il y aura des balises propres au projet, comme les
   * personnages, etc.
   **/
-  get contentsFormated () {
+  get contentsFormated ( callback ) {
     // console.log(`Parag#${this.id} -> contentsFormated()`)
     if ( ! this._contents_formated )
     {
-      if ( ! this.formated ) { this.formateContents() /* peut être asynchrone */ }
+      if ( ! this.formated ) { this.formateContents(callback) /* peut être asynchrone */ }
       else { this._contents_formated = `[Parag#${this.id} mal formaté]` }
-      this.formated = true
     }
     return this._contents_formated
   }
@@ -358,7 +357,7 @@ class Parag
             .replace(/\t/g, ' ')
             .replace(/<(.*?)>/g, '')
             .replace(/"/g, "\\\"")
-            .replace(/  +/g, ' ') // deux espaces ou + par une espace
+            .replace(/  +/g, ' ') // deux espaces ou + remplacé par une espace
             .trim()
     )
     return this._formcontsanstags
@@ -394,10 +393,13 @@ class Parag
   * @produit this._contents_formated
   *
   **/
-  formateContents ()
+  formateContents ( callback )
   {
     // console.log(`Parag#${this.id} -> formateContents()`)
-    if ( ! this.contents ) { return '' }
+    if ( ! this.contents ) {
+      if ( 'function' === typeof callback ) { callback.call() }
+      return ''
+    }
     let c = Kramdown.parse(this.contents)
 
     // === Les balises PARAG#xxx ===
@@ -431,13 +433,22 @@ class Parag
       // <= des paragraphes n'étaient pas chargés, on a mis des marques
       //    marques à la place, qu'on va remplacées une fois qu'elles
       //    seront.
+      // => Il faudra charger ces paragraphes pour remplacer les marques
       this.missing_parags_ids = missing_parags_list
-      this.loadAndReplaceMarks()
+      this.loadAndReplaceMarks( callback )
+      return // ne pas suivre sinon le callback serait appelé deux fois
     }
     else if ( this.methodeAfterDisplay )
     {
        this.methodeAfterDisplay.call()
     }
+
+    /*  Indique que ce parag a été formaté */
+
+    this.formated = true
+
+    if ( 'function' === typeof callback ) { callback.call() }
+
     return c // cf. contentsFormated()
   }
 
@@ -479,14 +490,32 @@ class Parag
     else
     {
       // <= Il n'y a plus de paragraphes manquant à traiter
+      // => On peut finir
       console.log(`Parag#${this.id} Fin du traitement des paragraphes manquants`)
+
+      /*  On indique que le contenu du parag est formaté */
+
+      my.formated = true
+
+      /*  On détruit la liste qui contenait les parags à charger */
+
       delete my.missing_parags_ids
+
+      /*  On met le contenu provisoire (corrigé) en contenu formaté */
+
       my._contents_formated = my.provisoireContents
       console.log(`contents_formated final du parag#${this.id}`, my._contents_formated)
+
+      /*  On actualise l'affichage du paragraphe  */
+
       my.updateDisplay()
+
+
       delete my.provisoireContents
+
       // Si une méthode doit être appelée après l'affichage du paragraphe
       // on doit l'appeler
+
       if ( my.methodeAfterDisplay ) {
         my.methodeAfterDisplay.call()
         delete my.methodeAfterDisplay
@@ -575,12 +604,25 @@ class Parag
     return Array.prototype.indexOf.call(this.panneau.container.childNodes, this.mainDiv)
   }
 
+  /**
+  * @return {Parag} le paragraphe qui suit le parag, ou nul s'il n'y en a pas
+  *
+  * Depuis que les parags ne sont pas chargés par défaut, il faut soit
+  * utiliser le DOM soit utiliser la liste _ids de la liste des parags.
+  **/
   get next ()
   {
+    const pano      = this.panneau
+    if ( pano.loaded )
     {
       if (this.mainDiv.nextSibling){
-        return this.panneau.parags.instanceFromElement(this.mainDiv.nextSibling)
+        return pano.parags.instanceFromElement(this.mainDiv.nextSibling)
       }
+    }
+    else
+    {
+      let thisIndex = pano.parags._ids.indexOf(this.id)
+      return Parags.get(pano.parags._ids[thisIndex + 1])
     }
   }
   /**
@@ -589,8 +631,18 @@ class Parag
   **/
   get previous ()
   {
-    if (this.mainDiv.previousSibling){
-      return this.panneau.parags.instanceFromElement(this.mainDiv.previousSibling)
+    const pano = this.panneau
+
+    if ( pano.loaded )
+    {
+      if (this.mainDiv.previousSibling){
+        return pano.parags.instanceFromElement(this.mainDiv.previousSibling)
+      }
+    }
+    else
+    {
+      let thisIndex = pano.parags._ids.indexOf(this.id)
+      return Parags.get(pano.parags._ids[thisIndex - 1])
     }
   }
 
@@ -606,18 +658,19 @@ class Parag
   {
     console.log('-> syncAllPanneaux')
     const my    = this
-        , proj  = this.projet
+        , proj  = my.projet
+
+    // - index du panneau à synchroniser -
+
     my.i_panneau_sync || ( my.i_panneau_sync = 0 )
     let pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
-    console.log("pan_id:", pan_id)
+
     if ( pan_id )
     {
-      if ( proj.panneau(pan_id).loaded ) {
+      if ( proj.panneau(pan_id).dataLoaded ) {
         my.syncInPanneau(pan_id)
       } else {
-        // On charge le panneau puis on lance la méthode de synchronisation
-        console.log("--> On doit charger le panneau", pan_id)
-        proj.panneau(pan_id).load( this.syncInPanneau.bind(this, pan_id) )
+        proj.panneau(pan_id).loadData( this.syncInPanneau.bind(this, pan_id) )
       }
     }
     else
@@ -640,7 +693,7 @@ class Parag
   syncInPanneau(pan_id)
   {
     const my = this
-    console.log("Synchronisation du panneau", pan_id)
+    console.log("[Parag#syncInPanneau] Début de synchronisation du parag#%d dans le panneau '%s'", this.id, pan_id)
     let newParagSync
       , pano
       , nombre_parags = this.panneau.parags.count
@@ -688,7 +741,7 @@ class Parag
       })
       // puts("===/fin de création du paragraphe")
 
-      optionsAdd = {}
+      optionsAdd = {display: false}
       paragAfter && ( optionsAdd.before = paragAfter )
       console.log(`[Synchronisation] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
       pano.parags.add( newParagSync, optionsAdd )
