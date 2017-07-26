@@ -407,7 +407,9 @@ class Projet
 
     my.methode_after_saving = callback // même si non défini
 
-    fs.open(my.parags_file_path, 'w', (err, filedescriptor) => {
+    const openFlag = fs.existsSync(my.parags_file_path) ? 'r+' : 'w'
+
+    fs.open(my.parags_file_path, openFlag, (err, filedescriptor) => {
       if ( err ) {
         console.log("Une erreur est survenue, je dois renoncer à l'enregistrement :", err)
         throw err

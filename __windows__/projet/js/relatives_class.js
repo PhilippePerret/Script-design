@@ -14,6 +14,20 @@ class Relatives
   *** --------------------------------------------------------------------- */
 
   /**
+  * On reset aussi bien les relatives ici que dans les paragraphes.
+  *
+  * Pour le moment, cette méthode n'est utile que pour les tests.
+  **/
+  reset ()
+  {
+    this._data = this.defaultData
+    for(let pid in Parags.items){
+      if(Parags.items.hasOwnProperty(pid)){
+        this.resetParag(Parags.items[pid])
+      }
+    }
+  }
+  /**
   * Ajout d'un paragraphe, sans association, dans la donnée des
   * relatives. Méthode appelée à la création du paragraphe pour qu'il soit
   * pris en compte dans les relatives.

@@ -151,7 +151,7 @@ define(
             case '@':       // => Aide demandée
               return ipc.send('want-help', { current_window: this.options.window })
             default:
-              log(`[UI Général] Touche '${evt.key}' pressée en dehors d'un text fields.`)
+              // log(`[UI Général] Touche '${evt.key}' pressée en dehors d'un text fields.`)
           }
         }
       }

@@ -57,6 +57,11 @@ global.PROJET_ID   = 'exemple'  // projet identifiant
 global.USER_DATA_PATH = path.join(require('os').homedir(),'Library','Application\ Support','Script-design-TEST')
 // console.log('USER_DATA_PATH',USER_DATA_PATH)
 
+global.UILog = function(message, type)
+{
+  this._messages_UILog || ( this._messages_UILog = [] )
+  this._messages_UILog.push({message: message, type: type})
+}
 
 // ---------------------------------------------------------------------
 
@@ -94,7 +99,7 @@ function createParag( params )
   params.contents || (params.contents = `Contenu du paragraphe #${params.id}`)
   params.created_at = now
   params.updated_at = now
-  params.duration  = 60 // durée/longueur
+  params.duration   = 60 // durée/longueur
   let parag = new Parag(params)
   // NOTER qu'on ne peut pas ajouter le paragraphe aux relatives ici, car
   // on ne connait pas encore le panneau du paragraphe. C'est au moment
@@ -115,9 +120,15 @@ function createParag( params )
 **/
 function initXParags ( nombre )
 {
+  // On commence par détruire tous les paragraphes qui ont pu être créés
+  // avant
+  let pid = 0
+  while(undefined !== global[`parag${pid++}`]){delete global[`parag${pid++}`]}
+  if ( nombre === 0 ) { return }
+
   let listeParags = []
-  nombre || (nombre = 20)
-  for(var pid = 0 ; pid < nombre ; ++ pid){
+  if ( undefined === nombre /* car nombre peut === 0 */) { nombre = 20 }
+  for(pid = 0 ; pid < nombre ; ++ pid){
     listeParags.push(createParag({id: pid}))
     eval(`global.parag${pid} = listeParags[${pid}];`)
   }
@@ -158,7 +169,7 @@ global.resetAllPanneaux = function( params)
   let now = moment().format()
 
   // On va créer 40 paragraphes
-  params.nombre_parags || ( params.nombre_parags = 40 )
+  if (undefined === params.nombre_parags) { params.nombre_parags = 40 }
 
   projet.definePanneauxAsInstances()
   Projet.PANNEAU_LIST.forEach( (pan_id) => {
@@ -196,6 +207,7 @@ function resetAllParags (params) {
   // Il faut détruire le fichier des relatives
   pth = projet.relatives.store.path
   if (fs.existsSync(pth)) {fs.unlinkSync(pth)}
+  projet.relatives.reset()
   // On crée autant de paragraphes que voulu (20 par défaut)
   let lastid = initXParags( params.nombre_parags )
   return lastid

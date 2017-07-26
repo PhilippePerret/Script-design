@@ -45,11 +45,11 @@ class Parag
         // Le type 'e' suit le type 'd', date, mais seulement YYMMJJ
         //
           'id'          : {length: 8  , type: 'n' }
-        , 'panneau_let' : {length: 1  , type: 's' }
-        , 'ucontents'   : {length: 512, type: 's' }
-        , 'duration'    : {length: 12 , type: 'n' }
-        , 'created_at'  : {length: 6  , type: 'e' }
-        , 'updated_at'  : {length: 6  , type: 'e' }
+        , 'panneau_let' : {length: 1  , type: 's', default: 'n'}
+        , 'ucontents'   : {length: 512, type: 's', default: '' }
+        , 'duration'    : {length: 12 , type: 'n', default: 60 }
+        , 'created_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD') }
+        , 'updated_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD')  }
       }
     )
     return this.__data
@@ -117,11 +117,6 @@ class Parag
     // toujours récupérer un paragraphe, quel que soit son panneau, avec la
     // méthode `Parags.get(<id>)`
     Parags.add(this)
-    // S'il est dans un panneau, on l'ajoute
-    if ( this.panneau )
-    {
-      this.panneau.parags.add(this)
-    }
   }
 
   /** ---------------------------------------------------------------------
@@ -181,7 +176,7 @@ class Parag
   {
     delete this._contents_formated
     delete this._formcontsanstags
-    delete this._formated_duration
+    delete this._duration_formated
     this.updateDisplay()
   }
 
@@ -291,7 +286,12 @@ class Parag
   xBytesData(p)
   {
     let d = Parag.DATA[p]
-    let v = this[p]
+    let v = ''
+    if ( undefined === this[p] || null === this[p] ) {
+      v = d.default
+    } else {
+      v = this[p]
+    }
     let t = d.type
     if ( t == 'b' ){
       v = v ? '1' : '0'
@@ -377,14 +377,14 @@ class Parag
   }
 
   get durationFormated () {
-    if ( ! this._formated_duration ) {
+    if ( ! this._duration_formated ) {
       if(undefined === this.duration){
-        this._formated_duration = '---'
+        this._duration_formated = '---'
       } else {
-        this._formated_duration = Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
+        this._duration_formated = Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
       }
     }
-    return this._formated_duration
+    return this._duration_formated
   }
 
   /**

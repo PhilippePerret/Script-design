@@ -156,7 +156,7 @@ define(
           return DOM.stopEvent(evt)
         case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
           // return Parags.create()
-          return curProj.current_panneau.parags.create()
+          return curProj.current_panneau.parags.createAndEdit()
         case 'o':
           alert("La fenêtre des outils n'est pas encore implémentée")
           break

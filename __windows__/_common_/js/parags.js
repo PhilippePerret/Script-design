@@ -66,39 +66,48 @@ class Parags
   * C'est la méthode qui est appelée par la touche `n` hors mode d'édition
   * depuis n'importe quel pano.
   **/
-  create ()
+  createAndEdit ()
   {
-    // On crée le paragraphe est on l'affiche
-    let newP = this.new()
-    newP.created_at = moment().format('YYMMDD')
-    // On l'ajoute à la liste des relatives qui tient à jour la relation entre
-    // les paragraphes dans les différents panneaux
-    this.projet.relatives.addParag(newP)
+    const my    = this
+    const newP  = my.createNewParag()
+
     // Si les options le demandent, on doit synchroniser les autres panneaux
-    this.projet.option('autosync') && ( newP.sync_after_save = true )
-    // On informe à titre indicatif
-    UILog(`Création du paragraphe #${newP.id}`)
-    // On l'édite pour le modifier
-    this.select(newP)
+    // Noter qu'on ne le fait pas dans la méthode createNewParag, car cette
+    // méthode servira justement aussi à créer les parags synchronisés.
+    my.projet.option('autosync') && ( newP.sync_after_save = true )
+
+    // On met aussitôt le paragraphe en édition pour le modifier
+    my.select(newP)
     newP.edit()
-    // On retourne le paragraphe créé
+    // On retourne le paragraphe créé (utile ?)
     return newP
   }
 
-
-  /**
-  * Appelée par la méthode `create` précédente, cette méthode
-  * permet d'initier la création d'un paragraphe {Parag}.
-  **/
-  new (options)
+  createNewParag ()
   {
-    let newP = new Parag({id:Parag.newID(),c:''})
-    // console.log("ID du nouveau parag", newP.id)
-    if (this.hasCurrent()) {
-      options || ( options = {} )
-      options.before = this.selection.current.next
-    }
-    this.add(newP, options)
+    const my = this
+    // On crée le paragraphe est on l'affiche
+    const new_id = Parag.newID()
+    const newP = new Parag({
+        id          : new_id
+      , contents    : ''
+      , created_at  : moment().format('YYMMDD')
+      , panneau_id  : my.panneau.id
+      , _modified   : true // pour qu'il soit enregistré
+    })
+
+    // Ajout du paragraphe dans le panneau, à l'endroit voulu,
+    // c'est-à-dire après la sélection si elle existe ou à la
+    // fin dans le cas contraire.
+    let options = {}
+    my.hasCurrent() && ( options.before = my.selection.current.next )
+    my.add(newP, options)
+
+    // On l'ajoute à la liste des relatives qui tient à jour la relation entre
+    // les paragraphes dans les différents panneaux
+    my.projet.relatives.addParag(newP)
+    // On informe à titre indicatif
+    UILog(`Création du paragraphe #${newP.id}`)
     return newP
   }
 

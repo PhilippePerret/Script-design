@@ -1,5 +1,10 @@
-* Maintenant que les parags sont enregistrés dans un unique fichier, il faut définir et tenir à jour la méthode `parags_ids` des panneaux, qui liste les identifiants de leurs paragraphes.
-
+* Synchronisation
+  Maintenant, la synchronisation, quand le panneau n'est pas chargée, doit juste
+  consister en :
+    - créer un nouveau paragraphe dans le fichier
+    - ajouter l'id dans la propriété `pids` du panneau (sans avoir à le construire
+      entièrement).
+      
 * Remplacer les balises PARAG#<id> par un lien qui affiche au survol le texte du paragraphe.
 
 * Prévoir à la fin du paragraphe un espace pour indiquer plein de choses et notamment le

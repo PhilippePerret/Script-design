@@ -3,7 +3,7 @@
 */
 require('../../spec_helper.js')
 
-describe.only('Contenu de Parag', function () {
+describe('Contenu de Parag', function () {
   describe('méthode', function () {
 
 
