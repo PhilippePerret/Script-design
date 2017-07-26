@@ -41,6 +41,13 @@ class PanProjet
   /* --- Public --- */
 
   /**
+  * @return {Objet} Les données absolues du panneau (dans Projet.PANNEAUX_DATA)
+  **/
+  get absData () {
+    this._absdata || ( this._absdata = Projet.PANNEAUX_DATA[this.id] )
+    return this._absdata
+  }
+  /**
   * Ajouter un parag au panneau, comme la méthode parags.add, mais
   * marque le panneau modifié.
   *

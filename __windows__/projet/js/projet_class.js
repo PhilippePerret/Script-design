@@ -38,23 +38,31 @@ class Projet
     this._panneauxSync || (this._panneauxSync = ['notes','synopsis','scenier','treatment','manuscrit'])
     return this._panneauxSync
   }
+
+  /**
+  *
+  *
+  * Pour obtenir ces données absolues, il suffit de faire :
+  *
+  *   projet.panneau(panneau_id).absData
+  **/
   static get PANNEAUX_DATA ()
   {
     this._panneauData || (
       this._panneauData = {
-          'data'        : {oneLetter: 'd'/* pour relatives*/ }
+          'data'        : {synchronizable: false, oneLetter: 'd'/* pour relatives*/ }
         , 'd' : 'data'
-        , 'manuscrit'   : {oneLetter: 'm'}
+        , 'manuscrit'   : {synchronizable: true, oneLetter: 'm'}
         , 'm' : 'manuscrit'
-        , 'notes'       : {oneLetter: 'n'}
+        , 'notes'       : {synchronizable: true, oneLetter: 'n'}
         , 'n' : 'notes'
-        , 'personnages' : {oneLetter: 'p'}
+        , 'personnages' : {synchronizable: false, oneLetter: 'p'}
         , 'p' : 'personnages'
-        , 'scenier'     : {oneLetter: 's'}
+        , 'scenier'     : {synchronizable: true, oneLetter: 's'}
         , 's' : 'scenier'
-        , 'treatment'   : {oneLetter: 't'}
+        , 'treatment'   : {synchronizable: true, oneLetter: 't'}
         , 't' : 'treatment'
-        , 'synopsis'    : {oneLetter: 'y'}
+        , 'synopsis'    : {synchronizable: true, oneLetter: 'y'}
         , 'y' : 'synopsis'
       }
     )

@@ -255,7 +255,13 @@ class Relatives
       , relpan_p1 = data_p1['r'][lpan_p2]
       , relpan_p2 = data_p2['r'][lpan_p1]
 
-    return (relpan_p1 && relpan_p1.indexOf(pid2) > -1) || (relpan_p2 && relpan_p2.indexOf(pid1) > -1)
+    if ( !relpan_p1 || relpan_p1.indexOf(pid2) < 0 ) { return false }
+    if ( !relpan_p2 || relpan_p2.indexOf(pid1) < 0 ) { return false }
+
+    /* - les deux parags sont relatifs - */
+
+    return true
+
   }
 
   /**

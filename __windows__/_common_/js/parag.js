@@ -790,17 +790,18 @@ class Parag
   **/
   onChangeContents ()
   {
+    const my = this
     // console.log('-> onChangeContents')
-    this.contents = this.newContents
+    my.contents = my.newContents
     // pour forcer l'actualisation du contenu mis en forme
-    delete this._contents_formated
-    this.setModified()
-    if ( this.sync_after_save )
+    delete my._contents_formated
+    my.setModified()
+    if ( my.sync_after_save )
     {
-      this.sync()
-      delete this.sync_after_save
+      my.sync()
+      delete my.sync_after_save
     }
-    this.panneau.modified = true
+    my.panneau.modified = true
   }
 
   /**
