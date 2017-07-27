@@ -248,12 +248,12 @@ class Parag
   * C'est une méthode asynchrone car il faut peut-être charger le panneau
   * qui va recevoir le nouvel élément.
   **/
-  sync ()
+  sync ( callback )
   {
     console.log(`-> sync() du parag#${this.id}`)
     this.projet.busy = true         // pour empêcher la sauvegarde
     this.parags2sync_list = [this]  // liste des parags qui seront associés
-    this.syncAllPanneaux()
+    this.syncAllPanneaux( callback )
   }
 
   /** ---------------------------------------------------------------------
@@ -746,24 +746,31 @@ class Parag
     this.doEdit.bind(this)()
   }
 
-  syncAllPanneaux()
+  syncAllPanneaux( callback )
   {
     console.log('-> syncAllPanneaux')
-    const my    = this
-        , proj  = my.projet
+    const my      = this
+        , proj    = my.projet
+
+    let pan_id  = null
 
     // - index du panneau à synchroniser -
 
     my.i_panneau_sync || ( my.i_panneau_sync = 0 )
-    let pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
+
+    pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
+    if ( pan_id == my.panneau_id ) {
+      pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++] }
 
     if ( pan_id )
     {
-      if ( proj.panneau(pan_id).dataLoaded ) {
-        my.syncInPanneau(pan_id)
-      } else {
-        proj.panneau(pan_id).loadData( this.syncInPanneau.bind(this, pan_id) )
-      }
+      /*  Il reste des panneaux à traiter  */
+
+      // Note : les données seront effectivement chargées seulement
+      //        si elles ne l'ont pas encore été.
+
+      proj.panneau(pan_id).loadData( my.syncInPanneau.bind(my, pan_id, callback) )
+
     }
     else
     {
@@ -777,6 +784,8 @@ class Parag
       proj.relatives.associate(this.parags2sync_list)
       proj.busy = false
       delete this.i_panneau_sync
+
+      if ( 'function' === typeof callback ) { callback.call() }
     }
   }
   /**
@@ -786,78 +795,75 @@ class Parag
   *
   * (1) Les données du panneau ont été chargées dans la méthode appelante.
   *
+  * Note
   **/
-  syncInPanneau ( pan_id )
+  syncInPanneau ( pan_id, callback )
   {
     const my = this
     console.log("[Parag#syncInPanneau] Début de synchronisation du parag#%d dans le panneau '%s'", this.id, pan_id)
     let newParagSync
       , pano
-      , nombre_parags = this.panneau.parags.count
-      , myindex       = this.index
+      , nombre_parags = my.panneau.parags.count
+      , myindex       = my.index
       , ipar
       , iparag
       , paragAfter_id
       , paragAfter // le paragraphe avant lequel ajouter le parag synchronisé
       , optionsAdd
 
-    // S'il s'agit du panneau du parag, on ne fait rien, évidemment
-    if ( pan_id !== my.panneau_id ) {
+    // puts(`* ÉTUDE DU PANNEAU ${pan_id} *`)
+    // Si le paragraphe courant est déjà en relation avec un paragraphe
+    // du panneau +pan_id+, il n'y a rien à faire
+    if ( my.firstRelativeInPanneau(pan_id) ) { return true }
 
-      // puts(`* ÉTUDE DU PANNEAU ${pan_id} *`)
-      // Si le paragraphe courant est déjà en relation avec un paragraphe
-      // du panneau +pan_id+, il n'y a rien à faire
-      if ( my.firstRelativeInPanneau(pan_id) ) { return true }
+    pano = my.projet.panneau(pan_id)
 
-      pano = my.projet.panneau(pan_id)
+    paragAfter = undefined
 
-      paragAfter = undefined
+    /*  On passe en revue les parags après le courant pour
+        trouver un parag associé dans le panneau */
 
-      /*  On passe en revue les parags après le courant pour
-          trouver un parag associé dans le panneau */
-
-      for(ipar = myindex+1; ipar < nombre_parags ; ++ipar){
-        iparag = my.panneau.parags.items[ipar] // (1)
-        if ( null !== (paragAfter_id = iparag.firstRelativeInPanneau(pan_id)) )
-        {
-          paragAfter = Parags.get(Number(paragAfter_id))
-          break
-        }
-      }
-
-      /*  Si un parag après n'a pas été trouvé, on regarde si le parag juste
-          avant est associé à un parag et on le prend si c'est le cas       */
-      if ( !paragAfter
-          && my.previous
-          && (paragAfter_id = my.previous.lastRelativeInPanneau(pan_id))
-      )
+    for(ipar = myindex+1; ipar < nombre_parags ; ++ipar){
+      iparag = my.panneau.parags.items[ipar] // (1)
+      if ( null !== (paragAfter_id = iparag.firstRelativeInPanneau(pan_id)) )
       {
-        paragAfter = Parags.get( Number(paragAfter_id) ).next
+        paragAfter = Parags.get(Number(paragAfter_id))
+        break
       }
+    }
 
-      /*  On ajoute le nouveau parag associé à son panneau */
+    /*  Si un parag après n'a pas été trouvé, on regarde si le parag juste
+        avant est associé à un parag et on le prend si c'est le cas       */
+    if ( !paragAfter
+        && my.previous
+        && (paragAfter_id = my.previous.lastRelativeInPanneau(pan_id))
+    )
+    {
+      paragAfter = Parags.get( Number(paragAfter_id) ).next
+    }
 
-      optionsAdd = {display: false, before: paragAfter || undefined }
+    /*  On ajoute le nouveau parag associé à son panneau */
 
-      newParagSync = pano.parags.createNewParag({
-            contents    : `[Relatif du paragraphe PARAG#${my.id}]`
-          , duration    : my.duration
-        }
-        , optionsAdd
-      )
+    optionsAdd = {display: false, before: paragAfter || undefined }
 
-      console.log(`[Synchronisation] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
+    newParagSync = pano.parags.createNewParag({
+          contents    : `[Relatif du paragraphe PARAG#${my.id}]`
+        , duration    : my.duration
+      }
+      , optionsAdd
+    )
 
-      /*  Ajout du paragraphe à la liste des paragraphes qui seront associés
-          quand on les aura tous créés. */
+    console.log(`[syncInPanneau] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
 
-      this.parags2sync_list.push(newParagSync)
+    /*  Ajout du paragraphe à la liste des paragraphes qui seront associés
+        quand on les aura tous créés. */
 
-    } // fin de si ça n'est pas le panneau courant
+    my.parags2sync_list.push(newParagSync)
+    console.log("[syncInPanneau] Liste des parags à synchroniser", my.parags2sync_list.map(p=>{return p.id}))
 
     /*  On peut passer au panneau suivant, ou finir */
 
-    this.syncAllPanneaux()
+    this.syncAllPanneaux( callback )
   }
 
 
@@ -894,7 +900,7 @@ class Parag
   * les paragraphes synchronisés si le paragraphe a réellement
   * été créé (this.sync_after_save à true).
   **/
-  onChangeContents ()
+  onChangeContents ( callback )
   {
     const my = this
     // console.log('-> onChangeContents')
@@ -904,7 +910,7 @@ class Parag
     my.setModified()
     if ( my.sync_after_save )
     {
-      my.sync()
+      my.sync( callback )
       delete my.sync_after_save
     }
     my.panneau.modified = true

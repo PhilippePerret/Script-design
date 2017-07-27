@@ -21,10 +21,14 @@ class PanProjet
     return this._newid
   }
 
-
-  static oneLetterOf ( panneau_id )
+  /**
+  * @return {String} La lettre correspondant au panneau +pan_id+
+  *
+  * @param {String} pan_id ID du panneau (p.e. 'scenier' ou 'notes')
+  **/
+  static oneLetterOf ( pan_id )
   {
-    return Projet.PANNEAUX_DATA[this.panneau_id].oneLetter
+    return Projet.PANNEAUX_DATA[pan_id].oneLetter
   }
 
 
@@ -330,13 +334,22 @@ class PanProjet
   /**
   * Procède au chargement des données de ce panneau/élément narratif
   **/
-  loadData ( callback_method )
+  loadData ( callback )
   {
-    console.log("-> PanProjet#loadData de panneau '%s'", this.id)
-    let my = this
-    my.data = ''
-    my.afterLoadingCallback = callback_method
-    my.store.getData( my.loadWithStream.bind(my), my.onEndStreaming.bind(my) )
+    if ( this.dataLoaded )
+    {
+      /*  Si les données ont déjà été chargée, on ne fait rien */
+
+      if ( 'function'==typeof callback ) { callback.call() }
+    }
+    else
+    {
+      console.log("-> PanProjet#loadData de panneau '%s'", this.id)
+      let my = this
+      my.data = ''
+      my.afterLoadingCallback = callback
+      my.store.getData( my.loadWithStream.bind(my), my.onEndStreaming.bind(my) )
+    }
   }
   loadWithStream ( chunk )
   {
@@ -388,12 +401,13 @@ class PanProjet
 
     /*  Fonction de callback si elle est définie  */
 
+    console.log('<- PanProjet#onEndStreaming du panneau "%s" (avant appel callback)', this.id)
+
     if( 'function' === typeof my.afterLoadingCallback ) {
-      // console.log('[PanProjet#onEndStreaming] Panneau "%s" / Appel de la méthode de callback', this.id)
+      console.log('[PanProjet#onEndStreaming] Appel de la méthode callback')
       my.afterLoadingCallback.call()
     }
 
-    console.log('<- PanProjet#onEndStreaming du panneau "%s"', this.id)
 
   }
 
