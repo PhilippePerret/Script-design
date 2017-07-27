@@ -27,7 +27,7 @@ La méthode peut recevoir aussi une liste d'identifiant, mais le parag correspon
 ```js
 
   // parags est projet.parags
-  parags.readParags(<liste ids>, <méthode callback>)
+  projet.readParags(<liste ids>, <méthode callback>)
 
 ```
 
@@ -37,7 +37,7 @@ On peut aussi fournir un seul nombre :
 
 ```js
 
-  parags.readParags(<id parag>, <méthode callback>)
+  projet.readParags(<id parag>, <méthode callback>)
 
 
 ```

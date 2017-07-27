@@ -83,24 +83,31 @@ class Parags
     return newP
   }
 
-  createNewParag ()
+  /**
+  * Création d'un nouveau parag pour le panneau propriétaire.
+  *
+  * @param {Object} params  Les paramètres pour l'instanciation. C'est là
+  *                         qu'on peut par exemple définir le contents ou
+  *                         la duration.
+  *
+  * @param {Object} options Les options pour la méthode `add`. C'est là qu'on
+  *                         peut définir par exemple le `before` pour dire avant
+  *                         quel parag on doit ajouter le nouveau.
+  **/
+  createNewParag ( params, options )
   {
     const my = this
     // On crée le paragraphe est on l'affiche
-    const new_id = Parag.newID()
-    const newP = new Parag({
-        id          : new_id
-      , contents    : ''
-      , created_at  : moment().format('YYMMDD')
-      , panneau_id  : my.panneau.id
-      , _modified   : true // pour qu'il soit enregistré
-    })
+    const newP = my.newInstance( params )
 
     // Ajout du paragraphe dans le panneau, à l'endroit voulu,
     // c'est-à-dire après la sélection si elle existe ou à la
     // fin dans le cas contraire.
-    let options = {}
-    my.hasCurrent() && ( options.before = my.selection.current.next )
+    options || ( options = {} )
+    !options.before && my.hasCurrent() && ( options.before = my.selection.current.next )
+
+    /*  On ajoute le parag */
+
     my.add(newP, options)
 
     // On l'ajoute à la liste des relatives qui tient à jour la relation entre
@@ -108,6 +115,23 @@ class Parags
     my.projet.relatives.addParag(newP)
     // On informe à titre indicatif
     UILog(`Création du paragraphe #${newP.id}`)
+    return newP
+  }
+
+  newInstance ( params )
+  {
+    const my  = this
+    const now = moment().format('YYMMDD')
+    params || ( params = {} )
+    const new_id = Parag.newID()
+    const newP = new Parag({
+        id          : new_id
+      , contents    : String(params.contents || '')
+      , created_at  : params.created_at || now
+      , updated_at  : params.updated_at || now
+      , panneau_id  : params.panneau_id || my.panneau.id
+      , _modified   : true // pour qu'il soit enregistré
+    })
     return newP
   }
 
@@ -170,7 +194,7 @@ class Parags
   *
   * Note : on observe aussi ce paragraphe.
   **/
-  add ( argp, options, methodeAfterDisplay )
+  add ( argp, options )
   {
 
     let my = this
@@ -187,8 +211,6 @@ class Parags
     /*  On répète pour chaque paragraphe  */
 
     argp.forEach( (iparag) => {
-
-      methodeAfterDisplay && (iparag.methodeAfterDisplay = methodeAfterDisplay)
 
       // Paragraphe existant déjà
       if ( undefined !== my._dict[iparag.id] ) { return }

@@ -98,22 +98,22 @@ describe('Contenu de Parag', function () {
     }) // @contentsFormated
 
 
-    describe('@contentsFormatedSansTags', function () {
+    describe('@contentsSimple', function () {
       it("existe", function(){
-        expect(parag0.contentsFormatedSansTags).not.to.be.undefined
+        expect(parag0.contentsSimple).not.to.be.undefined
       })
       it("retourne le contenu sans les balises", function(){
         parag1._contents_formated = '<i>Bonjour tout le monde !</i>'
-        delete parag1._formcontsanstags
-        expect(parag1.contentsFormatedSansTags).to.equal('Bonjour tout le monde !')
+        delete parag1._contents_simple
+        expect(parag1.contentsSimple).to.equal('Bonjour tout le monde !')
         parag2._contents_formated = '<b>Bonjour <a href="#pour-voir">tout</a> le <strong>monde</strong><br> !'
-        delete parag2._formcontsanstags
-        expect(parag2.contentsFormatedSansTags).to.equal('Bonjour tout le monde !')
+        delete parag2._contents_simple
+        expect(parag2.contentsSimple).to.equal('Bonjour tout le monde !')
         parag3._contents_formated = "<a\n\thref=\"http://monadresse.net\"\n\n\tclass='lien'>Un lien sur plusieurs lignes\n\n</a>"
-        delete parag3._formcontsanstags
-        expect(parag3.contentsFormatedSansTags).to.equal('Un lien sur plusieurs lignes')
+        delete parag3._contents_simple
+        expect(parag3.contentsSimple).to.equal('Un lien sur plusieurs lignes')
       })
-    }) // @contentsFormatedSansTags
+    }) // @contentsSimple
 
   })// /PROPERTIES
 });

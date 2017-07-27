@@ -453,7 +453,7 @@ class Projet
   writeParag( fd, iparag )
   {
     const my = this
-    fs.write(fd, iparag.dataline_infile, iparag.startPos, 'utf8', (err, sizew, writen) => {
+    fs.write(fd, iparag.data_infile, iparag.startPos, 'utf8', (err, sizew, writen) => {
       if (err){ throw err }
       iparag.modified = false
       my.saved_parags_count += 1

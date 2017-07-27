@@ -1,5 +1,7 @@
 let moment  = require('moment')
   , fs      = require('fs')
+
+
 /** ---------------------------------------------------------------------
   *   class PanProjet
   *   ---------------
@@ -18,6 +20,19 @@ class PanProjet
     this._newid ++
     return this._newid
   }
+
+
+  static oneLetterOf ( panneau_id )
+  {
+    return Projet.PANNEAUX_DATA[this.panneau_id].oneLetter
+  }
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *   INSTANCES
+    *
+  *** --------------------------------------------------------------------- */
 
   constructor (name, projet)
   {
@@ -73,6 +88,10 @@ class PanProjet
   }
 
   /* --- Public --- */
+
+  isCurrent () {
+    return this.projet.current_panneau.id == this.id
+  }
 
   /**
   * @return {Objet} Les données absolues du panneau (dans Projet.PANNEAUX_DATA)
@@ -484,7 +503,7 @@ class PanProjet
     if ( is_panneau_courant && my.parags2display_list.length )
     {
       // Pour la boucle asynchrone
-      this.parags.add(my.parags2display_list.shift(), undefined, my.displayAllParags.bind(my, true))
+      this.parags.add(my.parags2display_list.shift())
     }
     else
     {

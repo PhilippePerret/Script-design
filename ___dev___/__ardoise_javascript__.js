@@ -1,12 +1,9 @@
 let path  = require('path')
 let fs    = require('fs')
 
+var a = "a"
 
-var a = ['un', new String('deux'), 'trois', 'quatre']
+a = a.padStart(10)
 
-var b = a.slice(1,3)
 
-b[0] = 'deuxième'
-
-console.log(b)
 console.log(a)
