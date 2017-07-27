@@ -1,5 +1,24 @@
-* Méthode `addNotNew` à poursuivre
-  L'utiliser pour le load du panneau
+* Soit le parag 19
+  Il est demandé sa synchronisation
+  On crée le #20 dans le panneau Notes
+  On crée le #21 dans le panneau Manuscrit
+
+  La question est la suivante : quand un parag est associé à un autre, faut-il
+  les synchroniser avec tous les parags associés ?
+
+    Associés                      Associés
+   v-------v            v---------v-------------v
+  #20     #21          #27       #23           #24
+          #22          #28       #29           #25
+                                 #30           #26
+
+  Lorsque #20 et #26 sont associés, faut-il associer tous ces associés ?
+
+  Faut-il plutôt n'associer que les parags directs ?
+  Donc :
+    #26 va être associé à #21 et #22 par #20
+    #20 va être associé à #23, #29 et #30 par #26
+
 
 * Reprendre le load des panneaux, faire une liste de toutes les instanciations, puis l'envoyer
   à parags.add avec l'option display = false

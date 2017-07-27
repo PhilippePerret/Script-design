@@ -487,6 +487,17 @@ class PanProjet
   }
 
   /**
+  * @property {String} le panneau courant en version 1-lettre
+  *
+  * Cette valeur est utile pour les relatives et pour l'enregistrement du
+  * paragraphe.
+  **/
+  get oneLetter ()
+  {
+    this._oneletter || ( this._oneletter = PanProjet.oneLetterOf(this.id))
+    return this._oneletter
+  }
+  /**
   * Marque tous les paragraphes comme non modifiés.
   * Cette méthode sert après l'enregistrement du panneau.
   **/

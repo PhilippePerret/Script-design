@@ -636,8 +636,16 @@ class Parag
   *** --------------------------------------------------------------------- */
 
   /**
-  * @return {Array} de {Parag}, la liste des relatifs du parag courant
+  * @return {Object} de {Parag}, la liste des relatifs du parag courant
   *         tels que définis dans les données Relatives du projet
+  *         dans deux class 'as_referent' et 'as_relatifs' qui contiennent
+  *         chacune une liste des référents ou des relatifs.
+  *
+  * @note Pour une version plus simple, cf. this.relatives qui est une simple
+  *       Map contenant les parags associés avec en clé leur ID et en valeur
+  *       leur instance Parag ou Null s'ils ne sont pas encore chargés.
+  *       La méthode this.isRelativeOf(<id>) retourne true si les deux
+  *       parags sont associés.
   **/
   get relatifs ()
   {
@@ -781,7 +789,7 @@ class Parag
       // créés
       // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
       console.log("Fin de la synchronisation de tous les panneaux synchronisables.")
-      proj.relatives.associate(this.parags2sync_list)
+      proj.relatives.associateWithNoReferent(this.parags2sync_list)
       proj.busy = false
       delete this.i_panneau_sync
 
@@ -1381,6 +1389,34 @@ class Parag
 
     return panRels
 
+  }
+
+  /**
+  * @return {Boolean} true si le parag est associé au parag d'ID +pid+
+  *
+  * @param {Number|Parag} pid Soit l'ID du parag soit le parag lui-même.
+  **/
+  isRelativeOf ( pid )
+  {
+    if ( 'Parag' == pid.constructor.name ) { pid = pid.id }
+    return undefined !== this.relatives.get(pid)
+  }
+  hasRelative ( pid ) { return this.isRelativeOf(pid) }
+
+  get relatives ()
+  {
+    if ( undefined === this._relatives )
+    {
+      const my = this
+      let panLetters = Object.getOwnPropertyNames(my.data_relatives['r'])
+      this._relatives = new Map()
+      panLetters.forEach( pl => {
+        my.data_relatives['r'][pl].forEach( pid => {
+          this._relatives.set(pid, Parags.get(pid) || null /* pas undefined */)
+        })
+      })
+    }
+    return this._relatives
   }
 
 }

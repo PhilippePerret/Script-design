@@ -52,6 +52,7 @@ class Relatives
     {
       delete iparag._data_relatives
       delete iparag._relatifs
+      delete iparag._relatives
     }
   }
 
@@ -106,13 +107,12 @@ class Relatives
   **/
   associate_groupByPanneau( parags )
   {
-    let hrelates = {}
+    let hrelates = new Map()
     parags.forEach( (parag) => {
-      if ( undefined === hrelates[parag.panneau_id] ){
-        hrelates[parag.panneau_id] = []
+      if ( undefined === hrelates.get(parag.panneau_id) ){
+        hrelates.set(parag.panneau_id, [])
       }
-      // On ajoute l'identifiant à cette liste
-      hrelates[parag.panneau_id].push(parag.id)
+      hrelates.get(parag.panneau_id).push(parag.id)
     })
     return hrelates
   }
@@ -120,21 +120,22 @@ class Relatives
   /**
   * Sous-méthode de `associate` qui retourne le paragraphe de référence.
   *
-  * @return {Array} [hash-référent, hash-relatives]
+  * @return {Map} [hash-référent, hash-relatives]
   *
   **/
-  associate_getReferent ( hrelates )
+  associate_getReferent ( hrelates /* {Map} */)
   {
     let erreurNoReferent  = false
       , referent          = null
-      , pan
+      , pan, arr_ids
 
-    for ( pan in hrelates )
+    for(let tab of hrelates)
     {
-      if ( hrelates[pan].length == 1 )
+      [pan, arr_ids] = tab
+      if ( arr_ids.length == 1 )
       {
-        referent = { panneau: pan, id: hrelates[pan][0] }
-        delete hrelates[pan]
+        referent = { panneau: pan, id: arr_ids[0] }
+        hrelates.delete(pan)
         break
       }
     }
@@ -271,10 +272,11 @@ class Relatives
   * Méthode qui procède à l'association des parags contenus dans la liste
   * @param {Array} parags Liste de {Parag} à associer
   * @product
+  *
   * @return {Parag} Le paragraphe référent si l'association a pu se faire
   *                 et false dans le cas contraire.
   *                 Note : on renvoie le référent pour mettre tout de suite
-  *                 ses relatifs en exergue.
+  *                 ses relatifs en exergue dans le panneau, si possible.
   *
   * Rappel:
   *
@@ -292,7 +294,7 @@ class Relatives
   **/
   associate ( parags )
   {
-    let hrelates, referent
+    const my = this
 
     // console.log("\n==== RELATIVES avant l'association : ", JSON.stringify(this.data))
     // Avant de vérifier que les données sont valides,
@@ -303,18 +305,17 @@ class Relatives
     //    "scenier":  [x, y]
     //    "synopsis": [z, a, b]
     // }
-    // Noter que ci-dessus on obtient les valeurs de trois tableaux, mais
-    // en règle générale, puisqu'on associe par deux tableaux, il ne peut y en
-    // avoir que deux.
-    hrelates = this.associate_groupByPanneau(parags)
+
+    let hrelates = this.associate_groupByPanneau(parags) // => Map
     // console.log(`==== hrelates: ${JSON.stringify(hrelates)}`)
 
     // On récupère le référent, c'est-à-dire le parag qu'on doit associer
     // aux autres, entendu qu'on ne peut pas associer plusieurs parag à
     // plusieurs autres. Un parag peut être associé à plusieurs parag,
     // mais toujours un référent à la fois.
-    referent = this.associate_getReferent( hrelates )
+    let referent = this.associate_getReferent( hrelates )
     // console.log(`referent = ${JSON.stringify(referent)}`)
+
     if ( ! referent ) { return false }
     // console.log("==== hrelates après retrait du référent: ", JSON.stringify(hrelates))
 
@@ -325,48 +326,86 @@ class Relatives
     // L'opération est possible, on peut procéder
     // ------------------------------------------
     let ref_id          = referent.id
-      , ref_pan_letter  = Projet.PANNEAUX_DATA[referent.panneau].oneLetter
+      , ref_pan_letter  = referent.panneau.oneLetter
       , ref_relatives   = this.data.relatives[String(ref_id)]
       , other_id
       , other_relatives
 
-    let pan, pan_letter
-    let my = this
-    for ( pan in hrelates )
-    {
-      pan_letter = Projet.PANNEAUX_DATA[pan].oneLetter
-      // console.log(`Traitement du panneau ${pan} (${pan_letter})`)
-
-      if (undefined === ref_relatives['r'][pan_letter])
+    let pan, panLetter
+    hrelates.forEach( (value, pan) => {
+      panLetter = PanProjet.oneLetterOf(pan)
+      if (undefined === ref_relatives['r'][panLetter])
       {
-        ref_relatives['r'][pan_letter] = []
+        ref_relatives['r'][panLetter] = []
       }
-      // On ajoute tous les relatifs
-      hrelates[pan].forEach( (pid) => {
+      value.forEach(
+        (pid) => {
 
-        // Ajout du relatif dans le référent
-        ref_relatives['r'][pan_letter].push(pid)
+         // Ajout du relatif dans le référent
+         ref_relatives['r'][panLetter].push(pid)
 
-        // Ajout du référent dans le relatif
-        other_relatives = my.data.relatives[String(pid)]
-        if (undefined === other_relatives['r'][ref_pan_letter])
-        {
-          other_relatives['r'][ref_pan_letter] = []
-        }
-        other_relatives['r'][ref_pan_letter].push(ref_id)
-        my.data.relatives[String(pid)] = other_relatives
+         /* Ajout du référent dans le relatif */
 
-      })
-    }
+         other_relatives = my.data.relatives[String(pid)]
+         if (undefined === other_relatives['r'][ref_pan_letter])
+         {
+           other_relatives['r'][ref_pan_letter] = []
+         }
+         other_relatives['r'][ref_pan_letter].push(ref_id)
+        //  my.data.relatives[String(pid)] = other_relatives
 
-    // On remet dans les données les relatives du référent
-    this.data.relatives[String(ref_id)] = ref_relatives
+      }, value /* thisArg */)
+    }, hrelates /* thisArg */)
+
+    // On remet dans les données les relatives du référent (utile ?)
+    // this.data.relatives[String(ref_id)] = ref_relatives
 
     // console.log("\n==== RELATIVES est devenue : ", JSON.stringify(this.data))
-    let iparag = Parags.get(Number(ref_id))
-    this.resetParag(iparag)
-    this.modified = true
-    return iparag
+
+    my.resetAllParags()
+    my.modified = true
+
+    /*  On retourne le référent (utile ?) */
+
+    return Parags.get(Number(ref_id))
+  }
+
+  /**
+  * Méthode qui associe les paragraphes sans référent
+  *
+  * À la différence de la méthode `associate`, qui associe les parags
+  * à un référent unique (sans associer les autres parags entre eux), ici,
+  * il n'y a pas de référent et il n'y a (normalement) qu'un seul parag par
+  * panneau. Cette méthode est appelée par la synchronisation.
+  * Dans ce cas, tous les parags sont associés entre eux.
+  **/
+  associateWithNoReferent ( parags )
+  {
+    const my = this
+    let pRef, pRel, dataRef
+
+    parags.forEach( pRef => {
+      dataRef = my.data.relatives[String(pRef.id)]['r']
+      parags.forEach( pRel => {
+        if (pRel.id == pRef.id){ return }
+        if ( undefined === dataRef[pRel.panneau.oneLetter] )
+        {
+          dataRef[pRel.panneau.oneLetter] = []
+        }
+        if ( dataRef[pRel.panneau.oneLetter].indexOf(pRel.id) < 0 )
+        {
+          dataRef[pRel.panneau.oneLetter].push( pRel.id )
+        }
+      })
+    })
+
+    my.resetAllParags( parags )
+    my.modified = true
+  }
+
+  resetAllParags (parags)
+  {
+    parags.forEach( p => { this.resetParag(p) } )
   }
 
   /**

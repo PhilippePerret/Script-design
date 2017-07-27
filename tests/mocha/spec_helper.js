@@ -159,7 +159,9 @@ resetCurrentProjet = function( params )
   params.options.autosync || (params.options['autosync'] = 0)
   params.options.autosave || (params.options['autosave'] = 0)
   for(var p in params.options){
-    if (params.options.hasOwnProperty(p)){projet.option(p, params.options[p])}
+    if (params.options.hasOwnProperty(p)){
+      projet.option(p, params.options[p])
+    }
   }
   Parag._lastID = -1
 

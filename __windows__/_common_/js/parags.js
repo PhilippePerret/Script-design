@@ -132,6 +132,7 @@ class Parags
       , panneau_id  : params.panneau_id || my.panneau.id
       , _modified   : true // pour qu'il soit enregistré
     })
+    newP.panneau.modified = true
     return newP
   }
 

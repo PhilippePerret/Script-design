@@ -1,9 +1,9 @@
 let path  = require('path')
 let fs    = require('fs')
 
-var a = "a"
+let a = {un: 'un', 2: 'deux'}
 
-a = a.padStart(10)
+let m = new Map()
 
 
-console.log(a)
+console.log(m)

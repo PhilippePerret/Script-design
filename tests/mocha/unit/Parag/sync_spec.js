@@ -9,7 +9,7 @@
 */
 require('../../spec_helper.js')
 
-describe.only('Synchronisation d’un nouveau parag dans seulement 1 panneau', function () {
+describe('Synchronisation d’un nouveau parag dans seulement 1 panneau', function () {
   /*
     C'est une version simplifiée pour vérifier la base.
    */
@@ -20,6 +20,8 @@ describe.only('Synchronisation d’un nouveau parag dans seulement 1 panneau', f
     expect(parag0).to.be.instanceOf(Parag)
     expect(()=>{return parag19}).to.throw()
     expect(Parags.get(19), 'Le parag#19 ne devrait pas exister').to.be.instanceOf(Parag)
+    expect(Parags.get(20), 'Le parag#20 ne devrait pas exister').to.be.instanceOf(Parag)
+    expect(Parags.get(21), 'Le parag#21 ne devrait pas exister').to.be.instanceOf(Parag)
     expect(projet.relatives.all['19'], 'La donnée relatives du parag#18 ne devrait pas exister').to.be.undefined
 
 
@@ -66,8 +68,117 @@ describe.only('Synchronisation d’un nouveau parag dans seulement 1 panneau', f
   it("crée le nouveau parag", function(){
     expect(Parags.get(19)).to.be.instanceOf(Parag)
   })
+  it("a ajouté le parag au panneau notes", function(){
+    expect(panneauNotes.parags._ids).to.include(20)
+    expect(panneauNotes.parags._ids).to.deep.equal([20])
+  })
+  it("a synchronisé les deux parags", function(){
+    expect(Parags.get(19).isRelativeOf(20), 'les parags 19 et 20 doivent être relatifs').to.be.true
+    expect(Parags.get(20).isRelativeOf(19), 'les parags 19 et 20 doivent être relatifs').to.be.true
+  })
+  it("marque les deux panneaux modifiés", function(){
+    expect(panneauNotes._modified, 'le panneau Notes devrait être marqué modifié').to.be.true
+    expect(panneauScenier._modified, 'le panneau Scénier devrait être marqué modifié').to.be.true
+  })
 
 });
+
+
+
+
+
+
+
+
+
+
+
+describe.only('Synchronisation d’un nouveau paragraphe dans 2 panneaux', function () {
+  /*
+    C'est une version simplifiée pour vérifier la base.
+   */
+  before(function (done) {
+    // - On reconstruit seulement 18 paragraphes -
+
+    resetTest({nombre_parags : 18})
+    expect(parag0).to.be.instanceOf(Parag)
+    expect(()=>{return parag19}).to.throw()
+    expect(Parags.get(19), 'Le parag#19 ne devrait pas exister').to.be.instanceOf(Parag)
+    expect(Parags.get(20), 'Le parag#20 ne devrait pas exister').to.be.instanceOf(Parag)
+    expect(Parags.get(21), 'Le parag#21 ne devrait pas exister').to.be.instanceOf(Parag)
+    expect(projet.relatives.all['19'], 'La donnée relatives du parag#18 ne devrait pas exister').to.be.undefined
+
+
+    // - On vérifie qu'aucun panneau ne soit chargé -
+    // - On vérifie que tous les panneaux soit vides -
+
+    Projet.PANNEAU_LIST.forEach( (panid) => {
+      expect(projet.panneau(panid).loaded, `Le panneau "${panid}" ne devrait pas être chargé`).to.be.false
+      expect(projet.panneau(panid).parags.count, `Le panneau ${panid} ne devrait pas avoir de parags`).to.equal(0)
+      expect(projet.panneau(panid)._modified, `Le panneau "${panid}" ne devrait pas être marqué modifié.`).to.be.false
+    })
+
+    // - On enclenche l'auto-synchronisation -
+
+    projet.option('autosync', 1)
+
+    /*  On ne met plus qu'un seul panneau pour la synchronisation */
+
+    this.original_panneaux_sync = Projet.PANNEAUX_SYNC.slice(0,-1)
+    Projet._panneauxSync = ['scenier', 'notes', 'manuscrit']
+
+    // - Création du parag #18 -
+
+    projet.current_panneau = panneauScenier
+    let newP = panneauScenier.parags.createAndEdit()
+
+    // - La synchronisation n'est demandée qu'au changement de contenu -
+    //   Donc on le simule.
+
+    newP.onChangeContents( done )
+
+    // done()
+
+  })
+  after(function () {
+
+    /*  On remet la liste original de panneaux synchronisés */
+
+    Projet._panneauxSync = this.original_panneaux_sync
+    console.log("Projet.PANNEAUX_SYNC remis à ", Projet.PANNEAUX_SYNC)
+
+  });
+
+  it("crée le nouveau parag", function(){
+    expect(Parags.get(19)).to.be.instanceOf(Parag)
+  })
+  it("a ajouté le parag au panneau notes", function(){
+    expect(panneauNotes.parags._ids).to.deep.equal([20])
+    expect(panneauManuscrit.parags._ids).to.deep.equal([21])
+  })
+  it("a synchronisé les trois parags", function(){
+    expect(Parags.get(19).isRelativeOf(20), 'les parags 19 et 20 doivent être relatifs').to.be.true
+    expect(Parags.get(20).isRelativeOf(19), 'les parags 19 et 20 doivent être relatifs').to.be.true
+    expect(Parags.get(20).isRelativeOf(21), 'les parags 21 et 20 doivent être relatifs').to.be.true
+    expect(Parags.get(19).isRelativeOf(21), 'les parags 21 et 19 doivent être relatifs').to.be.true
+  })
+  it("marque les deux panneaux modifiés", function(){
+    expect(panneauNotes._modified, 'le panneau Notes devrait être marqué modifié').to.be.true
+    expect(panneauScenier._modified, 'le panneau Scénier devrait être marqué modifié').to.be.true
+    expect(panneauManuscrit._modified, 'le panneau Manuscrit devrait être marqué modifié').to.be.true
+  })
+
+});
+
+
+
+
+
+
+
+
+
+
 
 describe('Synchronisation d’un nouveau paragraphe', function () {
 

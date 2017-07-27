@@ -139,14 +139,14 @@ class ProjetOptions
   *
   * La méthode définit this._data
   *
-  * Si le fichier est options n'existe pas encore, la méthode met {}
+  * Si le fichier des options n'existe pas encore, la méthode met {}
   * à la donnée _data.
   **/
   load ( callback )
   {
     if ( fs.existsSync(this.store_path) )
     {
-      this._data = this.store_options.getData(null, callback)
+      this._data = this.store_options.getData(null, callback) || {}
     }
     else
     {
@@ -176,7 +176,7 @@ class ProjetOptions
 
 
   get store_options     () {
-    this._store_options || (this._store_options = new Store(`projets/${this.projet.id}/options`) )
+    this._store_options || (this._store_options = new Store(`projets/${this.projet.id}/options`, {}) )
     return this._store_options
   }
 
