@@ -12,17 +12,14 @@
   c'est fait automatiquement au chargement de cette librairie.
 
 */
-global.path   = require('path')
-global.moment = require('moment')
-global.fs     = require('fs')
+global.path               = require('path')
+global.PROJET_JS_FOLDER   = path.resolve('./__windows__/projet/js')
+
 global.assert = require('assert')
 const chai    = require('chai')
 global.expect = chai.expect
-
 const myChaiExtension = require('./support/chai-extension')
 chai.use(myChaiExtension)
-
-// Ne semble pas fonctionner…
 // global.jsdom  = require('mocha-jsdom')
 // global.document = jsdom().
 const jsdom = require('jsdom')
@@ -34,34 +31,39 @@ const window = dom.window
 global.document = window.document
 
 
-const LIB_UTILS_JS      = path.resolve('./lib/utils')
-const FOLDER_COMMON_JS  = path.resolve('./__windows__/_common_/js')
-const FOLDER_PROJET_JS  = path.resolve('./__windows__/projet/js')
+// Toutes les définitions globales
+require(path.join(PROJET_JS_FOLDER,'_includes.js'))
 
-global.DOM      = require(path.join(LIB_UTILS_JS, 'dom_class.js'))
-global.Store    = require(path.join(LIB_UTILS_JS, 'store_class.js'))
 
-global.Parags   = require(path.join(FOLDER_COMMON_JS,'parags.js'))
-global.Parag    = require(path.join(FOLDER_COMMON_JS,'parag.js'))
-
-global.Projet = require(path.join(FOLDER_PROJET_JS,'projet_class.js'))
 global.projet = undefined // utiliser initTess() pour l'instancier
-global.PanProjet      = require(path.join(FOLDER_PROJET_JS,'panprojet_class.js'))
-global.ProjetOptions  = require(path.join(FOLDER_PROJET_JS,'options_class.js'))
-global.Relatives      = require(path.join(FOLDER_PROJET_JS,'relatives_class.js'))
-global.ProjetUI       = require(path.join(FOLDER_PROJET_JS,'projet_ui.js'))
 
 global.PANNEAU_ID  = 'synopsis' // panneau par défaut dans projet
 global.PROJET_ID   = 'exemple'  // projet identifiant
-
 global.USER_DATA_PATH = path.join(require('os').homedir(),'Library','Application\ Support','Script-design-TEST')
 // console.log('USER_DATA_PATH',USER_DATA_PATH)
 
+/** ---------------------------------------------------------------------
+  *
+  *   SURCLASSEMENT DE FONCTIONS
+  *
+*** --------------------------------------------------------------------- */
+
+/**
+* La méthode log simple qui met les messages dans la console
+**/
+global.log = function()
+{
+  console.log(...arguments)
+}
+
+// Il faut surclasser la méthode qui écrit des messages dans
+// la fenêtre (pied de page)
 global.UILog = function(message, type)
 {
   this._messages_UILog || ( this._messages_UILog = [] )
   this._messages_UILog.push({message: message, type: type})
 }
+
 
 // ---------------------------------------------------------------------
 
@@ -265,11 +267,19 @@ global.myLog = function(message, type)
 }
 
 before(function () {
+
   this.jsdom = require('jsdom-global')()
+  // Utile pour tout ce qui concerne le DOM "virtuel"
+
+
 })
 
 after(function () {
+
   this.jsdom()
+  // Certainement pour remettre en fonction le window/window.document normal.
+
+
 })
 
 

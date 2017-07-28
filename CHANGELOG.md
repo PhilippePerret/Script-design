@@ -1,9 +1,15 @@
+# 0.1.11
+
+  * Une seule inclusion pour les tests et le programme lui-même pour définir les globales.
+  * Tests complets de la synchronisation des paragraphes.
+  * Introduction des handy-méthodes (pour essayer)
+
 # 0.1.10
 
   * Ajout d'un footer dans la page projet
   * Ajout d'une class ProjetUI pour la gestion de l'interface en générale
   * Première implémentation des options.
-  
+
 # 0.1.9
 
   * Implémentation des touches 'i' et 'k' pour remplacer les flèches haut/bas.

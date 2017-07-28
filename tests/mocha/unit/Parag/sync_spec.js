@@ -93,7 +93,7 @@ describe('Synchronisation d’un nouveau parag dans seulement 1 panneau', functi
 
 
 
-describe.only('Synchronisation d’un nouveau paragraphe dans 2 panneaux', function () {
+describe('Synchronisation d’un nouveau paragraphe dans 2 panneaux', function () {
   /*
     C'est une version simplifiée pour vérifier la base.
    */
@@ -258,7 +258,7 @@ describe('Synchronisation d’un nouveau paragraphe', function () {
     })
   })
 
-  describe('Création d’un parag synchronisé avant un parag déjà synchronisé', function () {
+  describe.only('Création d’un parag synchronisé avant un parag déjà synchronisé', function () {
     before(function(){
 
       /* On réinitialise tout */
@@ -272,15 +272,21 @@ describe('Synchronisation d’un nouveau paragraphe', function () {
       panneauTreatment.add([parag4, parag5, parag6, parag7, parag8])
 
 
+
+      console.log("<- fin de before")
+    });
+
+    it.only("on associe les parags #1 et #2", function(done){
       /*  On associe certains paragraphes  */
 
       expect(projet.relatives.areRelatifs(parag1, parag2), 'les parag1 et parag2 ne devraient pas être relatifs').to.be.false
       projet.relatives.associate([parag1, parag2, parag6])
       expect(projet.relatives.areRelatifs(parag1, parag2), 'les parag1 et parag2 devraient être relatifs').to.be.true
 
-    });
+      done()
+    })
 
-    it("on sauve tous les paragraphes", function(done){
+    it.only("on sauve tous les paragraphes", function(done){
 
       projet.saveAll( () => {
         expect(panneauScenier._modified, 'panneauScenier ne devrait pas être marqué modified').to.be.false
@@ -290,7 +296,7 @@ describe('Synchronisation d’un nouveau paragraphe', function () {
 
     })
 
-    it("on fait des premières vérifications avant initialisation", function(){
+    it.only("on fait des premières vérifications avant initialisation", function(){
 
       expect(panneauSynopsis.parags.count, 'le panneau Synopsis ne devrait pas avoir de parags').to.equal(0)
       expect(panneauManuscrit.parags.count, 'le panneau Manuscrit ne devrait pas avoir de parags').to.equal(0)
@@ -299,7 +305,7 @@ describe('Synchronisation d’un nouveau paragraphe', function () {
 
     })
 
-    it("on reset les panneaux autre que celui courant", function(){
+    it.only("on reset les panneaux autre que celui courant", function(){
 
       panneauScenier.reset()
       panneauManuscrit.reset()
@@ -308,7 +314,7 @@ describe('Synchronisation d’un nouveau paragraphe', function () {
 
     })
 
-    it("on fait quelques vérifications", function(){
+    it.only("on fait quelques vérifications", function(){
 
       /*  Dernières vérifications  */
 
@@ -321,21 +327,28 @@ describe('Synchronisation d’un nouveau paragraphe', function () {
 
     })
 
-    it("On crée le paragraphe synchronisé", function(done){
+    it.only("On crée le paragraphe synchronisé", function(done){
 
 
       // - On enclenche l'auto-synchronisation -
 
-      projet.option('autosync', 1)
+      setOptionProjet('autosync', 1)
 
       /*  On sélectionne le parag0 du panneau notes
           et on crée le nouveau paragraphe            */
-      projet.current_panneau = panneauNotes
-      panneauNotes.select(parag0)
-      let newP = panneauNotes.parags.createAndEdit()
-      expect(newP.sync_after_save, `@sync_after_save du parag#${newP.id} devrait être true pour synchroniser`).to.be.true
-      newP.onChangeContents() // pour lancer la synchronisation
 
+      setCurrentPanneau (panneauNotes)
+
+      selectParag(parag0)
+
+      console.log("-> Création du nouveau paragraphe")
+      let newP = createAndEditNewParag()
+      console.log("Nouveau paragraphe créé #%d", newP.id)
+      expect(newP.sync_after_save, `@sync_after_save du parag#${newP.id} devrait être true pour synchroniser`).to.be.true
+
+      console.log("-> On lance la synchronisation")
+      newP.onChangeContents() // pour lancer la synchronisation
+      console.log("<- retour de onChangeContents")
     })
 
     it("le panneau notes a 3 parags", function(){
