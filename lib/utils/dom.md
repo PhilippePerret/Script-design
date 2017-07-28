@@ -2,7 +2,7 @@
 
 ## Définir le titre (title) de la page
 
-Utiliser la méthode `DOM.setTitle(<titre>)`.
+Utiliser la méthode `DOM.set_title(<titre>)`.
 
 
 ## requirejs

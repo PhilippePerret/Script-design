@@ -40,7 +40,7 @@ describe('Synchronisation d’un nouveau parag dans seulement 1 panneau', functi
 
     /*  On ne met plus qu'un seul panneau pour la synchronisation */
 
-    this.original_panneaux_sync = Projet.PANNEAUX_SYNC.slice(0,-1)
+    this.original_panneaux_sync = Projet.PANNEAUX_SYNC.slice(0)
     Projet._panneauxSync = ['scenier', 'notes']
 
     // - Création du parag #18 -
@@ -124,7 +124,7 @@ describe('Synchronisation d’un nouveau paragraphe dans 2 panneaux', function (
 
     /*  On ne met plus qu'un seul panneau pour la synchronisation */
 
-    this.original_panneaux_sync = Projet.PANNEAUX_SYNC.slice(0,-1)
+    this.original_panneaux_sync = Projet.PANNEAUX_SYNC.slice(0)
     Projet._panneauxSync = ['scenier', 'notes', 'manuscrit']
 
     // - Création du parag #18 -

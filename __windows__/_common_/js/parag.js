@@ -240,6 +240,22 @@ class Parag
     my.panneau && my.panneau.isCurrent() && my.updateDisplay()
   }
 
+  /**
+  * Méthode affichant le parag dans son panneau.
+  *
+  * C'est la méthode principale.
+  **/
+  display (callback)
+  {
+    const my = this
+    console.log("<#Parag %d>#display()", my.id)
+    if ( ! my.displayed )
+    {
+      my.panneau.container.appendChild(my.mainDiv)
+      my.displayed = true
+    }
+    callback && callback.call()
+  }
 
   /**
   * Méthode appelée pour synchroniser le parag dans les autres panneaux,

@@ -68,7 +68,8 @@ class PanProjet
     this.dataLoaded = false
 
     // Mis à true quand les paragraphes ont été affichés
-    this.paragsDisplayed = false
+    this.paragsDisplayed  = false
+    this.built            = false
 
     /*  Réinitialisation complète de sa donnée Parags */
 
@@ -177,20 +178,23 @@ class PanProjet
   **/
   activate ( callback ) {
     const my = this
+    console.log("-> <#PanProjet %s>#activate", my.id)
 
     // console.log("-> activate panneau '%s'", my.id)
 
     // Dans tous les cas, on active le panneau
     my.section.className = 'panneau actif'
     my.actif = true
+    my.projet.current_panneau = my
 
     // console.log("-> activate panneau")
     if ( my.dataLoaded && my.loaded ) {
-      if ( ! my.paragsDisplayed )
+      if ( ! my.built )
       {
         // <= Toutes les données ont été chargées, mais les parags n'ont
         //    pas été affichés.
         // => Il faut afficher les parags
+        console.log("-> displayParags du panneau %s", this.id)
         my.displayParags( callback )
       }
       else
@@ -199,12 +203,14 @@ class PanProjet
         //    été affichés.
         // => Il suffit d'activer le panneau. Peut-être que plus tard il y
         //    aura des actualisations à faire.
+        callback && callback.call()
       }
     }
     else
     {
       // <= Les données ou les parags n'ont pas été chargées
       // => Il faut tout charger et réappeler cette méthode
+      console.log("On doit charger le panneau `%s`", my.id)
       my.load( my.activate.bind(my, callback) )
     }
 
@@ -317,25 +323,35 @@ class PanProjet
   load ( callback )
   {
     const my = this
+    console.log("-> <#PanProjet %s>#load", my.id)
 
     if ( false === my.dataLoaded ) {
+      console.log("On doit charger les données (par loadData) et revenir")
       return my.loadData( my.load.bind(my, callback) )
     }
 
+    console.log("Les données ont été chargées")
     // S'il y a des paragraphes, et que ce panneau est le panneau
     // courant, alors il faut afficher les paragraphes
-    if (  my.projet.current_panneau.id == my.id
+    if (  my.isCurrent()
           && my.data.pids
           && my.data.pids.length )
     {
-
+      console.log("<#PanProjet %s> est le panneau courant et il y a des parags => on les affiche", my.id)
       my.loaded = true
       my.displayParags( callback )
 
-    } else if ( 'function' === typeof callback ) {
-
+    }
+    else
+    {
+      if ( ! my.isCurrent() ){
+        console.log("<#PanProjet %s> n'est pas le panneau courant => on n'affiche  pas les parags.", my.id)
+      }
+      if ( !my.data.pids || my.data.pids.length == 0){
+        console.log("<#PanProjet %s> n'a pas de parags à afficher.", my.id)
+      }
       my.loaded = true
-      callback.call()
+      callback && callback.call()
 
     }
 
@@ -526,36 +542,46 @@ class PanProjet
   **/
   displayParags ( callback )
   {
-    // console.log(`PanProjet#${this.id} -> displayParags()`)
-    this.displayAllParags(this.id == this.projet.current_panneau.id, callback)
+    console.log(`-> <#PanProjet ${this.id}>#displayParags`)
+    this.displayEachParag(callback)
   }
 
   /**
   * Méthode en boucle qui procède à l'affichage de tous les paragraphes,
   * les uns après les autres.
   **/
-  displayAllParags ( is_panneau_courant, callback )
+  displayEachParag ( callback )
   {
     const my = this
-    // console.log(`PanProjet#${this.id} -> instancieAllParags()`)
-    if ( undefined === my.parags2add_list )
+    console.log(`-> <#PanProjet ${my.id}>#displayEachParag`)
+
+    if ( undefined === my.parags2display_list )
     {
-      my.parags2display_list = my.parags.items.slice(0,-1) // pour faire une copie
+      my.parags2display_list = my.parags.items.slice(0) // pour faire une copie
     }
-    if ( is_panneau_courant && my.parags2display_list.length )
+
+    if ( my.isCurrent() && my.parags2display_list.length )
     {
-      // Pour la boucle asynchrone
-      my.parags.add(my.parags2display_list.shift())
+
+      /*- Affichage du paragraphe -*/
+
+      my.parags2display_list.shift().display(my.displayEachParag.bind(my, callback))
+
     }
     else
     {
 
-      // Quand tous les parags ont été affichés
+      /*= Tous les paragraphes ont été affichés =*/
 
       my.paragsDisplayed = true
+      my.built = true
+      // Pour le moment, ces deux données doivent être redondantes, il
+      // faudra supprimer la première (TODO)
 
-      // console.log("[displayParags] Fin de l'affichage de tous les paragraphes")
       delete my.parags2display_list
+
+      /* On peut appeler la méthode de callback */
+
       callback && callback.call()
     }
 

@@ -4,9 +4,6 @@
   *   Gestion des évènements en tant qu'ensemble d'{Event}s.
   *
 *** --------------------------------------------------------------------- */
-let moment  = require('moment')
-let fs      = require('fs')
-
 class Parags
 {
 
@@ -181,12 +178,11 @@ class Parags
       my._ids.push(iparag.id)
       ++ my._count
 
-      options.display && my.panneau.container.appendChild(iparag.mainDiv)
+      options.display && displayParag(iparag)
 
     })
 
   }
-
   /**
   * Méthode ajoutant un NOUVEAU paragraphe au pan-projet courant, par exemple au
   * synopsis ou au scénier.

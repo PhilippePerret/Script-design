@@ -20,3 +20,7 @@ global.setCurrentPanneau  = function(pan){ projet.current_panneau = pan }
 global.selectParag = function(p) { projet.current_panneau.parags.select(p) }
 
 global.createAndEditParag = function() { return projet.current_panneau.parags.createAndEdit() }
+
+/* - PARAG - */
+
+global.displayParag = function (p, callback) { return p.display(callback)}

@@ -211,7 +211,7 @@ global.resetAllPanneaux = function( params)
   Projet.PANNEAU_LIST.forEach( (pan_id) => {
     let pan = projet.panneau(pan_id)
     // On détruit le fichier de données s'il existe
-    if ( fs.existsSync(pan.store.path) ) { fs.unlink(pan.store.path)}
+    if ( fs.existsSync(pan.store.path) ) { fs.unlinkSync(pan.store.path)}
     pan._modified = false
     pan.container.innerHTML = ''
     pan.parags.reset()

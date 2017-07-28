@@ -15,7 +15,7 @@
     "start": "./runner.sh",
     "test-unit": "NODE_ENV=test mocha tests/unit/utils/**/*_spec.js",
     "ptests": "./ptests.sh",
-    "test": "./node_modules/.bin/mocha ./tests/mocha/unit/**/*_spec.js",
+    "test": "./node_modules/.bin/mocha ./tests/mocha/unit/**/*_spec.js --trace-warnings",
     "test-stop": "./node_modules/.bin/mocha  --bail --reporter=spec ./tests/mocha/unit/**/*_spec.js",
     "test-integration": "NODE_ENV=test mocha tests/integration/projets/**/*_spec.js",
     "mocha": "./node_modules/.bin/mocha ./tests/mocha/**/*_spec.js"

@@ -28,6 +28,15 @@
 *** --------------------------------------------------------------------- */
 class Projet
 {
+  /**
+  * Pour faire comme en ruby : Projet.new(<projet id>)
+  **/
+  static new (projet_id )
+  {
+    return new Projet(projet_id)
+  }
+
+
   static get PANNEAU_LIST () {
     this._panneaulist || (this._panneaulist = ['data','personnages','notes','synopsis','scenier','treatment','manuscrit'])
     return this._panneaulist
@@ -378,22 +387,80 @@ class Projet
   **/
   saveAll ( callback )
   {
-    let my = this
-      , pan
+    const my = this
+
+    console.log("-> <#Projet %s>#saveAll()")
 
     my.saving = true
     my.saved  = false
 
-    // TODO Il faudra que ça se fasse en asynchrone, ensuite
-    Projet.PANNEAU_LIST.forEach( (pan_id) => {
-      pan = my.panneau(pan_id)
-      pan.modified && pan.save.bind(pan)() // pas les paragraphes
+    /*- Sauvegarde des données du projet (synchrone) -*/
+
+    // my.saveData()
+    // console.log("Après saveData")
+
+    /*- Sauvegarde de tous les panneaux modifiés -*/
+
+    my.saveEachPanneau( () => {
+
+      console.log("callback de la sauvegarde des panneaux.")
+
+      /*- Sauvegarde de tous les parags -*/
+
+      this.saveParags( () => {
+
+        console.log("Callback de la sauvegarde des paragraphes.")
+
+        my.saving = false
+        my.saved  = true
+
+        callback && callback.call()
+
+      })
+
     })
-    this.saveParags( () => {
-      my.saving = false
-      my.saved  = true
-      if ( callback ) { callback.call() }
-    })
+
+    console.log("<- <#Projet %s>#saveAll()")
+
+  }
+
+  saveData ()
+  {
+    const my = this
+
+    my.store_data.save(true)
+  }
+
+  saveEachPanneau ( callback )
+  {
+    const my = this
+    let pano = null
+
+    if ( undefined === my.panneaux2save )
+    {
+      my.panneaux2save = []
+      Projet.PANNEAU_LIST.forEach( (pan_id) => {
+        my.panneau(pan_id)._modified && my.panneaux2save.push( my.panneau(pan_id) )
+      })
+    }
+
+    if ( pano = my.panneaux2save.shift() )
+    {
+
+      /*- On sauve le panneau -*/
+
+      pano.save.bind(pano, my.saveEachPanneau.bind(my, callback) )
+
+    }
+    else
+    {
+
+      /*= Tous les panneaux modifiés ont été enregistrés =*/
+
+      callback && callback.call()
+
+    }
+
   }
 
 
@@ -466,13 +533,14 @@ class Projet
     else
     {
       // console.log("=== Tous les paragraphes ont été sauvés. ===")
-      my.saving = false
-      my.saved  = true // sauf si erreurs
-      // On peut marquer tous les panneaux non modifiés
-      Projet.PANNEAU_LIST.forEach( panid => my.panneau(panid).modified = false)
+
+      /*- On appelle le callback -*/
+
       my.methode_after_saving && my.methode_after_saving.call()
     }
   }
+
+
   writeParag( fd, iparag )
   {
     const my = this
@@ -603,7 +671,7 @@ class Projet
         break
     }
     // On enregistre la donnée et on l'actualise dans l'affichage
-    let d2u = {updated_at: moment().format()}
+    let d2u = { updated_at: moment().format() }
     d2u[prop] = newValue
     this.store_data.set(d2u)
     this[`set_${prop}`]()
@@ -663,22 +731,23 @@ class Projet
   * Méthode qui enregistre et affiche le titre. Si @new_title est défini, elle
   * enregistre le nouveau titre. Sinon, elle l'affiche (dans la barre de titre et
   * dans le document)
+  *
+  * Noter que le nom de ces méthodes ne doivent pas être modifiée, car elles
+  * sont appelées de façon dynamique en construisant "set_<propriété>"
+  *
   **/
-  set_title (new_title) {
-    DOM.setTitle(this.title)
-    DOM.inner('title', this.title)
+  set_title (v) {
+    this.title = v
+    DOM.setTitle(v)
+    DOM.inner('title', v)
   }
-  /**
-  * Méthode qui enregistre et affiche les auteurs dans le document
-  **/
-  set_authors (new_authors)
-  {
-    DOM.inner('authors', this.authors.join(', '))
+  set_authors (v) {
+    this.authors = v
+    DOM.inner('authors', v.join(', '))
   }
-
-  set_summary (new_summary)
-  {
-    DOM.inner('summary', this.summary.split("\n").join('<br>'))
+  set_summary (v) {
+    this.summary = v
+    DOM.inner('summary', v.split("\n").join('<br>'))
   }
   set_created_at(){
     let c = moment(this.created_at)
@@ -693,14 +762,6 @@ class Projet
   get store_data        () {
     if(!this.id){throw new Error("Impossible de récupérer le fichier data : id est indéfini")}
     return new Store(`projets/${this.id}/data`)
-  }
-  get store_personnages () {
-    if(!this.id){throw new Error("Impossible de récupérer le fichier data des personnages : id est indéfini")}
-    return new Store(`projets/${this.id}/personnages`)
-  }
-  get store_scenes      () {
-    if(!this.id){throw new Error("Impossible de récupérer le fichier data des scènes : id est indéfini")}
-    return new Store(`projets/${this.id}/scenes`)
   }
 
   /**
@@ -726,8 +787,6 @@ class Projet
 
   // Les données remontées des différents stores
   get data_generales    () { return this.store_data.data }
-  get data_personnages  () { return this.store_personnages.data }
-  get data_scenes       () { return this.store_scenes.data}
 
   get title       (){ return this.data_generales.title  || "Projet sans titre" }
   get authors     (){ return this.data_generales.authors || [] }
