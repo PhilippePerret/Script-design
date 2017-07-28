@@ -1,3 +1,39 @@
+* [Test] Poursuivre le container du scénier pour voir à quel moment il se vide et pourquoi.
+
+* Soit le parag 19
+  Il est demandé sa synchronisation
+  On crée le #20 dans le panneau Notes
+  On crée le #21 dans le panneau Manuscrit
+
+  La question est la suivante : quand un parag est associé à un autre, faut-il
+  les synchroniser avec tous les parags associés ?
+
+    Associés                      Associés
+   v-------v            v---------v-------------v
+  #20     #21          #27       #23           #24
+          #22          #28       #29           #25
+                                 #30           #26
+
+  Lorsque #20 et #26 sont associés, faut-il associer tous ces associés ?
+
+  Faut-il plutôt n'associer que les parags directs ?
+  Donc :
+    #26 va être associé à #21 et #22 par #20
+    #20 va être associé à #23, #29 et #30 par #26
+
+
+* Reprendre le load des panneaux, faire une liste de toutes les instanciations, puis l'envoyer
+  à parags.add avec l'option display = false
+
+* next et previous des parags doivent pouvoir fonctionner aussi quand les parags ne sont pas chargés (loaded = false). Il suffit de tester dans _ids des parags du panneau
+
+* Synchronisation
+  Maintenant, la synchronisation, quand le panneau n'est pas chargée, doit juste
+  consister en :
+    - créer un nouveau paragraphe dans le fichier
+    - ajouter l'id dans la propriété `pids` du panneau (sans avoir à le construire
+      entièrement).
+
 * Remplacer les balises PARAG#<id> par un lien qui affiche au survol le texte du paragraphe.
 
 * Prévoir à la fin du paragraphe un espace pour indiquer plein de choses et notamment le

@@ -4,7 +4,8 @@
   *   Gestion des évènements en tant qu'ensemble d'{Event}s.
   *
 *** --------------------------------------------------------------------- */
-let moment = require('moment')
+let moment  = require('moment')
+let fs      = require('fs')
 
 class Parags
 {
@@ -65,44 +66,129 @@ class Parags
   * C'est la méthode qui est appelée par la touche `n` hors mode d'édition
   * depuis n'importe quel pano.
   **/
-  create ()
+  createAndEdit ()
   {
+    const my    = this
+    const newP  = my.createNewParag()
+
+    // Si les options le demandent, on doit synchroniser les autres panneaux
+    // Noter qu'on ne le fait pas dans la méthode createNewParag, car cette
+    // méthode servira justement aussi à créer les parags synchronisés.
+    my.projet.option('autosync') && ( newP.sync_after_save = true )
+
+    // On met aussitôt le paragraphe en édition pour le modifier
+    my.select(newP)
+    newP.edit()
+    // On retourne le paragraphe créé (utile ?)
+    return newP
+  }
+
+  /**
+  * Création d'un nouveau parag pour le panneau propriétaire.
+  *
+  * @param {Object} params  Les paramètres pour l'instanciation. C'est là
+  *                         qu'on peut par exemple définir le contents ou
+  *                         la duration.
+  *
+  * @param {Object} options Les options pour la méthode `add`. C'est là qu'on
+  *                         peut définir par exemple le `before` pour dire avant
+  *                         quel parag on doit ajouter le nouveau.
+  **/
+  createNewParag ( params, options )
+  {
+    const my = this
     // On crée le paragraphe est on l'affiche
-    let newP = this.new()
-    newP.created_at = moment().format('YYMMDD')
+    const newP = my.newInstance( params )
+
+    // Ajout du paragraphe dans le panneau, à l'endroit voulu,
+    // c'est-à-dire après la sélection si elle existe ou à la
+    // fin dans le cas contraire.
+    options || ( options = {} )
+    // if (options.before){
+    //   console.log("[createNewParag] options.before avant : ", options.before.id)
+    // }
+    !options.before && my.hasCurrent() && ( options.before = my.selection.current.next )
+    // console.log("[createNewParag] my.hasCurrent() = ", my.hasCurrent())
+    // if ( my.hasCurrent() )
+    // {
+    //   console.log("[createNewParag] my.selection.current.id = ", my.selection.current.id)
+    //   if ( my.selection.current ) {
+    //     console.log("[createNewParag] my.selection.current.next = ", my.selection.current.next.id)
+    //   } else {
+    //     console.log("PAS DE SÉLECTION COURANTE")
+    //   }
+    // }
+
+    /*  On ajoute le parag */
+
+    my.add(newP, options)
+
+    // console.log("Ids du panneau '%s' après ajout du parag #%d", my.panneau.id, newP.id, my._ids)
+
     // On l'ajoute à la liste des relatives qui tient à jour la relation entre
     // les paragraphes dans les différents panneaux
-    this.projet.relatives.addParag(newP)
-    // Si les options le demandent, on doit synchroniser les autres panneaux
-    this.projet.option('autosync') && ( newP.sync_after_save = true )
+    my.projet.relatives.addParag(newP)
     // On informe à titre indicatif
     UILog(`Création du paragraphe #${newP.id}`)
-    // On l'édite pour le modifier
-    this.select(newP)
-    newP.edit()
-    // On retourne le paragraphe créé
     return newP
   }
 
-
-  /**
-  * Appelée par la méthode `create` précédente, cette méthode
-  * permet d'initier la création d'un paragraphe {Parag}.
-  **/
-  new (options)
+  newInstance ( params )
   {
-    let newP = new Parag({id:Parag.newID(),c:''})
-    // console.log("ID du nouveau parag", newP.id)
-    if (this.hasCurrent()) {
-      options || ( options = {} )
-      options.before = this.selection.current.next
-    }
-    this.add(newP, options)
+    const my  = this
+    const now = moment().format('YYMMDD')
+    params || ( params = {} )
+    const new_id = Parag.newID()
+    const newP = new Parag({
+        id          : new_id
+      , contents    : String(params.contents || '')
+      , created_at  : params.created_at || now
+      , updated_at  : params.updated_at || now
+      , panneau_id  : params.panneau_id || my.panneau.id
+      , _modified   : true // pour qu'il soit enregistré
+    })
+    newP.panneau.modified = true
     return newP
   }
 
   /**
-  * Méthode ajoutant un paragraphe au pan-projet courant, par exemple au
+  * Ajoute un parag connu au panneau, lorsque ce parag a déjà été
+  * introduit dans le panneau.
+  * C'est la méthode utilisée après la création des instances paragraphes
+  * au chargement des paragraphes du panneau.
+  *
+  * @param {Parag|Array} argp Soit le parag soit la liste de parags
+  * @param {Object} options Les options, dont :
+  *     options.reset     Si true, tout est remis à "zéro"
+  *     options.display   Si true, les paragraphes sont affichés.
+  *                       Default: false
+  **/
+  addNotNew ( argp, options, callback )
+  {
+    const my = this
+
+    options || ( options = {} )
+
+    // S'il faut tout réinitialiser
+    if (options.reset || ! my._dict) { my.reset() }
+
+    Array.isArray(argp) || ( argp = [argp] )
+
+    argp.forEach( (iparag) => {
+
+      my._dict[iparag.id] = iparag
+      my._items.push(iparag)
+      my._ids.push(iparag.id)
+      ++ my._count
+
+      options.display && my.panneau.container.appendChild(iparag.mainDiv)
+
+    })
+
+  }
+
+  /**
+  * Méthode ajoutant un NOUVEAU paragraphe au pan-projet courant, par exemple au
   * synopsis ou au scénier.
   * Cet ajout consiste à ajouter le paragraphe au document affiché et à
   * l'ajouter dans la liste des paragraphes du panneau (s'il ne s'y trouve
@@ -124,50 +210,67 @@ class Parags
   *
   * Note : on observe aussi ce paragraphe.
   **/
-  add ( argp, options, methodeAfterDisplay )
+  add ( argp, options )
   {
-    options || ( options = {} )
 
-    // S'il faut tout réinitialiser
-    options.reset && this.reset()
-
-    Array.isArray(argp) || ( argp = [argp] )
-
-    // On répète pour chaque paragraphe
     let my = this
       , div
       , lastParag
 
-    my._dict || my.reset()
+    options || ( options = {} )
+
+    // S'il faut tout réinitialiser
+    if (options.reset || ! my._dict) { this.reset() }
+
+    Array.isArray(argp) || ( argp = [argp] )
+
+    /*  On répète pour chaque paragraphe  */
 
     argp.forEach( (iparag) => {
-
-      methodeAfterDisplay && (iparag.methodeAfterDisplay = methodeAfterDisplay)
 
       // Paragraphe existant déjà
       if ( undefined !== my._dict[iparag.id] ) { return }
 
       // On définit la donnée panneau_id du paragraphe, qui n'est plus
-      // définit par défaut ou par les données (car c'est une donnée qui
-      // consomme et qui est inutile)
+      // définie par défaut
+
       iparag.panneau_id = my.panneau.id
 
-      // On ajoute la div du paragraphe dans le panneau HTML
-      if (options.before)
+      // On ajoute la div du paragraphe dans le panneau HTML à l'endroit
+      // voulu.
+
+      // log("Nombre d'enfants du panneau '%s' avant ajout", my.panneau.id, my.panneau.container.childNodes.length)
+      if ( my.panneau.loaded /* options.doNotDisplay */ )
       {
-        console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
-        my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv)
-      }
-      else
-      {
-        console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
-        my.panneau.container.appendChild(iparag.mainDiv)
-      }
+
+        // Quand on synchronisze les paragraphes, il se peut qu'un panneau ne
+        // soit pas chargé, et on n'a pas envie de le charger juste pour lui
+        // ajouter un paragraphe synchronisé. Dans ce cas, on met doNotDisplay
+        // à true pour empêcher son affichage.
+        // Mais pour le moment, on regarde s'implement si le panneau est
+        // entièrement chargé (loaded)
+
+        if (options.before)
+        {
+          // log("Ajout du parag #%d dans le panneau '%s' before parag#%d in", iparag.id, my.panneau.id, options.before.id)
+          // console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
+          my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv)
+        }
+        else
+        {
+          // log("Ajout du parag #%d dans le panneau '%s'", iparag.id, my.panneau.id)
+          // console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
+          my.panneau.container.appendChild(iparag.mainDiv)
+        }
+        // log("Nombre d'enfants du panneau '%s' avant ajout", my.panneau.id, my.panneau.container.childNodes.length)
+        // log("Container après ajout :", my.panneau.container.outerHTML)
+
+      } // si le panneau est chargé
 
       // On ajoute le paragraphe à la liste des paragraphes du panneau
       if (options.before)
       {
-        let index_before = options.before.index - 1
+        let index_before = options.before.index
         my._items .splice(index_before, 0, iparag)
         my._ids   .splice(index_before, 0, iparag.id)
       }
@@ -178,14 +281,18 @@ class Parags
       }
       my._dict[iparag.id] = iparag
 
-      // Il faut aussi ajouter une donnée relative pour ce paragraphe
+      /* Ajout d'une donnée relative pour ce parag */
+
       my.projet.relatives.addParag(iparag)
 
-      // On augmente le nombre de paragraphe du panneau
+      /* Incrémentation du nombre de parags du panneau */
+
       my._count ++
 
       // Noter que seule l'option selected pourra être appliquée
-      // à tous les parags fournis, pas l'option current.
+      // à tous les parags fournis, pas l'option current, qui sera
+      // uniquement appliquée au dernier
+
       options.selected && my.selection.add( iparag )
 
       lastParag = iparag
@@ -558,22 +665,12 @@ class Parags
   setUnmodified ( argp )
   {
     if ( undefined === argp || 'all' === argp ) {
-      argp = this._items
+      argp = this._items || []
     }
     else {
       argp = this.realArgs(argp)
     }
     argp.forEach( (p) => { p.modified = false } )
-  }
-
-  get as_data ()
-  {
-    // On commence par initialiser this._items ce qui produira la
-    // relecture des paragraphes dans le document
-    // TODO Mais je n'aime pas trop ça… Il vaut mieux faire une méthode
-    // qui les relis et laisser items retourner simplement la liste des items
-    delete this._items
-    return this.items.map( p => p.data )
   }
 
   /**
@@ -638,7 +735,7 @@ class Parags
     // // OK, on procède à l'association
     // // Si le référent est retourné (ce qui se produit en cas de réussite)
     // // alors on met en exergue les relatives de ce référent
-    // let referent = Projet.current.relatives.associate(Parag.selecteds)
+    // let referent = this.projet.relatives.associate(Parag.selecteds)
     // if ( referent ) {
     //   this.parags.selection.setCurrent(referent)
     //   referent.exergueRelatifs()
@@ -648,7 +745,7 @@ class Parags
 
   /** ---------------------------------------------------------------------
     *
-    *   ITEMS
+    *   CLASSE PARAGS
     *
   *** --------------------------------------------------------------------- */
 
@@ -742,6 +839,9 @@ class ParagsSelection
   //  Méthodes d'ajout et de retrait
   // ---------------------------------------------------------------------
 
+  /**
+  * Ajout de parags à la sélection
+  **/
   add ( argp )
   {
     if ( 'number' === typeof argp ) { argp = this.instance_parags.get(argp) }

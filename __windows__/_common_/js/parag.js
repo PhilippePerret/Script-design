@@ -9,13 +9,8 @@
   *
 *** --------------------------------------------------------------------- */
 let path        = require('path')
-  , fs          = require('fs')
   , moment      = require('moment')
-  // , requirejs   = require('requirejs')
-  , Kramdown    = require(path.join(C.LIB_UTILS_FOLDER,'kramdown_class.js'))
-
-// let Kramdown
-// requirejs([path.join(C.LIB_UTILS_FOLDER,'kramdown.js')], (K)=>{Kramdown=K})
+  , Kramdown    = require(path.resolve(path.join('.','lib','utils','kramdown_class.js')))
 
 class Parag
 {
@@ -25,6 +20,13 @@ class Parag
     *
   *** --------------------------------------------------------------------- */
 
+  /**
+  * Définition des DATA du PARAG telles qu'elles seront enregistrées dans
+  * le fichier PARAGS.txt à longueur fixe.
+  *
+  * Ce fichier permet d'atteindre n'importe quel paragraphe en connaissant
+  * sont ID.
+  **/
   static get DATA ()
   {
     this.__data || (
@@ -32,15 +34,16 @@ class Parag
         // length: Longueur de la donnée dans le fichier
         // Types
         // -----
-        // n: number, s:string, b:boolean
+        // n: number, s:string, u:unicode, b:boolean
         //
         // Le type 'e' suit le type 'd', date, mais seulement YYMMJJ
-          'id'          :   {length: 8  , type: 'n'   }
-        , 'panneau_let' :   {length: 1  , type: 's'   }
-        , 'contents'    :   {length: 512, type: 's'   }
-        , 'duration'    :   {length: 12 , type: 'n'   }
-        , 'created_at'  :   {length: 6  , type: 'e'   }
-        , 'updated_at'  :   {length: 6  , type: 'e'   }
+        //
+          'id'          : {length: 8  , type: 'n' }
+        , 'panneau_let' : {length: 1  , type: 's', default: 'n'}
+        , 'ucontents'   : {length: 512, type: 's', default: '' }
+        , 'duration'    : {length: 12 , type: 'n', default: 60 }
+        , 'created_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD') }
+        , 'updated_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD')  }
       }
     )
     return this.__data
@@ -48,7 +51,9 @@ class Parag
 
   /**
   * Retourne la longueur exacte d'une donnée de paragraphe dans le fichier
-  * de tous les paragraphes.
+  * de tous les paragraphes en la calculant par rapport à Parag.DATA
+  *
+  * (1) Les 2 retours chariot à la fin de la donnée
   **/
   static get dataLengthInFile ()
   {
@@ -56,25 +61,27 @@ class Parag
     {
       let n = 0, p
       for(p in this.DATA){ n += this.DATA[p].length + 1 }
-      this._dataLengthInFile = n + 2 /* +2 = les deux retours chariots de la fin */
+      this._dataLengthInFile = n + 2 // (1)
     }
     return this._dataLengthInFile
   }
+
   /**
   * @return {Number} Un nouvel identifiant pour un paragraphe. C'est un ID
   * absolu et universel qui doit être fourni, unique à tous les panneaux
   * confondus.
+  *
+  * Il est enregistré dans la propriété last_parag_id des données
+  * générales du projet.
   **/
   static newID ()
   {
     // console.log("-> Parag.newID", this._lastID)
     if( undefined === this._lastID)
     {
-      if ( undefined === Projet.current.data_generales.last_parag_id ) {
-        this._lastID = -1
-      } else {
-        this._lastID = Projet.current.data_generales.last_parag_id
-      }
+      this._lastID = undefined === Projet.current.data_generales.last_parag_id
+                      ? -1
+                      : Projet.current.data_generales.last_parag_id
     }
     ++ this._lastID
     // On enregistre toujours le nouveau dernier ID dans les données
@@ -84,9 +91,11 @@ class Parag
       , last_parag_id: this._lastID
       },
       undefined,
-      true /* pour dire de ne pas le faire en asynchrone */
+      true /* synchrone */
     )
-    // console.log('this._lastID',this._lastID)
+
+    /* Retourne le nouvel ID après l'avoir enregistré */
+
     return Number(this._lastID)
   }
 
@@ -98,96 +107,186 @@ class Parag
   *** --------------------------------------------------------------------- */
 
 
+  /**
+  * Instanciation d'un Parag
+  *
+  * @param {Object} data  Données du Parag, complètes ou incomplètes.
+  *     Doit obligatoirement définir `id`
+  *     Peut ensuite définir toutes les propriétés propres voulues.
+  *
+  * (1) L'identifiant doit toujours exister à l'instanciation.
+  *
+  * (2) Dans tous les cas, l'instance est ajoutée à Parags.items qui permettra
+  *     de récupérer le Parag par `Parags.get(<parag id>)` sans précision de
+  *     panneau.
+  **/
   constructor (data)
   {
-    this.id     = data.id // doit toujours exister
+
+    this.id     = data.id // (1)
     this.projet = Projet.current
-    this.panneau_id   = data.panneau_id || this.projet.current_panneau.id
-    this.panneau_let  = Projet.PANNEAUX_DATA[this.panneau_id].oneLetter
     for(let p in data){if(data.hasOwnProperty(p)){this[p] = data[p]}}
-    // Dans tous les cas, on ajoute l'instance à Parags.items afin de pouvoir
-    // toujours récupérer un paragraphe, quel que soit son panneau, avec la
-    // méthode `Parags.get(<id>)`
-    Parags.add(this)
+    Parags.add(this) // (2)
+
+    this.loaded = data.loaded || false
+
   }
 
+  /** ---------------------------------------------------------------------
+    *
+    * STATE Methods
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * Indique l'état du parag. Cette donnée est capitale puisque c'est elle
+  * qui déterminera si le Parag est à sauver ou non.
+  *
+  * Si le Parag est mis à "modifié", le panneau aussi, ce qui par cascade
+  * mettra aussi le projet à "modifié"
+  **/
+  get modified () { return this._modified || false }
+  set modified (v){
+    this._modified = v
+    this.panneau && ( this.panneau.modified = true )
+  }
   /** ---------------------------------------------------------------------
   *
   *   DATA Methods
   *
   * --------------------------------------------------------------------- */
-  get contents    ()  { return this._contents    }
-  set contents    (v) { this._contents = v ; this.reset()  }
+
+  /** ---------------------------------------------------------------------
+  * Les propriétés enregistrées dans le fichier PARAGS.txt
+  *
+  * Toutes ces propriétés doivent être définies dans Parag.DATA (cf. plus haut)
+  * pour savoir comment les enregistrer dans le fichier de data à longueur fixe.
+  *
+  * (1) C'est ma propre méthode String (dans lib/utils/String)
+  *
+  **/
+  get ucontents   () {
+    this._ucontents || (this._ucontents = this.contents.toUnicode()) // (1)
+    return this._ucontents
+  }
+  set ucontents (v){
+    this._ucontents = v
+    this._contents  = JSON.parse(`"${v.trim()}"`)
+  }
+  get panneau_let ()  {
+    if (undefined === this._panneau_let && this.panneau_id )
+    {
+      this._panneau_let = PanProjet.oneLetterOf(this.panneau_id)
+    }
+    return this._panneau_let
+  }
+
+  set panneau_let (v) {
+    this._panneau_let = v
+    this._panneau_id = Projet.PANNEAUX_DATA[v]
+  }
   get duration    ()  { return this._duration    }
   set duration    (v) { this._duration = v ; this.reset()  }
   get created_at  ()  { return this._created_at   }
   set created_at  (v) { this._created_at = v ; this.reset() }
   get updated_at  ()  { return this._updated_at   }
   set updated_at  (v) { this._updated_at = v ; this.reset() }
+
+
+  /** ---------------------------------------------------------------------
+  * Les propriétés volatiles calculées à la volée
+  **/
+  /**
+  * Le contenu textuel du Parag. Il est transformé en Unicode pour être
+  * enregistré et est décodé dans cette propriété qui permet de l'afficher
+  * lorsqu'on édite le Parag.
+  *
+  *       ucontents   <----- contents -----> contentsFormated
+  *
+  *     Enregistrement        Édition         Affichage dans les
+  *     dans le fichier.                      panneaux.
+  *
+  **/
+  get contents    ()  { return this._contents    }
+  set contents    (v) { this._contents = v ; this.reset()  }
   get panneau_id  ()  { return this._panneau_id   }
   set panneau_id  (v) { this._panneau_id = v      }
-  get panneau_let ()  {return this._panneau_let}
-  set panneau_let (v) {this._panneau_let = v      }
-  // Données volatiles
 
-  // NOTE Pour le fichier à données de longueur fixe, il faut définir
-  // la nouvelle propriété dans Parag.DATA ci-dessus
 
-  // Pour forcer le "recalcul" de toutes les propriétés volatiles à
-  // construire.
+
+  /**
+  * Méthode qui initialise tout pour forcer le recalcul des valeurs,
+  * après une modification.
+  *
+  * Il faut maintenant utiliser la méthode `update` pour actualiser le
+  * Parag dans l'affichage.
+  **/
   reset ()
   {
-    delete this._formated_contents
-    delete this._formcontsanstags
-    delete this._formated_duration
-    // Toutes les méthodes qui consigne dans le fichier
-    delete this._contents_infile
-    delete this._duration_infile
-    delete this._created_at_infile
-    delete this._updated_at_infile
-    this.updateDisplay()
+    delete this._contents_formated
+    delete this._contents_simple
+    delete this._duration_formated
+    this.formated = false
+  }
+
+  /**
+  * Actualise le paragraphe dans l'affichage, s'il est modifié et que
+  * son panneau est le panneau courant.
+  **/
+  update ()
+  {
+    const my = this
+    my.reset()
+    my.panneau && my.panneau.isCurrent() && my.updateDisplay()
+  }
+
+
+  /**
+  * Méthode appelée pour synchroniser le parag dans les autres panneaux,
+  * à sa création ou n'importe quand après.
+  *
+  * C'est une méthode asynchrone car il faut peut-être charger le panneau
+  * qui va recevoir le nouvel élément.
+  **/
+  sync ( callback )
+  {
+    // console.log('-> sync() du parag#%d', this.id)
+    // console.log("Nombre d'enfants du panneau Scénier : %d", projet.panneau('scenier').container.childNodes.length)
+    this.projet.busy = true         // pour empêcher la sauvegarde
+    this.parags2sync_list = [this]  // liste des parags qui seront associés
+    this.syncAllPanneaux( callback )
   }
 
   /** ---------------------------------------------------------------------
     *
-    *   Méthodes qui permettent d'enregistrer les données paragraphe
-    *   dans le fichier à longueur unique.
+    *   Méthodes d'I/O permettant d'enregistrer les données paragraphe
+    *   dans le fichier à longueur unique puis de les parser en retour.
     *
   *** --------------------------------------------------------------------- */
 
   /**
-  * Méthode principale qui retourne la ligne de donnée à enregistrer dans
-  * le fichier de données en longueur pour ce paragraphe.
-  *
-  * Noter qu'il peut y avoir des retours chariot et autre.
+  * @return {String} La donnée à enregistrer dans le fichier de données
   **/
-  get dataline_infile ()
+  get data_infile ()
   {
     let d = '', p
-    for(p in Parag.DATA) { d += this.xBytesData(p) }
-    d += "\n\n"
-    return d
+    for(let p in Parag.DATA) { d += this.xBytesData(p) }
+    return d + "\n\n"
   }
 
   /**
-  * Lit la valeur de la donnée du paragraphe dans le fichier
+  * Lit la valeur de la donnée du paragraphe dans le fichier et la
+  * retourne telle quelle.
   *
   * @return {String} La donnée brute, non parsée
   **/
-  read_infile ( callback )
+  read ( callback )
   {
-    this.loaded = false
-    this.parsed = false
-    let rstream = fs.createReadStream(this.panneau.parags_file_path,{
-        encoding  : 'utf8'
-      , start     : this.startPos
-      , end       : this.endPos
-    })
-    rstream
-      .on('data', this.parse_data_infile.bind(this))
-      .on('end', ()=>{
-        this.loaded = true
-      })
+    // console.log('-> Parag#read')
+    this.after_read_callback = callback
+    this.parsed   = false
+    this.reading  = true
+    this.projet.readParags(this.id, this.parse_data_infile.bind(this))
   }
 
   /**
@@ -197,8 +296,9 @@ class Parag
   **/
   parse_data_infile ( datainfile )
   {
-    // console.log("Je dois parser la donnée ",datainfile)
+    // console.log('-> Parag#parse_data_infile')
     const my = this
+    my.reading = false
     let prop, dProp, len, val, typ
     let pos = 0
     for(prop in Parag.DATA)
@@ -207,12 +307,13 @@ class Parag
       len = dProp.length
       typ = datainfile.substr(pos, 1)
       val = datainfile.substr(pos+1, len).trim()
+      // console.log('prop %s len %d type %s valeur %s', prop, len, typ, val)
       pos += len + 1
       // Transformation de la valeur
       switch(typ)
       {
         case 'e': // date YYMMDD
-          val = val // pour le moment
+          val = val
           break
         case 'n':
           val = Number(val.trim())
@@ -221,13 +322,24 @@ class Parag
           val = val == '1' ? true : false
       }
       this[`_${prop}`] = val
+
       // console.log(`Propriété '${prop}' mise à `, this[prop])
     }
+    // Traitement spécial de la valeur contents, dont les caractères
+    // spéciaux ont été transformés en caractères unicode
+    this.ucontents = this._ucontents // pour forcer this.contents
+
     this.parsed = true
+    this.loaded = true
+
+    if ( 'function' == typeof this.after_read_callback )
+    {
+      this.after_read_callback.call()
+    }
   }
 
   /**
-  * Retourne la position du paragraphe dans le fichier contenant tous les
+  * @property Pointer du paragraphe dans le fichier contenant tous les
   * paragraphes.
   **/
   get startPos ()
@@ -236,129 +348,148 @@ class Parag
     return this._startPos
   }
 
-  get endPos ()
-  {
-    this._endpos || ( this._endpos = this.startPos + Parag.dataLengthInFile - 1)
-    return this._endpos
-  }
-
-  /**
-  * Méthode qui "longuarise" une donnée pour l'enregistrer dans le fichier
-  * par longueur.
-  *
-  * @return {String}  La valeur à enregistrer dans le fichier, de la bonne
-  *                   longeur et avec en première lettre le type de la
-  *                   donnée.
-  *
-  * @param {String} p Nom de la propriété, par exemple 'id' ou 'contents'
-  *                   Elle doit correspondre à une entrée dans Parag.DATA
-  **/
-  xBytesData(p)
-  {
-    let d = Parag.DATA[p]
-    let v = this[p]
-    let t = d.type
-    if ( t == 'b' ){
-      v = v ? '1' : '0'
-    } else {
-      v = String(v)
-      let dif = d.length - v.length
-      let suf = ''
-      for(var i = 0; i < dif; ++i){ suf += ' '}
-      v = suf + v
-    }
-    return t + v // le type en une lettre et la valeur de la donnée
-  }
-
   /** ---------------------------------------------------------------------
     *
     * / Fin des méthode pour le fichier à longueur unique
     *
   *** --------------------------------------------------------------------- */
+
   /**
   * Cette méthode actualise l'affichage du paragraphe s'il existe dans son
   * conteneur.
   **/
   updateDisplay ()
   {
-    console.log(`Parag#${this.id} -> updateDisplay()`)
-    if ( this.divContents )
+    if ( this.panneau && this.panneau.isCurrent() && this.divContents )
     {
-      console.log("           Le divContents existe. Je l'actualise.")
+      // console.log(`Parag#${this.id} -> updateDisplay()`)
       this.divContents.innerHTML = ''
       this.divContents.innerHTML = this.contentsFormated
     }
+    else { return false }
   }
   /** ---------------------------------------------------------------------
     *
-    *   Méthode de formatage
+    *   MÉTHODES DE FORMATAGE (HELPERS)
     *
   *** --------------------------------------------------------------------- */
 
   /**
   * Le texte tel qu'il doit être affiché dans la page
   *
-  * Peut-être qu'une méthode plus générale devra être instituée pour traiter l'affichage
-  * du paragraphe, notamment lorsqu'il y aura des balises propres au projet, comme les
-  * personnages, etc.
   **/
-  get contentsFormated () {
-    console.log(`Parag#${this.id} -> contentsFormated()`)
-    if ( ! this._formated_contents )
+  get contentsFormated ( ) {
+    // console.log(`Parag#${this.id} -> contentsFormated()`)
+    if ( !this._contents_formated )
     {
-      if ( ! this.formated ) { this.formateContents() /* peut être asynchrone */ }
-      else { this._formated_contents = `[Parag#${this.id} mal formaté]` }
-      this.formated = true
-    }
-    return this._formated_contents
-  }
-
-  get contentsFormatedSansTags () {
-    console.log(`Parag#${this.id} -> contentsFormatedSansTags()`)
-    this._formcontsanstags || (
-      this._formcontsanstags =
-          this.contentsFormated
-            .replace(/<(.*?)>/g, '')
-            .replace(/"/, "\\\"")
-            .trim()
-    )
-    return this._formcontsanstags
-  }
-
-
-  as_link (options) {
-    console.log(`Parag#${this.id} -> as_link()`)
-    options       || ( options = {} )
-    options.titre || ( options.titre = `#${this.id}`)
-    return  '<a href="#"'
-          + `  onclick="return showParag(${this.id})"`
-          + '  class="p-al"'
-          + `  title="${this.contentsFormatedSansTags}">${options.titre}</a>`
-              // Class 'p-al' pour 'parag as link'
-  }
-
-  get durationFormated () {
-    if ( ! this._formated_duration ) {
-      if(undefined === this.duration){
-        this._formated_duration = '---'
-      } else {
-        this._formated_duration = Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
+      if ( !this.formated )
+      {
+        this.formateContents() /* peut être asynchrone */
+      }
+      else
+      {
+        this._contents_formated = `[Parag#${this.id} mal formaté]`
       }
     }
-    return this._formated_duration
+    return this._contents_formated
+  }
+
+  /**
+  * @property {String} Le contenu sans balises ni retours chariots ni
+  * tabulation, pour affichage en tant que title d'un lien.
+  **/
+  get contentsSimple () {
+    this._contents_simple || (
+      this._contents_simple =
+          this.contentsFormated
+            .replace(/[\n\r]/g,' ')
+            .replace(/\t/g, ' ')
+            .replace(/<(.*?)>/g, '')
+            .replace(/"/g, "\\\"")
+            .replace(/  +/g, ' ') // deux espaces ou + remplacé par une espace
+            .trim()
+    )
+    return this._contents_simple
+  }
+
+
+  /**
+  * @return {String} Le parag comme lien qui doit remplacer la balise
+  *                   PARAG#<this id>
+  *
+  * @param {Object} options   Des options de formatage
+  *       options.titre     Le titre à donner au lien
+  *                         Le titre par défaut est "#<this id>"
+  *
+  *
+  **/
+  as_link (options) {
+    if (options)
+    {
+      options.titre || ( options.titre = `#${this.id}` )
+      options.title || ( options.title = this.contentsSimple )
+      return this.buildLinkWith(options)
+    }
+    else
+    {
+      this._as_link || (
+        this._as_link = this.buildLinkWith({titre:`#${this.id}`,title:this.contentsSimple})
+      )
+      return this._as_link
+    }
+  }
+  /**
+  * Méthode qui construit le lien
+  *
+  * @return {String} Le lien construit
+  *
+  * (1) Class CSS 'p-al' pour 'parag as link'
+  *
+  * (2) Quand le parag n'est pas encore chargé (mais que son instance
+  *     existe), on met un texte provisoire pour dire qu'on est en train
+  *     de le charger.
+  *
+  * (3) Le "p-<id>" permettra de remplacer tous les title des balises lorsque
+  *     le parag sera chargé, s'il n'était pas chargé au moment de la
+  *     construction du lien.
+  *
+  **/
+  buildLinkWith ( data )
+  {
+    return  '<a href="#"'
+          + ` onclick="return showParag(${this.id})"`
+          + ` class="p-al p-${this.id}"` // (1) (3)
+          + ` title="${data.title/* (2) */}">${data.titre}</a>`
+  }
+
+  /**
+  * @property {String} La durée formatée
+  **/
+  get durationFormated () {
+    if ( ! this._duration_formated ) {
+      if( undefined === this.duration){
+        this._duration_formated = '---'
+      } else {
+        this._duration_formated = Number[this.projet.option('dureepage')?'pages':'s2h'](this.duration)
+      }
+    }
+    return this._duration_formated
   }
 
   /**
   * Méthode qui formate le contenu à afficher du paragraphe
   *
   * @return {String} Le contenu formaté
-  * @produit this._formated_contents
+  * @produit this._contents_formated
   *
   **/
-  formateContents ()
+  formateContents ( callback )
   {
-    console.log(`Parag#${this.id} -> formateContents()`)
-    if ( ! this.contents ) { return '' }
+    // console.log(`Parag#${this.id} -> formateContents()`)
+    if ( ! this.contents ) {
+      if ( 'function' === typeof callback ) { callback.call() }
+      return ''
+    }
     let c = Kramdown.parse(this.contents)
 
     // === Les balises PARAG#xxx ===
@@ -372,118 +503,133 @@ class Parag
       , p
     c = c.replace(/PARAG#([0-9]+)/g, (found, pid) => {
       p = Parags.get( Number(pid) )
+
+      /*
+       3 cas peuvent se produire ici :
+
+        1.  Le parag est connu et chargé. C'est le cas simple, on inscrit
+            simplement son lien.
+
+        2.  Le parag n'est pas connu, p est undefined. Dans ce cas, on
+            construit une instance provisoire, on inscrit un lien avec un
+            title provisoire et on enregistre l'identifiant pour savoir qu'on
+            devra chargé le parag après pour modifier le title provisoire (qui
+            doit afficher le contents du parag)
+
+        3.  Le parag est passé par le cas 2, donc une instance a été créé.
+            Dans ce cas, on met le texte provisoire mais on n'enregistre pas
+            le parag puisqu'il a déjà été enregistré pour chargement.
+      */
       if ( undefined !== p )
       {
-        return p.as_link({relative: true})
+
+        if ( p.loaded )
+        {
+          /*  Le parag est chargé, on écrit son lien par défaut */
+
+          return p.as_link()
+        }
+        else
+        {
+          /*  Cas 3 ci-dessus  */
+          return p.as_link({title:'Chargement du contenu en cours…'})
+        }
+
       }
       else
       {
+
+        /*  Le parag n'est pas encore chargé, on met un contenu provisoire */
+
         missing_parags_list.push(pid)
-        return `<__P${pid}__/>`
+        return (new Parag({id:pid, loaded: false})).as_link(
+          {title: 'Chargement du contenu en cours…'}
+        )
+
       }
     })
-    this._formated_contents = c
-        // ATTENTION : Il faut vraiment définit this._formated_contents AVANT
-        // de traiter les missings_parags car la méthode loadAndReplaceMarks
-        // se sert de la valeur de this._formated_contents
+    c = c.trim()
+    this._contents_formated = c
+    this.formated           = true
+
+
     if ( missing_parags_list.length > 0 )
     {
-      // <= des paragraphes n'étaient pas chargés, on a mis des marques
-      //    marques à la place, qu'on va remplacées une fois qu'elles
-      //    seront.
-      this.missing_parags_ids = missing_parags_list
-      this.loadAndReplaceMarks()
-    }
-    else if ( this.methodeAfterDisplay )
-    {
-      console.log("Je dois jouer la méthode after display")
-      //  this.methodeAfterDisplay.call()
-      setTimeout(this.methodeAfterDisplay, 2000)
-    }
-    return c // cf. contentsFormated()
-  }
 
-  /**
-  * Méthode qui prend en argument une liste d'identifiant de paragraphes
-  * non chargés, qui les charges, puis qui remplace dans les textes affichés
-  * les marques __Pxxx__ par les liens correspondants vers les paragraphes
-  * correspondants.
-  **/
-  loadAndReplaceMarks ()
-  {
-    console.log(`Parag#${this.id} -> loadAndReplaceMarks()`)
-    console.log('[loadAndReplaceMarks] this.missing_parags_ids = ', this.missing_parags_ids)
-    const my = this
-    let pid, p, re, pano
+      // <= des paragraphes n'étaient pas chargés.
+      // => Il faut charger ces paragraphes pour remplacer les titles dans
+      //    les liens.
 
-    my.provisoireContents || ( my.provisoireContents = my._formated_contents )
+      this.loadAndReplaceTitleInLinks( missing_parags_list, callback )
 
-    if ( pid = Number(this.missing_parags_ids.pop()) )
-    {
-      // <= Il reste encore des paragraphes manquants
-      // => On traite le dernier.
-      // On essaie toujours de récupérer le paragraphe car il a peut-être
-      // été chargé par le chargement du paragraphe précédent
-      if ( p = Parags.get(pid) )
-      {
-        // <= Le paragraphe a été chargé entre temps
-        // => On peut l'utiliser tout de suite et passer à la suite
-        my.traiteMarkParagAndGoOn(pid, p)
-      }
-      else
-      {
-        // <= Le paragraphe n'est toujours pas chargé
-        // => Il faut charger son panneau pour l'obtenir
-        //    Note : les relatives nous donne l'information très simplement
-        pano = my.projet.relatives.all[String(pid)]['t']
-        pano = my.projet.panneau(Projet.PANNEAUX_DATA[pano])
-        console.log(`[loadAndReplaceMarks] --> panneau(${pano.id}).load()`)
-        pano.load(() => {
-          let myp = Parags.get(this.id)
-          myp.traiteMarkParagAndGoOn.bind(myp)(pid)
-        })
-      }
     }
     else
     {
-      // <= Il n'y a plus de paragraphes manquant à traiter
-      console.log(`Parag#${this.id} Fin du traitement des paragraphes manquants`)
-      delete my.missing_parags_ids
-      my._formated_contents = my.provisoireContents
-      console.log(`contents_formated final du parag#${this.id}`, my._formated_contents)
-      my.updateDisplay()
-      delete my.provisoireContents
-      // Si une méthode doit être appelée après l'affichage du paragraphe
-      // on doit l'appeler
-      if ( my.methodeAfterDisplay ) {
-        my.methodeAfterDisplay.call()
-        delete my.methodeAfterDisplay
-      }
+      if ( 'function' === typeof callback ) { callback.call() }
     }
+
   }
+
   /**
-  * Méthode utile à la précédente, pour modifier les marques __Pxxx__ dans
-  * le texte formaté du paragraphe, lorsque des marques PARAG#xxx ont été
-  * trouvées, mais que ces paragraphes n'étaient pas encore chargés.
+  *
+  * @param  {Array} ids   Liste des identifiants des parags à charger et
+  *                       traiter.
+  * @param  {Function|Null} callback Méthode de callback
+  *
+  * Au cours du formatage du paragraphe (`formateContents`), certaines marques
+  * de parags PARAG#<id> n'ont pas pu être remplacées par un lien complet
+  * vers le parag correspondant car il n'était pas chargé.
+  * Cette méthode va charger ces paragraphes et remplacer les `titles` dans
+  * les liens, qui affichent le contenu du parag lié au survol de la souris.
+  *
   **/
-  traiteMarkParagAndGoOn (pid, iparag )
+  loadAndReplaceTitleInLinks (ids, callback)
   {
-    let my = this
-    iparag || ( iparag = Parags.get(pid) )
-    if ( ! iparag )
-    {
-      console.log(`IMPOSSIBLE DE TROUVER LE PARAG #${pid} dans Parags.items`,Parags.items)
-    }
-    console.log('REMPLACEMENT')
-    console.log("DE", `<__P${pid}__/>`)
-    console.log("PAR", iparag.as_link({relative:true}))
-    console.log('DANS', my.provisoireContents)
-    my.provisoireContents = my.provisoireContents
-          .replace(`<__P${pid}__/>`, iparag.as_link({relative:true}))
-    console.log("my.provisoireContents = ", my.provisoireContents)
-    // On poursuit avec le prochain paragraphe manquant qu'il faut charger
-    my.loadAndReplaceMarks()
+    const my = this
+
+    /*  On charge tous les parags manquant */
+    my.projet.readParags( ids, my.replaceTitleInLinks(ids, callback) )
   }
+
+  /**
+  * Méthode qui remplace tous les contenus des `title` dans les liens
+  * des parags de la liste `ids` puis appelle la méthode callback
+  *
+  * @param {Array} ids Liste des identifiants des parags
+  * @param {Function|Null} callback Méthode de callback
+  *
+  **/
+  replaceTitleInLinks ( ids, callback )
+  {
+    const my = this
+
+    /*  On corrige tous les liens dans le panneau */
+
+    ids.forEach( pid => Parags.get(pid).updateTitleInLink(my.panneau) )
+
+    /*  On peut passer à la suite */
+
+    // console.log(`Parag#${this.id} Fin du traitement des paragraphes manquants`)
+
+    /*  On appelle le callback s'il est défini */
+
+    if ('function' === typeof callback) { callback.call() }
+
+  }
+
+  /**
+  * Méthode qui remplace le `title` du lien du parag par son contenu
+  * simple.
+  * Cette méthode est utile lorsque le parag n'était pas encore chargé au
+  * moment où un autre parag contenait un lien vers lui.
+  **/
+  updateTitleInLink ( panneau )
+  {
+    const my = this
+    let as = panneau.container.querySelectorsAll(`a.p-${my.id}`)
+    as.forEach( a => a.setAttribute('title', my.contentsSimple) )
+  }
+
   /** ---------------------------------------------------------------------
     *
     *     RELATIVES
@@ -491,8 +637,16 @@ class Parag
   *** --------------------------------------------------------------------- */
 
   /**
-  * @return {Array} de {Parag}, la liste des relatifs du parag courant
+  * @return {Object} de {Parag}, la liste des relatifs du parag courant
   *         tels que définis dans les données Relatives du projet
+  *         dans deux class 'as_referent' et 'as_relatifs' qui contiennent
+  *         chacune une liste des référents ou des relatifs.
+  *
+  * @note Pour une version plus simple, cf. this.relatives qui est une simple
+  *       Map contenant les parags associés avec en clé leur ID et en valeur
+  *       leur instance Parag ou Null s'ils ne sont pas encore chargés.
+  *       La méthode this.isRelativeOf(<id>) retourne true si les deux
+  *       parags sont associés.
   **/
   get relatifs ()
   {
@@ -529,26 +683,47 @@ class Parag
   }
 
   get data_relatives ()
-    { return this.projet.relatives.data.relatives[String(this.id)] }
+    { return this.projet.relatives.all[String(this.id)] }
 
   set data_relatives (v) {
-    this.projet.relatives.data.relatives[String(this.id)] = v
-    // TODO Il faut aussi régler les associés
+    this.projet.relatives.all[String(this.id)] = v
   }
   /**
-  * Retourne l'index du paragraphe dans le panneau
+  * Retourne l'index du paragraphe dans le panneau, s'il est chargé,
+  * ou dans la liste des ids dans le cas contraire.
   **/
   get index ()
   {
-    return Array.prototype.indexOf.call(this.panneau.container.childNodes, this.mainDiv)
+    const my = this
+    if ( my.panneau.loaded )
+    {
+      return Array.prototype.indexOf.call(my.panneau.container.childNodes, my.mainDiv)
+    }
+    else
+    {
+      return my.panneau.parags._ids.indexOf(my.id)
+    }
   }
 
+  /**
+  * @return {Parag} le paragraphe qui suit le parag, ou nul s'il n'y en a pas
+  *
+  * Depuis que les parags ne sont pas chargés par défaut, il faut soit
+  * utiliser le DOM soit utiliser la liste _ids de la liste des parags.
+  **/
   get next ()
   {
+    const pano = this.panneau
+    if ( pano.loaded )
     {
       if (this.mainDiv.nextSibling){
-        return this.panneau.parags.instanceFromElement(this.mainDiv.nextSibling)
+        return pano.parags.instanceFromElement(this.mainDiv.nextSibling)
       }
+    }
+    else
+    {
+      let thisIndex = pano.parags._ids.indexOf(this.id)
+      return Parags.get(pano.parags._ids[thisIndex + 1])
     }
   }
   /**
@@ -557,8 +732,18 @@ class Parag
   **/
   get previous ()
   {
-    if (this.mainDiv.previousSibling){
-      return this.panneau.parags.instanceFromElement(this.mainDiv.previousSibling)
+    const pano = this.panneau
+
+    if ( pano.loaded )
+    {
+      if (this.mainDiv.previousSibling){
+        return pano.parags.instanceFromElement(this.mainDiv.previousSibling)
+      }
+    }
+    else
+    {
+      let thisIndex = pano.parags._ids.indexOf(this.id)
+      return Parags.get(pano.parags._ids[thisIndex - 1])
     }
   }
 
@@ -570,23 +755,31 @@ class Parag
     this.doEdit.bind(this)()
   }
 
-  syncAllPanneaux()
+  syncAllPanneaux( callback )
   {
-    console.log('-> syncAllPanneaux')
-    const my    = this
-        , proj  = this.projet
+    // console.log('-> syncAllPanneaux')
+    const my      = this
+        , proj    = my.projet
+
+    let pan_id  = null
+
+    // - index du panneau à synchroniser -
+
     my.i_panneau_sync || ( my.i_panneau_sync = 0 )
-    let pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
-    console.log("pan_id:", pan_id)
+
+    pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
+    if ( pan_id == my.panneau_id ) {
+      pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++] }
+
     if ( pan_id )
     {
-      if ( proj.panneau(pan_id).loaded ) {
-        my.syncInPanneau(pan_id)
-      } else {
-        // On charge le panneau puis on lance la méthode de synchronisation
-        console.log("--> On doit charger le panneau", pan_id)
-        proj.panneau(pan_id).load( this.syncInPanneau.bind(this, pan_id) )
-      }
+      /*  Il reste des panneaux à traiter  */
+
+      // Note : les données seront effectivement chargées seulement
+      //        si elles ne l'ont pas encore été.
+
+      proj.panneau(pan_id).loadData( my.syncInPanneau.bind(my, pan_id, callback) )
+
     }
     else
     {
@@ -596,157 +789,117 @@ class Parag
       // En enfin, on procède à l'association de tous les paragraphes
       // créés
       // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
-      console.log("Fin de la synchronisation de tous les panneaux synchronisables.")
-      proj.relatives.associate(this.parags2sync_list)
+      // console.log("Fin de la synchronisation de tous les panneaux synchronisables.")
+      proj.relatives.associateWithNoReferent(this.parags2sync_list)
       proj.busy = false
       delete this.i_panneau_sync
+
+      if ( 'function' === typeof callback ) { callback.call() }
     }
   }
   /**
   * Méthode qui synchronise le paragraphe courant dans le panneau pan_id
+  *
+  * @param {String} pan_id    Identifiant du panneau (p.e. 'scenier')
+  *
+  * (1) Les données du panneau ont été chargées dans la méthode appelante.
+  *
+  * Note
   **/
-  syncInPanneau(pan_id)
+  syncInPanneau ( pan_id, callback )
   {
     const my = this
-    console.log("Synchronisation du panneau", pan_id)
+    // console.log("[Parag#syncInPanneau] Début de synchronisation du parag#%d dans le panneau '%s'", this.id, pan_id)
     let newParagSync
       , pano
-      , nombre_parags = this.panneau.parags.count
-      , myindex       = this.index
+      , nombre_parags = my.panneau.parags.count
+      , myindex       = my.index
       , ipar
       , iparag
       , paragAfter_id
       , paragAfter // le paragraphe avant lequel ajouter le parag synchronisé
       , optionsAdd
 
-    // S'il s'agit du panneau du parag, on ne fait rien, évidemment
-    if ( pan_id !== my.panneau_id ) {
+    // puts(`* ÉTUDE DU PANNEAU ${pan_id} *`)
+    // Si le paragraphe courant est déjà en relation avec un paragraphe
+    // du panneau +pan_id+, il n'y a rien à faire
+    if ( my.firstRelativeInPanneau(pan_id) ) { return true }
 
-      // puts(`* ÉTUDE DU PANNEAU ${pan_id} *`)
-      // Si le paragraphe courant est déjà en relation avec un paragraphe
-      // du panneau +pan_id+, il n'y a rien à faire
-      if ( my.relativeParagInPanneau(pan_id) ) { return true }
+    pano = my.projet.panneau(pan_id)
 
-      pano = my.projet.panneau(pan_id)
+    paragAfter = undefined
 
-      paragAfter = undefined
+    /*  On passe en revue les parags après le courant pour
+        trouver un parag associé dans le panneau */
 
-      for(ipar = myindex+1; ipar < nombre_parags ; ++ipar){
-        iparag = my.panneau.parags.items[ipar]
-        if ( null !== (paragAfter_id = iparag.relativeParagInPanneau(pan_id, true)) )
-        {
-          paragAfter = Parags.get(Number(paragAfter_id))
-          break
-        }
-      }
-
-      if ( !paragAfter
-          && my.previous
-          && (paragAfter_id = my.previous.relativeParagInPanneau(pan_id, false))
-      )
+    for(ipar = myindex+1; ipar < nombre_parags ; ++ipar){
+      iparag = my.panneau.parags.items[ipar] // (1)
+      if ( null !== (paragAfter_id = iparag.firstRelativeInPanneau(pan_id)) )
       {
-        paragAfter = Parags.get( Number(paragAfter_id) ).next
+        paragAfter = Parags.get(Number(paragAfter_id))
+        break
       }
-
-      newParagSync = new Parag({
-          id: Parag.newID()
-        , c : `[Relatif du paragraphe PARAG#${my.id}]`
-        , ca: moment().format('YYMMDD')
-        , d : my.duration // par défaut, la même durée que ce parag
-      })
-      // puts("===/fin de création du paragraphe")
-
-      optionsAdd = {}
-      paragAfter && ( optionsAdd.before = paragAfter )
-      console.log(`[Synchronisation] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
-      pano.parags.add( newParagSync, optionsAdd )
-      pano.modified = true
-      // Ajout du paragraphe à la liste des paragraphes qui seront associés
-      // quand on les aura tous créés.
-      this.parags2sync_list.push(newParagSync)
-
-    } // fin de si ça n'est pas le panneau courant
-
-    // À la fin, on peut passer au panneau suivant, ou arrêter
-    this.syncAllPanneaux()
-  }
-  /**
-  * Méthode appelée pour synchroniser le parag dans les autres panneaux
-  *
-  * C'est une méthode asynchrone car il faut peut-être charger le panneau
-  * qui va recevoir le nouvel élément.
-  **/
-  sync ()
-  {
-    console.log(`-> sync() du parag#${this.id}`)
-    this.projet.busy = true         // pour empêcher la sauvegarde
-    this.parags2sync_list = [this]  // liste des parags qui seront associés
-    this.syncAllPanneaux()
-  }
-
-  /**
-  * Méthode qui retourne le paragraphe avant lequel le paragraphe courant est
-  * en relation dans le panneau courant.
-  *
-  * Noter que cette méthode ne
-  *
-  * @param  {String} pan_id   L'ID du panneau (entier, donc 'manuscrit')
-  * @param {Boolean} firstOne Si true, on doit renvoyer le premier, sinon,
-  *                           on renvoie le dernier.
-  *
-  * @return {Number}  L'ID du paragraphe avant lequel insérer le nouveau
-  *                   paragraphe ou NULL s'il doit être inséré à la fin.
-  **/
-  relativeParagInPanneau ( pan_id, firstOne )
-  {
-    // La lettre correspondant au panneau
-    const oneLettreCol = Projet.PANNEAUX_DATA[pan_id].oneLetter
-    // puts(`oneLettreCol = ${oneLettreCol}`)
-
-    // Toutes les relatives du projet
-    // ------------------------------
-    const rels = this.projet.relatives.all
-    // if (! this.this_projet_relatives_marked )
-    // {
-    //   puts(`this.projet.relatives.all = ${JSON.stringify(this.projet.relatives.all)}`)
-    //   this.this_projet_relatives_marked = true
-    // }
-
-    // Relatifs du paragraphe courant
-    // ------------------------------
-    // C'est un Hash qui contient en clé les colonnes une-lettre et
-    // en valeur une liste
-    const rels_cur_parag = rels[String(this.id)]['r']
-    // puts(`rels[String(${this.id})]['r'] (rels_cur_parag) = ${JSON.stringify(rels[String(this.id)]['r'])}`)
-
-    // Si le paragraphe n'a pas de donnée concernant la colonne, on ajoute
-    // à la fin
-    if ( undefined === rels_cur_parag[oneLettreCol] ) {
-      // puts(`Pas de clé '${oneLettreCol}' dans ${JSON.stringify(rels[String(this.id)]['r'])}`)
-      return null
     }
-    // Sinon, il y a des données, c'est-à-dire que le paragraphe est en
-    // relation avec des paragraphes de l'autre panneau.
-    // Mais il faut noter que les identifiants ne sont pas forcément dans l'ordre
-    // dans le plateau. Il faut les classer.
-    // puts(`Classement au début : ${rels_cur_parag[oneLettreCol]}`)
-    rels_cur_parag[oneLettreCol].sort((pid1,pid2)=>{
-      return Parags.get(pid1).index - Parags.get(pid2).index
-    })
-    // puts(`Classement après classement : ${rels_cur_parag[oneLettreCol]}`)
 
-    if ( firstOne )
+    /*  Si un parag après n'a pas été trouvé, on regarde si le parag juste
+        avant est associé à un parag et on le prend si c'est le cas       */
+    if ( !paragAfter
+        && my.previous
+        && (paragAfter_id = my.previous.lastRelativeInPanneau(pan_id))
+    )
     {
-      // puts(`On retourne le premier parag : ${rels_cur_parag[oneLettreCol][0]}`)
-      return rels_cur_parag[oneLettreCol][0]
+      paragAfter = Parags.get( Number(paragAfter_id) ).next
     }
-    else
-    {
-      let nombre_rels = rels_cur_parag[oneLettreCol].length
-      // puts( `On retourne le dernier parag : ${rels_cur_parag[oneLettreCol][nombre_rels - 1]}`)
-      return rels_cur_parag[oneLettreCol][nombre_rels - 1]
-    }
+
+    /*  On ajoute le nouveau parag associé à son panneau */
+
+    optionsAdd = {display: false, before: paragAfter || undefined }
+
+    newParagSync = pano.parags.createNewParag({
+          contents    : `[Relatif du paragraphe PARAG#${my.id}]`
+        , duration    : my.duration
+      }
+      , optionsAdd
+    )
+
+    // console.log(`[syncInPanneau] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
+
+    /*  Ajout du paragraphe à la liste des paragraphes qui seront associés
+        quand on les aura tous créés. */
+
+    my.parags2sync_list.push(newParagSync)
+    // console.log("[syncInPanneau] Liste des parags à synchroniser", my.parags2sync_list.map(p=>{return p.id}))
+
+    /*  On peut passer au panneau suivant, ou finir */
+
+    this.syncAllPanneaux( callback )
   }
+
+
+  /**
+  * @return {Number|Null} ID du premier parag associé au parag courant dans le
+  *                       panneau +pan_id+
+  *
+  * @param {String} pan_id  L'ID du panneau
+  *
+  **/
+  firstRelativeInPanneau ( pan_id )
+  {
+    return this.relativeParagInPanneau(pan_id, true)
+  }
+
+  /**
+  * @return {Number|Null} ID du dernier parag associé au parag courant dans le
+  *                       panneau +pan_id+
+  *
+  * @param {String} pan_id  L'ID du panneau
+  **/
+  lastRelativeInPanneau ( pan_id )
+  {
+    return this.relativeParagInPanneau(pan_id, false)
+  }
+
+
 
   /**
   * Méthode appelée quand on blur le champ contents pour actualiser
@@ -756,19 +909,20 @@ class Parag
   * les paragraphes synchronisés si le paragraphe a réellement
   * été créé (this.sync_after_save à true).
   **/
-  onChangeContents ()
+  onChangeContents ( callback )
   {
+    const my = this
     // console.log('-> onChangeContents')
-    this.contents = this.newContents
+    my.contents = my.newContents
     // pour forcer l'actualisation du contenu mis en forme
-    delete this._formated_contents
-    this.setModified()
-    if ( this.sync_after_save )
+    delete my._contents_formated
+    my.setModified()
+    if ( my.sync_after_save )
     {
-      this.sync()
-      delete this.sync_after_save
+      my.sync( callback )
+      delete my.sync_after_save
     }
-    this.panneau.modified = true
+    my.panneau.modified = true
   }
 
   /**
@@ -1065,8 +1219,8 @@ class Parag
     }
     catch(err)
     {
-      console.log(`[doEdit] ERREUR avec parag#${this.id}`, err)
-      console.log(`[doEdit] Le parag#{this.id} contient (data) :`,this.data)
+      // console.log(`[doEdit] ERREUR avec parag#${this.id}`, err)
+      // console.log(`[doEdit] Le parag#{this.id} contient (data) :`,this.data)
       realContents = ''
     }
     o.innerHTML = realContents
@@ -1131,6 +1285,138 @@ class Parag
     c = c.replace(/<div>/g,'')
     c = c.replace(/<\/?div>/g,"\n").trim()
     this.newContents = c
+  }
+
+
+  /**
+  * Méthode qui "longuarise" une donnée pour l'enregistrer dans le fichier
+  * par longueur.
+  *
+  * @return {String}  La valeur à enregistrer dans le fichier, de la bonne
+  *                   longeur et avec en première lettre le type de la
+  *                   donnée.
+  *
+  * @param {String} p Nom de la propriété, par exemple 'id' ou 'contents'
+  *                   Elle doit correspondre à une entrée dans Parag.DATA
+  *
+  * (1) La donnée est toujours enregistrée avec en toute première lettre
+  *     le type de la donnée.
+  **/
+  xBytesData(p)
+  {
+
+    /*  Les données absolues de la propriété  */
+
+    const d = Parag.DATA[p]
+
+    /*  La valeur initiale  */
+
+    let v = this[p]
+    if ( v === undefined || v === null ) { v = d.default }
+
+    let t = d.type
+    if ( t == 'b' ){
+      v = v ? '1' : '0'
+    } else {
+
+      /* Allongement de la donnée à la bonne longueur */
+      // TODO Plus tard, on pourra utiliser padStart ?
+
+      let dif, suf = '', i = 0
+      v = String(v)
+      for(dif = (d.length-v.length) ; i < dif; ++i){ suf += ' '}
+      v = suf + v
+
+    }
+    return t + v // (1)
+  }
+
+  /**
+  * Méthode qui retourne le paragraphe avant lequel le paragraphe courant est
+  * en relation dans le panneau courant.
+  *
+  * Noter que cette méthode ne
+  *
+  * @param  {String} pan_id   L'ID du panneau (entier, donc 'manuscrit')
+  * @param {Boolean} firstOne Si true, on doit renvoyer le premier, sinon,
+  *                           on renvoie le dernier.
+  *
+  * @return {Number}  L'ID du paragraphe avant lequel insérer le nouveau
+  *                   paragraphe ou NULL s'il doit être inséré à la fin.
+  **/
+  relativeParagInPanneau ( pan_id, firstOne )
+  {
+    const my = this
+
+    const panRels = my.relativeParagsInPanneau(pan_id)
+
+    /*  Pas de données relatives pour ce panneau => null */
+
+    if ( undefined === panRels ) { return null }
+
+    /*  On retourne soit le premier soit le dernier élément */
+
+    return firstOne ? panRels[0] : panRels[panRels.length - 1]
+  }
+
+  /**
+  * @return {Array} Liste des {Parag}s associés au parag courant dans le panneau
+  *                 d'identifiant +pan_id+.
+  *                 Note : la liste est classée dans l'ordre (ce qui est
+  *                 nécessaire puisque les identifiants sont ajoutés sans
+  *                 ordre précis dans les relatives)
+  *
+  * @param {String} pan_id Identifiant du panneau.
+  *
+  **/
+  relativeParagsInPanneau ( pan_id )
+  {
+    const my = this
+
+    /*  La lettre correspond au panneau */
+
+    const panLetter = PanProjet.oneLetterOf(pan_id)
+
+    /*  Relatives du parag courant pour le panneau */
+
+    let panRels = my.data_relatives['r'][panLetter]
+
+    /*  On classe la liste des parags si elle est définie */
+
+    if ( panRels ) {
+      panRels.sort((p1,p2)=>{return Parags.get(p1).index-Parags.get(p2).index})
+    }
+
+    return panRels
+
+  }
+
+  /**
+  * @return {Boolean} true si le parag est associé au parag d'ID +pid+
+  *
+  * @param {Number|Parag} pid Soit l'ID du parag soit le parag lui-même.
+  **/
+  isRelativeOf ( pid )
+  {
+    if ( 'Parag' == pid.constructor.name ) { pid = pid.id }
+    return undefined !== this.relatives.get(pid)
+  }
+  hasRelative ( pid ) { return this.isRelativeOf(pid) }
+
+  get relatives ()
+  {
+    if ( undefined === this._relatives )
+    {
+      const my = this
+      let panLetters = Object.getOwnPropertyNames(my.data_relatives['r'])
+      this._relatives = new Map()
+      panLetters.forEach( pl => {
+        my.data_relatives['r'][pl].forEach( pid => {
+          this._relatives.set(pid, Parags.get(pid) || null /* pas undefined */)
+        })
+      })
+    }
+    return this._relatives
   }
 
 }

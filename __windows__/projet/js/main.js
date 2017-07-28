@@ -1,66 +1,32 @@
 console.log('-> projet/js/main.js')
-const
-    {remote}        = require('electron')
-  , {app}           = remote.require('electron')
-  , path            = require('path')
-  , requirejs       = require('requirejs')
-  , CONSTANTS_PATH  = path.join(app.getAppPath(),'lib','constants.js')
-  , C               = require(CONSTANTS_PATH)
-  , ipc             = require('electron').ipcRenderer
+
+
+global.path               = require('path')
+global.PROJET_JS_FOLDER   = path.resolve('./__windows__/projet/js')
 
 const
-    PROJET_FOLDER     = path.join(C.VIEWS_FOLDER,'projet')
-  , PROJET_JS_FOLDER  = path.join(PROJET_FOLDER,'js')
-  , PROJET_API_PATH   = path.join(PROJET_JS_FOLDER,'projet.js')
-  , PROJET_KBS_PATH   = path.join(PROJET_JS_FOLDER,'kbshortcuts.js')
-  , PROJET_PAN_PATH   = path.join(PROJET_JS_FOLDER, 'panprojet.js')
-  , PROJET_RELS_PATH  = path.join(PROJET_JS_FOLDER, 'relatives.js')
+    remote          = require('electron').remote
+  , app             = remote.require('electron').app
+  , APP_PATH        = app.getAppPath()
+  , CONSTANTS_PATH  = path.join(APP_PATH,'lib','constants.js')
+  , ipc             = require('electron').ipcRenderer
+  , requirejs       = require('requirejs')
+  , C               = require(CONSTANTS_PATH)
+
 
 requirejs(
   [
       C.LOG_MODULE_PATH
-    , C.DOM_MODULE_PATH
     , C.COMMON_UI_MODULE_PATH
-    , C.STORE_MODULE_PATH   // => Store
-    // ---- Cette fenêtre ---
-    , PROJET_API_PATH
-    , PROJET_KBS_PATH
-    , path.join(C.COMMON_JS_FOLDER,'parags_define.js')
-    , path.join(C.COMMON_JS_FOLDER,'parag_define.js')
-    , path.join(C.COMMON_JS_FOLDER,'tabulators_define.js')
-    , PROJET_PAN_PATH
-    , PROJET_RELS_PATH
-    , path.join(PROJET_JS_FOLDER, 'options.js')
   ]
 , function(
     log
-  , DOM
   , UI
-  , Store
-  // --- Cette fenêtre ---
-  , Projet
-  , KBShortcuts
-  , Parags
-  , Parag
-  , Tabulator
-  , PanProjet
-  , Relatives
-  , ProjOpts
 ){
 
-  global.log        = log
-  global.DOM        = DOM
-  global.Projet     = Projet
-  global.PanProjet  = PanProjet
-  global.Parags     = Parags
-  global.Parag      = Parag
-  global.Relatives  = Relatives
-  global.Store      = Store
-  global.Tabulator  = Tabulator
-  global.ProjetOptions = ProjOpts
+  require(path.join(PROJET_JS_FOLDER,'_includes.js'))
 
-  global.ProjetUI   = require(path.join(PROJET_JS_FOLDER,'projet_ui.js'))
-  global.UILog      = ProjetUI.log.bind(ProjetUI)
+  global.log = log
 
   // On donne l'app à Store, pour qu'il sache où chercher les fichiers.
   Store._app = app
@@ -68,7 +34,7 @@ requirejs(
   let timer = setInterval(
     function()
     {
-      if ( 'complete' === document.readyState )
+      if ( 'complete' === document.readyState)
       {
         clearInterval(timer)
         // ======= LA PAGE EST PRÊTE ========

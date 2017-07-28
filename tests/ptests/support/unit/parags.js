@@ -32,10 +32,25 @@
     en reprenant en suffixe l'ID du panneau titleisé.
 
 */
-try{
 let path    = require('path')
   , moment  = require('moment')
 
+if ( 'undefined' === typeof require_module )
+{
+  global.C = require(path.resolve('./lib/constants'))
+  global.USER_DATA_PATH = path.join(require('os').homedir(),'Library/Application\ Support/Script-design-TEST/')
+  console.log("USER_DATA_PATH", USER_DATA_PATH)
+
+  function require_module(mod)
+  {
+    mod = path.resolve(mod)
+    return require( mod )
+  }
+}
+try{
+
+global.DOM        = require_module(path.join('.','lib','utils','dom_class.js'))
+global.Store      = require_module(path.join('.','lib','utils','store_class.js'))
 global.Parag      = require_module(path.join('.','__windows__','_common_','js','Parag.js'))
 global.Projet     = require_module(path.join('.','__windows__','projet','js','projet_class.js'))
 global.PanProjet  = require_module(path.join('.','__windows__','projet','js','panprojet_class.js'))
@@ -43,7 +58,6 @@ global.ProjetOptions  = require_module(path.join('.','__windows__','projet','js'
 global.Parags     = require_module(path.join('.','__windows__','_common_','js','Parags.js'))
 global.Relatives  = require_module(path.join('.','__windows__','projet','js','relatives_class.js'))
 global.ProjetUI   = require_module(path.join('.','__windows__','projet','js','projet_ui.js'))
-global.Store      = require_module(path.join('.','lib','utils','store_class.js'))
 
 ProjetUI.log = function(mess,t){
   puts("Message UILog : " + mess)
@@ -206,5 +220,7 @@ resetAll()
 
 }catch(err){
   console.log(err)
-  puts("Une erreur s'est produite dans le support `ptests/support/parags.js` (voir en console)", 'warning')
+  if( 'function' === typeof( puts )){
+    puts("Une erreur s'est produite dans le support `ptests/support/parags.js` (voir en console)", 'warning')
+  }
 }

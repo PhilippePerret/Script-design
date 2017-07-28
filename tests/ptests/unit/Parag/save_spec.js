@@ -45,12 +45,12 @@ describe("Enregistrement du paragraphe",[
       expect(res).to.strictly.equal('e170721')
     })
   ])
-  , describe("#dataline_infile",[
+  , describe("#data_infile",[
     , it("répond", ()=>{
-      expect(parag1.dataline_infile).not.to.strictly.equal(undefined)
+      expect(parag1.data_infile).not.to.strictly.equal(undefined)
     })
     , it("retourne une donnée de longueur valide", ()=>{
-      res = parag1.dataline_infile
+      res = parag1.data_infile
       let longueur = 0
       for(let p in Parag.DATA){ longueur += Parag.DATA[p].length + 1 }
       longueur += 2 // les 2 retours chariot séparant les données

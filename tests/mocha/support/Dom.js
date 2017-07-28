@@ -15,7 +15,7 @@ class TestError extends Error {
   }
 }
 
-class PTestsDOM
+class DOMTest
 {
 
   /**
@@ -32,7 +32,7 @@ class PTestsDOM
   static actualTagContainsExpect (act, attrs_exp, options)
   {
     // return true
-    return new PTestsDOM(act, attrs_exp, options).searchExpectedInActual()
+    return new DOMTest(act, attrs_exp, options).searchExpectedInActual()
   }
 
   /** ---------------------------------------------------------------------
@@ -256,18 +256,8 @@ class PTestsDOM
 
   get dans_actual () {
     if (undefined === this._dans_actual){
-      // VERSION COMPLÈTE :
-      if ( this.options.realTest )
-      {
-        // <= On est sur de vrais tests, pas sur le test des tests
-        // => On affiche le code en HTML
-        this._dans_actual = `in code ${this.domActual.outerHTML.replace(/</g,'&lt;')}`
-      }
-      else
-      {
-        this._dans_actual = `in code ${this.domActual.outerHTML}`
-        // this._dans_actual = 'dans le code'
-      }
+      let c = this.domActual.outerHTML
+      this._dans_actual = ` in code ${c.substr(10, c.length-21)}`
     }
     return this._dans_actual
   }
@@ -286,7 +276,7 @@ class PTestsDOM
 
     // Il faut obligatoirement que des balises aient été trouvées
     if ( 0 == liste.length ){
-      this.errorMessage = `no ${this.capTag} tag found ${this.dans_actual}`
+      this.errorMessage = `no ${this.capTag} tag found${this.dans_actual}`
       throw new TestError({message: this.errorMessage, type:'expectation'})
     }
 
@@ -454,17 +444,17 @@ class PTestsDOM
     // Si un nombre d'éléments précis doit être trouvé, on vérifie
     if ( count && nombre_founds != count ){
       let s     = count > 1 ? 's' : ''
-      this.errorMessage = `${count} tag${s} (against ${nombre_founds} expected) should have be found ${this.dans_actual}`
+      this.errorMessage = `${count} tag${s} (against ${nombre_founds} found) should have be found${this.dans_actual}`
       throw new TestError({message: this.errorMessage, type:'expectation'})
     }
     else if ( maxcount && nombre_founds > maxcount ){
       let s     = maxcount > 1 ? 's' : ''
-      this.errorMessage = `no more than ${maxcount} tag${s} (against ${nombre_founds} found) should have be found ${this.dans_actual}`
+      this.errorMessage = `no more than ${maxcount} tag${s} (against ${nombre_founds} found) should have be found${this.dans_actual}`
       throw new TestError({message:this.errorMessage, type:'expectation'})
     }
     else if ( mincount && nombre_founds < mincount ){
       let s     = mincount > 1 ? 's' : ''
-      this.errorMessage = `at least ${mincount} tag${s} (against ${nombre_founds} found) should have be found ${this.dans_actual}`
+      this.errorMessage = `at least ${mincount} tag${s} (against ${nombre_founds} found) should have be found${this.dans_actual}`
       throw new TestError({message:this.errorMessage, type:'expectation'})
     }
 
@@ -472,4 +462,4 @@ class PTestsDOM
   }
 }
 
-module.exports = PTestsDOM
+module.exports = DOMTest

@@ -1,7 +1,9 @@
-let res = null
+let path  = require('path')
+let fs    = require('fs')
 
-c = "    12"
+let a = {un: 'un', 2: 'deux'}
 
-res = Number(c) + 3
+let m = new Map()
 
-console.log(res)
+
+console.log(m)
