@@ -110,11 +110,11 @@ describe('PanProjet', function () {
           expect(pan.loaded).to.be.false
           expect(pan.parags_ids).to.be.undefined
           pan.activate( () => {
-            expect(pan.loaded).to.be.true
-            expect(pan.actif).to.be.true
-            expect(pan.section).to.haveClass('actif')
-            expect(pan.parags_ids).not.to.be.undefined
-            expect(pan.parags_ids).to.be.instanceOf(Array)
+            expect(pan.loaded, `loaded du panneau '${pan.id}' devrait être true`).to.be.true
+            expect(pan.actif, `actif du panneau '${pan.id}' devrait être true`).to.be.true
+            expect(pan.section, `Le panneau ${pan.id} devrait avoir la classe CSS 'actif'`).to.haveClass('actif')
+            expect(pan.parags_ids, `parags_ids du paneau ${pan.id} ne devrait pas être undefined`).not.to.be.undefined
+            expect(pan.parags_ids, `parags_ids du panneau ${pan.id} devrait être une liste`).to.be.instanceOf(Array)
             done()
           })
 

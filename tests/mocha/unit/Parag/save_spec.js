@@ -48,11 +48,9 @@ describe('Enregistrement des paragraphes dans le fichier', function () {
 
         // On s'assure que
         let codeinfile = fs.readFileSync(projet.parags_file_path,'utf8')
-        console.log("Longueur de data in file : %d", codeinfile.length)
         // console.log(`CODE FICHIER : '${codeinfile}'`)
         expect(newP.startPos).to.equal(newP.id * Parag.dataLengthInFile)
         expect(newP.startPos).to.be.at.least(5000)
-        console.log("Position start de parag #%d : %d", newP.id, newP.startPos)
         let codePinfile = codeinfile.substr(newP.startPos, Parag.dataLengthInFile)
         // console.log("Segment data parag: '%s'", codePinfile)
 
@@ -76,7 +74,6 @@ describe('Enregistrement des paragraphes dans le fichier', function () {
 
       expect(fs.existsSync(projet.parags_file_path), 'le fichier PARAGS.txt devrait exister').to.be.true
       let codeinfile = fs.readFileSync(projet.parags_file_path,'utf8')
-      console.log("Code in file au début",codeinfile)
 
       // Création d'une instance de Parag
 
@@ -104,7 +101,6 @@ describe('Enregistrement des paragraphes dans le fichier', function () {
         // Le code complet du fichier
 
         let codeinfile = fs.readFileSync(projet.parags_file_path,'utf8')
-        console.log("Code in file après",codeinfile)
 
         // Les données de l'instance 14
 

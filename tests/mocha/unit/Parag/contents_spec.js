@@ -32,11 +32,12 @@ describe('Contenu de Parag', function () {
         parag2.formateContents()
         // ========== VÉRIFICATION ===========
         let val = parag2._contents_formated
-        let texp = '<p>Un lien vers <a href="#" onclick="return showParag(3)" class=\"p-al\" title=\"Contenu du paragraphe #3\">#3</a> pour voir !</p>'
-        // Pour détailler et voir le vrai caractère qui merde
-        // for(var i = 0, len = texp.length ; i < len ; ++ i ){
-        //   expect(val.substr(i,1), `Le caractère ${i}: '${val.substr(i,1)}'`).to.equal(texp.substr(i,1))
-        // }
+
+        // let texp = '<p>Un lien vers <a href="#" onclick="return showParag(3)" class=\"p-al p-3\" title=\"Contenu du paragraphe #3\">#3</a> pour voir !</p>'
+        let texp = '<p>Un lien vers <a href="#" onclick="return showParag(3)" class=\"p-al p-3\" title=\"Chargement du contenu en cours…\">#3</a> pour voir !</p>'
+        // Noter que ci-dessus le contenu "Chargement du contenu en cours" ne sera modifié que dans le
+        // document et cela relève donc d'un test d'intégration ou de test unitaire plus profond.
+
         expect(parag2._contents_formated).to.equal(texp)
         done()
       })

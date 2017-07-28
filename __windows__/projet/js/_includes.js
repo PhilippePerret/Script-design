@@ -1,5 +1,6 @@
 global.fs     = require('fs')
 global.moment = require('moment')
+moment.locale('fr')
 
 
 // const

@@ -8,11 +8,10 @@
   ----------
 
 */
-let
-      fs      = require('fs')
-    , moment  = require('moment')
-
-moment.locale('fr')
+// let
+//       fs      = require('fs')
+//     , moment  = require('moment')
+// moment.locale('fr')
 
 // log, DOM et Select sont utiles
 
@@ -35,8 +34,15 @@ class Projet
   }
   // Liste des panneaux qui peuvent être synchronisés les uns avec les autres
   static get PANNEAUX_SYNC () {
-    this._panneauxSync || (this._panneauxSync = ['notes','synopsis','scenier','treatment','manuscrit'])
+    this._panneauxSync || this.resetPanneauxSync()
     return this._panneauxSync
+  }
+  /**
+  * Détaché pour être utilisé par les tests
+  **/
+  static resetPanneauxSync ()
+  {
+    this._panneauxSync = ['notes','synopsis','scenier','treatment','manuscrit']
   }
 
   /**
@@ -211,6 +217,7 @@ class Projet
     this._current_panneau || ( this._current_panneau = this.panneaux['data'] )
     return this._current_panneau
   }
+  set current_panneau (v) { this._current_panneau = v }
 
   get modified () { return this._modified || false }
   set modified (v)

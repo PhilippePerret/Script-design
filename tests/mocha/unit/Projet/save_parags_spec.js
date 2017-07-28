@@ -12,15 +12,16 @@ describe("Projet#saveParags", () => {
     assert.equal(typeof projet.saveParags, 'function')
   })
   it("permet d'enregistrer tous les paragraphes", function(done){
+    resetTests()
     panneauNotes.parags.add([parag0, parag1, parag2, parag3])
     parag0._modified = true
     parag1._modified = true
     parag2._modified = true
     parag3._modified = true
     // ======== PRÉVÉRIFICATION ===========
-    expect(fs.existsSync(projet.parags_file_path)).not.to.equal(true)
-    expect(parag0._modified).to.be.true
-    expect(parag3._modified).to.be.true
+    expect(fs.existsSync(projet.parags_file_path), 'Le fichier des parags (PARAGS.txt) ne devrait pas exister…').not.to.equal(true)
+    expect(parag0._modified, 'la marque _modified du parag#0 devrait être true').to.be.true
+    expect(parag3._modified, 'la marque _modified du parag#3 devrait être true').to.be.true
     // =========> TESTS <=========
     projet.saveParags( () => {
       // Après la sauvegarde

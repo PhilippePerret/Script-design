@@ -104,11 +104,26 @@ class Parags
     // c'est-à-dire après la sélection si elle existe ou à la
     // fin dans le cas contraire.
     options || ( options = {} )
+    // if (options.before){
+    //   console.log("[createNewParag] options.before avant : ", options.before.id)
+    // }
     !options.before && my.hasCurrent() && ( options.before = my.selection.current.next )
+    // console.log("[createNewParag] my.hasCurrent() = ", my.hasCurrent())
+    // if ( my.hasCurrent() )
+    // {
+    //   console.log("[createNewParag] my.selection.current.id = ", my.selection.current.id)
+    //   if ( my.selection.current ) {
+    //     console.log("[createNewParag] my.selection.current.next = ", my.selection.current.next.id)
+    //   } else {
+    //     console.log("PAS DE SÉLECTION COURANTE")
+    //   }
+    // }
 
     /*  On ajoute le parag */
 
     my.add(newP, options)
+
+    // console.log("Ids du panneau '%s' après ajout du parag #%d", my.panneau.id, newP.id, my._ids)
 
     // On l'ajoute à la liste des relatives qui tient à jour la relation entre
     // les paragraphes dans les différents panneaux
@@ -224,21 +239,38 @@ class Parags
       // On ajoute la div du paragraphe dans le panneau HTML à l'endroit
       // voulu.
 
-      if (options.before)
+      // log("Nombre d'enfants du panneau '%s' avant ajout", my.panneau.id, my.panneau.container.childNodes.length)
+      if ( my.panneau.loaded /* options.doNotDisplay */ )
       {
-        // console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
-        my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv)
-      }
-      else
-      {
-        // console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
-        my.panneau.container.appendChild(iparag.mainDiv)
-      }
+
+        // Quand on synchronisze les paragraphes, il se peut qu'un panneau ne
+        // soit pas chargé, et on n'a pas envie de le charger juste pour lui
+        // ajouter un paragraphe synchronisé. Dans ce cas, on met doNotDisplay
+        // à true pour empêcher son affichage.
+        // Mais pour le moment, on regarde s'implement si le panneau est
+        // entièrement chargé (loaded)
+
+        if (options.before)
+        {
+          // log("Ajout du parag #%d dans le panneau '%s' before parag#%d in", iparag.id, my.panneau.id, options.before.id)
+          // console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
+          my.panneau.container.insertBefore(iparag.mainDiv, options.before.mainDiv)
+        }
+        else
+        {
+          // log("Ajout du parag #%d dans le panneau '%s'", iparag.id, my.panneau.id)
+          // console.log(`Ajout du parag#${iparag.id} dans le panneau ${my.panneau.id}`)
+          my.panneau.container.appendChild(iparag.mainDiv)
+        }
+        // log("Nombre d'enfants du panneau '%s' avant ajout", my.panneau.id, my.panneau.container.childNodes.length)
+        // log("Container après ajout :", my.panneau.container.outerHTML)
+
+      } // si le panneau est chargé
 
       // On ajoute le paragraphe à la liste des paragraphes du panneau
       if (options.before)
       {
-        let index_before = options.before.index - 1
+        let index_before = options.before.index
         my._items .splice(index_before, 0, iparag)
         my._ids   .splice(index_before, 0, iparag.id)
       }

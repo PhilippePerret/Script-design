@@ -23,10 +23,12 @@ describe('Création d’un nouveau Parag', function () {
     })
 
     describe('sans auto-synchronisation', function () {
-      it("crée un nouveau parag", function(done){
-        projet.option('autosync', 0)
+      before(function () {
         resetTest({nombre_parags : 0})
-        expect(()=>{return parag0}).to.throw()
+        projet.option('autosync', 0)
+        expect(()=>{parag1.id == 1}).to.throw()
+      })
+      it("crée un nouveau parag", function(done){
 
         // - l'identifiant du nouveau paragraphe devra être #12 -
         Parag._lastID = 11
@@ -50,11 +52,9 @@ describe('Création d’un nouveau Parag', function () {
 
           // On s'assure que
           let codeinfile = fs.readFileSync(projet.parags_file_path,'utf8')
-          console.log("Longueur de data in file : %d", codeinfile.length)
           // console.log(`CODE FICHIER : '${codeinfile}'`)
           expect(newP.startPos).to.equal(newP.id * Parag.dataLengthInFile)
           expect(newP.startPos).to.be.at.least(5000)
-          console.log("Position start de parag #%d : %d", newP.id, newP.startPos)
           let codePinfile = codeinfile.substr(newP.startPos, Parag.dataLengthInFile)
           // console.log("Segment data parag: '%s'", codePinfile)
 

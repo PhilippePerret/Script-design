@@ -13,10 +13,10 @@ global.setOptionProjet    = function( option, value) {projet.option(option, valu
 
 /*  - PANNEAUX -  */
 
-global.setCurrentPanneau  = function(pan){projet.current_panneau = pan}
+global.setCurrentPanneau  = function(pan){ projet.current_panneau = pan }
 
 /*  - PARAGS -  */
 
-global.selectParag = function(p) { projet.current_panneau.parags.select(p)  }
+global.selectParag = function(p) { projet.current_panneau.parags.select(p) }
 
-global.createAndEditNewParag = function() { return projet.current_panneau.parags.createAndEdit() }
+global.createAndEditParag = function() { return projet.current_panneau.parags.createAndEdit() }

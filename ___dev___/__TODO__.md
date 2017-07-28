@@ -1,3 +1,5 @@
+* [Test] Poursuivre le container du scénier pour voir à quel moment il se vide et pourquoi.
+
 * Soit le parag 19
   Il est demandé sa synchronisation
   On crée le #20 dans le panneau Notes

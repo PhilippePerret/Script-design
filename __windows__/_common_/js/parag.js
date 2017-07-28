@@ -250,7 +250,8 @@ class Parag
   **/
   sync ( callback )
   {
-    console.log(`-> sync() du parag#${this.id}`)
+    // console.log('-> sync() du parag#%d', this.id)
+    // console.log("Nombre d'enfants du panneau Scénier : %d", projet.panneau('scenier').container.childNodes.length)
     this.projet.busy = true         // pour empêcher la sauvegarde
     this.parags2sync_list = [this]  // liste des parags qui seront associés
     this.syncAllPanneaux( callback )
@@ -361,7 +362,7 @@ class Parag
   {
     if ( this.panneau && this.panneau.isCurrent() && this.divContents )
     {
-      console.log(`Parag#${this.id} -> updateDisplay()`)
+      // console.log(`Parag#${this.id} -> updateDisplay()`)
       this.divContents.innerHTML = ''
       this.divContents.innerHTML = this.contentsFormated
     }
@@ -608,7 +609,7 @@ class Parag
 
     /*  On peut passer à la suite */
 
-    console.log(`Parag#${this.id} Fin du traitement des paragraphes manquants`)
+    // console.log(`Parag#${this.id} Fin du traitement des paragraphes manquants`)
 
     /*  On appelle le callback s'il est défini */
 
@@ -756,7 +757,7 @@ class Parag
 
   syncAllPanneaux( callback )
   {
-    console.log('-> syncAllPanneaux')
+    // console.log('-> syncAllPanneaux')
     const my      = this
         , proj    = my.projet
 
@@ -788,7 +789,7 @@ class Parag
       // En enfin, on procède à l'association de tous les paragraphes
       // créés
       // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
-      console.log("Fin de la synchronisation de tous les panneaux synchronisables.")
+      // console.log("Fin de la synchronisation de tous les panneaux synchronisables.")
       proj.relatives.associateWithNoReferent(this.parags2sync_list)
       proj.busy = false
       delete this.i_panneau_sync
@@ -808,7 +809,7 @@ class Parag
   syncInPanneau ( pan_id, callback )
   {
     const my = this
-    console.log("[Parag#syncInPanneau] Début de synchronisation du parag#%d dans le panneau '%s'", this.id, pan_id)
+    // console.log("[Parag#syncInPanneau] Début de synchronisation du parag#%d dans le panneau '%s'", this.id, pan_id)
     let newParagSync
       , pano
       , nombre_parags = my.panneau.parags.count
@@ -861,13 +862,13 @@ class Parag
       , optionsAdd
     )
 
-    console.log(`[syncInPanneau] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
+    // console.log(`[syncInPanneau] Ajout du parag#${newParagSync.id} en synchro avec parag#${this.id} dans le panneau '${pan_id}'`)
 
     /*  Ajout du paragraphe à la liste des paragraphes qui seront associés
         quand on les aura tous créés. */
 
     my.parags2sync_list.push(newParagSync)
-    console.log("[syncInPanneau] Liste des parags à synchroniser", my.parags2sync_list.map(p=>{return p.id}))
+    // console.log("[syncInPanneau] Liste des parags à synchroniser", my.parags2sync_list.map(p=>{return p.id}))
 
     /*  On peut passer au panneau suivant, ou finir */
 
@@ -1218,8 +1219,8 @@ class Parag
     }
     catch(err)
     {
-      console.log(`[doEdit] ERREUR avec parag#${this.id}`, err)
-      console.log(`[doEdit] Le parag#{this.id} contient (data) :`,this.data)
+      // console.log(`[doEdit] ERREUR avec parag#${this.id}`, err)
+      // console.log(`[doEdit] Le parag#{this.id} contient (data) :`,this.data)
       realContents = ''
     }
     o.innerHTML = realContents
@@ -1311,8 +1312,7 @@ class Parag
     /*  La valeur initiale  */
 
     let v = this[p]
-    ( undefined === v || null === v ) && ( v = d.default )
-
+    if ( v === undefined || v === null ) { v = d.default }
 
     let t = d.type
     if ( t == 'b' ){

@@ -3,6 +3,7 @@ require('../../spec_helper.js')
 describe('Parag', function () {
   describe('#build', function () {
     it('répond', function(){
+      resetTest({nombre_parags:2})
       expect(parag0).to.respondsTo('build')
     });
     it('retourne un élément DOM valide pour le paragraphe', function(){

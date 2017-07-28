@@ -15,6 +15,7 @@
 global.path               = require('path')
 global.PROJET_JS_FOLDER   = path.resolve('./__windows__/projet/js')
 
+
 global.assert = require('assert')
 const chai    = require('chai')
 global.expect = chai.expect
@@ -67,6 +68,22 @@ global.UILog = function(message, type)
 
 // ---------------------------------------------------------------------
 
+let container_index = 0
+
+PanProjet.keepContainer = function(panid, container)
+{
+  this._containers || this.resetContainers()
+  this._containers.set(panid, container)
+}
+PanProjet.getContainer = function(panid)
+{
+  this._containers || this.resetContainers()
+  return this._containers.get(panid)
+}
+PanProjet.resetContainers = function()
+{
+  this._containers = new Map()
+}
 
 Object.defineProperties(PanProjet.prototype, {
   'section': {
@@ -78,7 +95,14 @@ Object.defineProperties(PanProjet.prototype, {
   'container': {
     get: function(){
       if ( undefined === this._container ) {
-        this._container = DOM.create('div', {id:`panneau-contents-${this.id}`})
+        this._container = PanProjet.getContainer(this.id)
+        if ( ! this._container )
+        {
+          this._container = DOM.create('div', {id:`panneau-contents-${this.id}`, 'index': (++container_index)})
+          // l'attribut 'index' ci-dessus a été ajouté pour vérifier qu'on avait bien le même
+          // container.
+          PanProjet.keepContainer(this.id, this._container)
+        }
       }
       return this._container
     }
@@ -125,7 +149,7 @@ function initXParags ( nombre )
   // On commence par détruire tous les paragraphes qui ont pu être créés
   // avant
   let pid = 0
-  while(undefined !== global[`parag${pid++}`]){delete global[`parag${pid++}`]}
+  for(;pid < 2000;++pid){delete global[`parag${pid}`]}
   if ( nombre === 0 ) { return }
 
   let listeParags = []
@@ -143,6 +167,14 @@ function initXParags ( nombre )
   * Grande méthode qui initialise tout.
   *
 *** --------------------------------------------------------------------- */
+/**
+* Réinitialisation de l'application. Appelé chaque fois qu'on fait
+* resetTest(…)
+**/
+resetApp = function( params )
+{
+  Projet.resetPanneauxSync()
+}
 
 /**
 * @param  {Object} params
@@ -224,6 +256,7 @@ function resetAllParags (params) {
 global.initTests = function ( params )
 {
   params || ( params = {} )
+  resetApp( params )
   resetCurrentProjet( params )
   resetAllPanneaux( params )
   let lastid = resetAllParags( params )
@@ -271,6 +304,11 @@ before(function () {
   this.jsdom = require('jsdom-global')()
   // Utile pour tout ce qui concerne le DOM "virtuel"
 
+  PanProjet.resetContainers()
+  // Par commodité, les containers des panneaux (qui sont mockés pour les
+  // tests) sont conservés dans PanProjet._containers. À chaque nouvelle
+  // feuille de test, il faut néanmoins resetter cette propriété pour repartir
+  // à zéro.
 
 })
 
