@@ -101,70 +101,19 @@ class Projet
   * @param {Array} keys Liste des id-panneaux (un ou deux seulement) définissant
   *                     le ou les panneaux à ouvrir.
   **/
-  static loadPanneauByTabulator ( keys )
+  static activatePanneauByTabulator ( keys )
   {
+    const curProj = this.current
     // console.log('-> loadPanneauByTabulator avec:', keys)
     if ( keys.length == 1 )
     {
-      this.loadPanneau(keys[0])
+      curProj.activatePanneau(keys[0])
     }
     else
     {
-      this.loadDoublePanneaux(...keys)
+      curProj.activateDoublePanneaux(...keys)
     }
   }
-
-  /**
-  * Méthode fonction passant en mode double panneau
-  **/
-  static loadDoublePanneaux (pan1_id, pan2_id)
-  {
-    // Désactiver les panneaux courants (if any)
-    this.desactiveAllCurrents()
-    let curProj = this.current
-
-    curProj._current_panneau = curProj.panneau(pan2_id)
-    curProj.current_panneau.activate()
-    curProj.current_panneau.setModeDouble('right')
-
-    curProj.alt_panneau = curProj.panneau(pan1_id)
-    curProj.alt_panneau.activate()
-    curProj.alt_panneau.setModeDouble('left')
-
-    curProj.mode_double_panneaux = true
-  }
-
-  /**
-  * Méthode fonctionnelle chargeant le plateau voulu
-  **/
-  static loadPanneau (panneau_id, evt)
-  {
-    // console.log(`-> Projet::loadPanneau(${panneau_id})`, evt)
-    // Si on était en mode double panneau, il faut en sortir, même
-    // si on va y revenir tout de suite
-    this.desactiveAllCurrents()
-    this.current._current_panneau = this.current.panneau(panneau_id)
-    this.current.current_panneau.activate()
-    this.current.mode_double_panneaux = false
-  }
-
-
-  /**
-  * Désactive le ou les panneaux affichés, en les repassant dans leur
-  * mode normal (en mode double panneaux, ils sont rétrécis et placés à
-  * gauche et à droite)
-  **/
-  static desactiveAllCurrents ()
-  {
-    if ( this.current.mode_double_panneaux )
-    {
-      this.current.alt_panneau.desactivate()
-      this.current.alt_panneau.unsetModeDouble()
-      this.current.current_panneau.unsetModeDouble()
-    }
-    this.current.current_panneau && this.current.current_panneau.desactivate()
-  }
-
 
   static newID ()
   {
@@ -209,15 +158,6 @@ class Projet
   get cancelableMethod () { return this._cancelableMethod }
   set cancelableMethod (v){ this._cancelableMethod = v    }
 
-  /**
-  * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
-  * Par défaut, c'est le panneau des données générales du projet.
-  **/
-  get current_panneau () {
-    this._current_panneau || ( this._current_panneau = this.panneaux['data'] )
-    return this._current_panneau
-  }
-  set current_panneau (v) { this._current_panneau = v }
 
   get modified () { return this._modified || false }
   set modified (v)
@@ -231,29 +171,6 @@ class Projet
     if (v) { this.ui.setProjetSaving() }
   }
 
-  panneau (pan_id) {
-    this._panneaux || this.definePanneauxAsInstances()
-    return this._panneaux[pan_id]
-  }
-  get panneaux () {
-    this._panneaux || this.definePanneauxAsInstances()
-    return this._panneaux
-  }
-
-  // Crée les instances panneaux pour le projet courant
-  definePanneauxAsInstances ()
-  {
-    let my = this
-    // my._panneaux = {}
-    // Pour la transition de Projet.panneaux à projet.panneaux
-    my._panneaux = {}
-    Projet.PANNEAU_LIST.forEach( (panneau_id) => {
-      // my._panneaux[panneau_id] = new PanProjet(panneau_id)
-      // Pour la transition de Projet.panneaux à projet.panneaux (donc
-      // de l'utilisation de la class à l'utilisation de l'instance)
-      my._panneaux[panneau_id] = new PanProjet(panneau_id, my)
-    })
-  }
   /**
   * Méthode appelée après chaque sauvegarde de panneau (ou autre) qui
   * vérifie l'état de sauvegarde du projet en général.
@@ -296,6 +213,105 @@ class Projet
     this.observeEditableFields()
     this.options.load(this.prepareSuivantOptions.bind(this))
   }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   méthodes PANNEAUX
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * @return {PanProjet} Le panneau courant (qui est beaucoup plus qu'un panneau)
+  * Par défaut, c'est le panneau des données générales du projet.
+  **/
+  get current_panneau () {
+    this._current_panneau || ( this._current_panneau = this.panneaux['data'] )
+    return this._current_panneau
+  }
+  set current_panneau (v) { this._current_panneau = v }
+
+  panneau (pan_id) {
+    return this.panneaux[pan_id]
+  }
+  get panneaux () {
+    this._panneaux || this.definePanneauxAsInstances()
+    return this._panneaux
+  }
+
+  // Crée les instances panneaux pour le projet courant
+  definePanneauxAsInstances ()
+  {
+    let my = this
+    // my._panneaux = {}
+    // Pour la transition de Projet.panneaux à projet.panneaux
+    my._panneaux = {}
+    Projet.PANNEAU_LIST.forEach( (panid) => {
+      my._panneaux[panid] = new PanProjet(panid, my)
+    })
+  }
+
+  /**
+  * Méthode fonctionnelle chargeant le plateau voulu
+  **/
+  activatePanneau (panneau_id, evt)
+  {
+    const my = this
+    // console.log(`-> Projet#loadPanneau(${panneau_id})`)
+
+    my.desactiveAllCurrents()
+    // Si on était en mode double panneau, il faut en sortir, même
+    // si on va y revenir tout de suite
+
+    my.current_panneau = my.panneau(panneau_id)
+    my.current_panneau.activate()
+    my.mode_double_panneaux = false
+
+    // console.log("<- #activatePanneau %s", panneau_id)
+  }
+
+
+
+  /**
+  * Méthode fonction passant en mode double panneau
+  **/
+  activateDoublePanneaux (pan1_id, pan2_id)
+  {
+    const my = this
+    // Désactiver les panneaux courants (if any)
+    my.desactiveAllCurrents()
+
+    my._current_panneau = curProj.panneau(pan2_id)
+    my.current_panneau.activate()
+    my.current_panneau.setModeDouble('right')
+
+    my.alt_panneau = curProj.panneau(pan1_id)
+    my.alt_panneau.activate()
+    my.alt_panneau.setModeDouble('left')
+
+    my.mode_double_panneaux = true
+  }
+
+
+  /**
+  * Désactive le ou les panneaux affichés, en les repassant dans leur
+  * mode normal (en mode double panneaux, ils sont rétrécis et placés à
+  * gauche et à droite)
+  **/
+  desactiveAllCurrents ()
+  {
+    const my = this
+    if ( my.mode_double_panneaux )
+    {
+      my.alt_panneau.desactivate()
+      my.alt_panneau.unsetModeDouble()
+      my.current_panneau.unsetModeDouble()
+    }
+    my.current_panneau && my.current_panneau.desactivate()
+  }
+
+  //
+  //  FIN MÉTHODES PANNEAUX
+  // ---------------------------------------------------------------------
 
 
   /**

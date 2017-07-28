@@ -240,7 +240,7 @@ class Parags
       // voulu.
 
       // log("Nombre d'enfants du panneau '%s' avant ajout", my.panneau.id, my.panneau.container.childNodes.length)
-      if ( my.panneau.loaded /* options.doNotDisplay */ )
+      if ( my.panneau.loaded && my.panneau.id === my.projet.current_panneau.id /* options.doNotDisplay */ )
       {
 
         // Quand on synchronisze les paragraphes, il se peut qu'un panneau ne

@@ -70,7 +70,7 @@ requirejs(
           Tabulator.Map = {
             "boutons-panneaux":{
                 maxSelected: 2
-              , enter_method: Projet.loadPanneauByTabulator.bind(Projet)
+              , enter_method: Projet.activatePanneauByTabulator.bind(Projet)
             }
             , "operations":{
                 'synchronize' : currentpan.synchronize.bind(currentpan)

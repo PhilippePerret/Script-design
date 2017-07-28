@@ -177,8 +177,11 @@ class PanProjet
   **/
   activate ( callback ) {
     const my = this
+
+    // console.log("-> activate panneau '%s'", my.id)
+
     // Dans tous les cas, on active le panneau
-    DOM.addClass(my.section,'actif')
+    my.section.className = 'panneau actif'
     my.actif = true
 
     // console.log("-> activate panneau")
@@ -204,16 +207,29 @@ class PanProjet
       // => Il faut tout charger et réappeler cette méthode
       my.load( my.activate.bind(my, callback) )
     }
+
+    // console.log("<- activate panneau '%s'", my.id)
+
   }
   desactivate () {
+    // console.log("-> desactivate panneau#%s", this.id)
+
+    this.parags.selection.reset()
     // Avant de désactiver le panneau, on déselectionne les sélections
     // et la marque de paragraphe courant.
-    this.parags.selection.reset()
-    DOM.removeClass(this.section,'actif')
+
+    this.section.className = 'panneau'
+    // Ici, avant, j'utilisais DOM.removeClass, mais ça ne retirait pas la
+    // class 'actif', en tout cas pas à tous les coups.
+
     // On supprime aussi l'annulation possible
     delete this.projet.cancelableMethod
-    // Puis on marque que le panneau n'est plus actif.
+
+    /* - le panneau n'est plus actif - */
+
     this.actif = false
+
+    // console.log("<- desactivate panneau#%s", this.id)
   }
 
   /**
