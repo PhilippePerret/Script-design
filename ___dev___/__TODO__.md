@@ -1,3 +1,35 @@
+* On peut utiliser les promesses pour :
+
+  * activer un panneau :
+
+    ChargerLesDonneesDuPanneau(panneau)
+      .then( ChargerLesParagraphesDuPanneau )
+      .then( AfficherlesParagraphesDuPanneau )
+      .then( ActiverLePanneau )
+      .catch(console.log.bind(console))
+
+    Ce qui donne dans PanProjet#activate
+
+    activate () {
+      const my = this
+      my.loadData()
+        .then( my.loadAllParags )
+        .then( my.displayAllParags )
+        .then( my.activateSection )
+        .catch(console.log.bind(console))
+    }
+
+  Pour le moment, je fais précéder toutes ces méthodes de "PR" pour savoir
+  que ce sont des promises (qu'elles renvoient des promises).
+
+  * Afficher un paragraphe
+
+    ActiverLePanneauDuParagraph(iparag)
+      .then( ChargerLesDonneesDuParagraphe )
+      .then( ConstruireLeDivDuParagraphe )
+      .then( AfficherLeParagraphe )
+      .catch(console.log.bind(console))
+
 * [Test] Poursuivre le container du scénier pour voir à quel moment il se vide et pourquoi.
 
 * Soit le parag 19

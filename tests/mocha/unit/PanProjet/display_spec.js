@@ -46,7 +46,7 @@ describe('Affichage des panneaux', function () {
 
   })
 })
-describe.only('Chargement d’un projet avec des parags', function () {
+describe('Chargement d’un projet avec des parags', function () {
   /*
     Ce test doit permettre de voir si les paragraphes sont bien affichés à
     partir d'un projet enregistré.

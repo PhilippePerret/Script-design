@@ -70,6 +70,7 @@ class PanProjet
     // Mis à true quand les paragraphes ont été affichés
     this.paragsDisplayed  = false
     this.built            = false
+    this.displayed        = false
 
     /*  Réinitialisation complète de sa donnée Parags */
 
@@ -127,9 +128,100 @@ class PanProjet
     throw new Error("PanProjet#parags_ids ne doit pas être atteint directement. Utiliser `add`.")
   }
 
+  /** ---------------------------------------------------------------------
+    *
+    *  MÉTHODES PROMESSES POUR L'ACTIVATION
+    *
+  *** --------------------------------------------------------------------- */
+
   /**
-  * Les méthodes appelées par le menu des commandes
+  * Méthode principale d'activation du panneau.
+  *
+  * Elle fonctionne à base de promises
+  *
   **/
+  PRactivate ()
+  {
+    PRloadData()
+      .then(  PRloadAllParags     )
+      .then(  PRdisplayAllParags  )
+      .then(  PRhideCurrent       )
+      .then(  PRshow              )
+      .catch(console.log.bind(console))
+  }
+
+  /**
+  * Méthode asynchrone téléchargeant les données du panneau si nécessaire
+  *
+  * @return {Promise}
+  **/
+  PRloadData ()
+  {
+
+  }
+
+  /**
+  * Méthode asynchrone téléchargeant toutes les données des parags
+  * du panneau (contenues dans pids dans les data)
+  *
+  * @return {Promise}
+  **/
+  PRloadAllParags ()
+  {
+
+  }
+
+  /**
+  * Méthode asynchrone affichant tous les paragraphes
+  *
+  * @return {Promise}
+  *
+  **/
+  PRdisplayAllParags ()
+  {
+
+  }
+
+  /**
+  * Méthode asynchrone qui masque le panneau courant
+  *
+  * @return {Promise}
+  **/
+  PRhideCurrent ()
+  {
+    const my      = this
+    const curPan  = Projet.current_panneau
+    return new Promise(function(ok, notok){
+      if ( curPan )
+      {
+        curPan.container.className = 'panneau'
+        curPan.actif = false
+        delete Projet.current_panneau
+      }
+      ok(true)
+    })
+  }
+
+  /**
+  * Méthode asynchrone affichant finalement le panneau (section)
+  **/
+  PRshow ()
+  {
+    const my = this
+    return new Promise(function(ok, pasok){
+      my.container.className = 'panneau actif'
+      my.actif      = true
+      my.displayed  = true
+      ok(true)
+    })
+  }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES APPELÉES PAR LES COMMANDES
+    *
+  *** --------------------------------------------------------------------- */
+
   defaultCommandMethod ( arg )
   {
     if ('function' === typeof this[arg]) {
