@@ -1,5 +1,5 @@
 
-describe.only('PRload et PRdisplay', function () {
+describe('PRload et PRdisplay', function () {
 
   describe('PRload', function () {
 
@@ -50,7 +50,7 @@ describe.only('PRload et PRdisplay', function () {
   })
 
 
-  describe.only('PRdisplay', function () {
+  describe('PRdisplay', function () {
 
     it("répond", function(){
       expect(parag2).to.respondsTo('PRdisplay')
@@ -72,6 +72,7 @@ describe.only('PRload et PRdisplay', function () {
       // ======== PRÉ-VÉRIFICATIONS ==============
       expect(parag3.panneau_id).to.equal('manuscrit')
       expect(parag3.panneau.id).to.equal('manuscrit')
+
       expect(panneauManuscrit.container).to.not.haveTag('div', {id:'p-3'})
 
       // =======> TEST <==========
@@ -82,6 +83,7 @@ describe.only('PRload et PRdisplay', function () {
           // ==========  VÉRIFICATIONS ============
 
           expect(panneauManuscrit.container).to.haveTag('div', {id:'p-3'})
+
         })
 
     })

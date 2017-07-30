@@ -60,12 +60,7 @@ class PanProjet
     this.actif      = false
 
     // Mis à true quand les données des PARAGS du panneau ont été chargées
-    this.loaded     = false
     this.loading    = false
-
-    // Mis à true quand les données du panneau ont été chargées, qu'elles
-    // existent ou non.
-    this.dataLoaded = false
 
     // Mis à true quand les paragraphes ont été affichés
     this.paragsDisplayed  = false
@@ -78,6 +73,7 @@ class PanProjet
 
     /*  Destruction de certaines propriétés volatiles */
 
+    delete this._loaded
     delete this._container
     delete this._section
     delete this._dom_id
@@ -93,6 +89,18 @@ class PanProjet
 
   isCurrent () {
     return this.projet.current_panneau.id == this.id
+  }
+
+  /**
+  * @return true si les données du panneau (et seulement ses données, pas
+  * ses parags) sont chargées.
+  **/
+  get loaded ()
+  {
+    if ( ! this._loaded ) {
+      this._loaded = this.pids !== undefined
+    }
+    return this._loaded
   }
 
   /**
@@ -142,12 +150,14 @@ class PanProjet
   **/
   PRactivate ()
   {
-    PRloadData()
-      .then(  PRloadAllParags     )
-      .then(  PRdisplayAllParags  )
-      .then(  PRhideCurrent       )
-      .then(  PRshow              )
-      .catch(console.log.bind(console))
+    const my = this
+
+    return my.PRloadData()
+      .then(  my.PRloadAllParags     )
+      .then(  my.PRdisplayAllParags  )
+      .then(  my.PRhideCurrent       )
+      .then(  my.PRshow              )
+      .catch( (err) => { throw err } )
   }
 
   /**
@@ -157,7 +167,24 @@ class PanProjet
   **/
   PRloadData ()
   {
-
+    const my = this
+    if ( true === my.loaded )
+    {
+      return Promise.resolve()
+    }
+    else if ( ! fs.existsSync(my.store.fpath) )
+    {
+      my.data = my.defaultData
+      return Promise.resolve()
+    }
+    else
+    {
+      return new Promise( (ok, notok) => {
+        // TODO Charger les données
+        my.store.loadAndTreatWith( my.parse )
+        ok(true)
+      })
+    }
   }
 
   /**
@@ -432,7 +459,6 @@ class PanProjet
           && my.data.pids.length )
     {
       console.log("<#PanProjet %s> est le panneau courant et il y a des parags => on les affiche", my.id)
-      my.loaded = true
       my.displayParags( callback )
 
     }
@@ -444,7 +470,6 @@ class PanProjet
       if ( !my.data.pids || my.data.pids.length == 0){
         console.log("<#PanProjet %s> n'a pas de parags à afficher.", my.id)
       }
-      my.loaded = true
       callback && callback.call()
 
     }
@@ -520,10 +545,6 @@ class PanProjet
       my.parags.addNotNew( instances, {reset: true, display: false} )
       // console.log('[PanProjet#onEndStreaming] Panneau "%s" / Instances introduites dans le panneau', this.id)
     }
-
-    /*  Pour indiquer que les données ont été chargées  */
-
-    this.dataLoaded = true
 
     /*  Fonction de callback si elle est définie  */
 

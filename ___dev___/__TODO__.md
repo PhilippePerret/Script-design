@@ -1,40 +1,8 @@
+* Implémenter la méthode `Store#loadAndTreatWith` qui charge les données de façon asynchrone puis utilise la méthode en premier argument pour les traiter.
+* Implémenter la méthode `PanProjet#parseData` qui est envoyée en premier argument de `Store#loadAndTreatWith` pour traiter les données du fichier de données du panneau.
+* Poursuivre activate_spec du panneau panprojet
 
-* Créer les méthodes `PRload` et `PRdisplay` de Parag. Ce sont des méthodes qui doivent retourner des promises.
 
-
-* On peut utiliser les promesses pour :
-
-  * activer un panneau :
-
-    ChargerLesDonneesDuPanneau(panneau)
-      .then( ChargerLesParagraphesDuPanneau )
-      .then( AfficherlesParagraphesDuPanneau )
-      .then( ActiverLePanneau )
-      .catch(console.log.bind(console))
-
-    Ce qui donne dans PanProjet#activate
-
-    activate () {
-      const my = this
-      my.loadData()
-        .then( my.loadAllParags )
-        .then( my.displayAllParags )
-        .then( my.activateSection )
-        .catch(console.log.bind(console))
-    }
-
-  Pour le moment, je fais précéder toutes ces méthodes de "PR" pour savoir
-  que ce sont des promises (qu'elles renvoient des promises).
-
-  * Afficher un paragraphe
-
-    ActiverLePanneauDuParagraph(iparag)
-      .then( ChargerLesDonneesDuParagraphe )
-      .then( ConstruireLeDivDuParagraphe )
-      .then( AfficherLeParagraphe )
-      .catch(console.log.bind(console))
-
-* [Test] Poursuivre le container du scénier pour voir à quel moment il se vide et pourquoi.
 
 * Soit le parag 19
   Il est demandé sa synchronisation
