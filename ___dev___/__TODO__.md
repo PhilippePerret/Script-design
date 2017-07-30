@@ -1,8 +1,5 @@
-* Implémenter la méthode `Store#loadAndTreatWith` qui charge les données de façon asynchrone puis utilise la méthode en premier argument pour les traiter.
-* Implémenter la méthode `PanProjet#parseData` qui est envoyée en premier argument de `Store#loadAndTreatWith` pour traiter les données du fichier de données du panneau.
-* Poursuivre activate_spec du panneau panprojet
 
-
+* Il faut absolument traiter autrement le panneau 'data'
 
 * Soit le parag 19
   Il est demandé sa synchronisation

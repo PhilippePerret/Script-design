@@ -88,7 +88,7 @@ PanProjet.resetContainers = function()
 Object.defineProperties(PanProjet.prototype, {
   'section': {
     get: function(){
-      this._section || (this._section = DOM.create('div', {id: `panneau-${this.id}`}))
+      this._section || (this._section = DOM.create('div', {id: `panneau-${this.id}`, class:'panneau'}))
       return this._section
     }
   },
