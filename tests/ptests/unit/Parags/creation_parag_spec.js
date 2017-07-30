@@ -55,7 +55,7 @@ describe("Création d'un nouveau paragraphe",[
       expect(parag2.next.id,'parag2.next.id').to.equal(pid)
     })
     , it("il y a bien une instance créée pour ce parag", ()=>{
-      parag20 = panneau.parags._dict[pid]
+      parag20 = panneau.parags._dict.get(pid)
       expect(parag20.id).to.equal(pid)
       expect(parag20).to.be.classOf('parag')
     })

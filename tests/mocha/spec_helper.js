@@ -94,7 +94,7 @@ Object.defineProperties(PanProjet.prototype, {
   },
   'container': {
     get: function(){
-      if ( undefined === this._container ) {
+      if ( ! this._container ) {
         this._container = PanProjet.getContainer(this.id)
         if ( ! this._container )
         {

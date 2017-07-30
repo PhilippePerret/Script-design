@@ -128,8 +128,6 @@ class Parag
     for(let p in data){if(data.hasOwnProperty(p)){this[p] = data[p]}}
     Parags.add(this) // (2)
 
-    this.loaded = data.loaded || false
-
   }
 
   /** ---------------------------------------------------------------------
@@ -194,7 +192,7 @@ class Parag
 
 
   /** ---------------------------------------------------------------------
-  * Les propriétés volatiles calculées à la volée
+  * Les propriétés volatiles
   **/
   /**
   * Le contenu textuel du Parag. Il est transformé en Unicode pour être
@@ -212,7 +210,79 @@ class Parag
   get panneau_id  ()  { return this._panneau_id   }
   set panneau_id  (v) { this._panneau_id = v      }
 
+  get loaded () {
+    (undefined === this._loaded) && ( this._loaded = 'string' == typeof(this.contents) )
+    return this._loaded
+  }
 
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES GÉNÉRALES
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * Méthode qui charge le paragraphe si nécessaire et retourne une promesse.
+  *
+  * Si le paragraphe est déjà chargé, on retourne tout de suite le résultat,
+  * sinon on utilise une promesse pour le charger.
+  *
+  * @return {Promise}
+  **/
+  PRload ()
+  {
+    const my = this
+
+    if ( my.loaded )
+    {
+      return Promise.resolve()
+    }
+    else
+    {
+      return my.PRloadInFile()
+        .then(my.PRparse.bind(my))
+        .catch(console.log.bind(console))
+    }
+  }
+
+  /**
+  * Méthode affichant le parag dans son panneau et retournant une promesse
+  *
+  * NOTE Pour le moment, on en fait une méthode synchrone (dans un cycle de
+  * méthode asynchrone) mais ensuite on pourra imaginer que le paragraphe
+  * sera entièrement construit par ce biais, et donc qu'il faudra charger
+  * d'autres parags pour compléter l'affichage.
+  *
+  * @return {Promise}
+  *
+  **/
+  PRdisplay ()
+  {
+    const my = this
+    my.panneau.container.appendChild( my.mainDiv )
+    return Promise.resolve()
+  }
+
+  PRloadInFile ()
+  {
+    const my = this
+    return new Promise( (ok, notok) => {
+      let startPos = pid * Parag.dataLengthInFile
+      let buffer   = new Buffer(Parag.dataLengthInFile)
+      fs.open(my.projet.parags_file_path, 'r', (err, fd) => {
+        fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
+          if ( err ) { throw err }
+          ok( buf.toString() )
+        })
+      })
+    })
+  }
+
+  PRparse ( code )
+  {
+    this.parse_data_infile( code )
+    return Promise.resolve()
+  }
 
   /**
   * Méthode qui initialise tout pour forcer le recalcul des valeurs,
@@ -226,6 +296,7 @@ class Parag
     delete this._contents_formated
     delete this._contents_simple
     delete this._duration_formated
+    delete this._loaded
     this.formated = false
   }
 
@@ -346,7 +417,6 @@ class Parag
     this.ucontents = this._ucontents // pour forcer this.contents
 
     this.parsed = true
-    this.loaded = true
 
     if ( 'function' == typeof this.after_read_callback )
     {
@@ -558,7 +628,7 @@ class Parag
         /*  Le parag n'est pas encore chargé, on met un contenu provisoire */
 
         missing_parags_list.push(pid)
-        return (new Parag({id:pid, loaded: false})).as_link(
+        return (new Parag({id:pid})).as_link(
           {title: 'Chargement du contenu en cours…'}
         )
 

@@ -346,7 +346,7 @@ describe("Destruction d'un parag avec #remove",[
       expect(panneau.container,'panneau.container').to.have_tag('div',{class:'p', id:'p-11'})
       panneau.parags.select([parag10, parag11])
       expect(panneau.parags.selection.count,'selection.count').to.equal(2)
-      expect(panneau.parags.selection._dict[11]).not.strictly.equal(undefined)
+      expect(panneau.parags.selection._dict.get(11)).not.strictly.equal(undefined)
       // ========> TEST <=========
       panneau.parags.remove(parag11)
     })
@@ -357,7 +357,7 @@ describe("Destruction d'un parag avec #remove",[
       expect(panneau.parags.items[11]).strictly.equal(undefined)
     })
     , it("le supprime de la sélection", ()=>{
-      expect(panneau.parags.selection._dict[11]).strictly.equal(undefined)
+      expect(panneau.parags.selection._dict.get(11)).strictly.equal(undefined)
     })
   ])
 ])
@@ -711,7 +711,7 @@ describe("La sélection #selection",[
       expect(panneau.parags.selection.multiple).to.be.false
     })
     , it("connait la propriété @_dict", ()=>{
-      expect(panneau.parags.selection._dict).to.be.classOf('object')
+      expect(panneau.parags.selection._dict).to.be.classOf('map')
     })
     , it("connait la propriété @items", ()=>{
       expect(panneau.parags.selection.items).to.be.classOf('array')

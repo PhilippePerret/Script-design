@@ -389,7 +389,7 @@ class Projet
   {
     const my = this
 
-    console.log("-> <#Projet %s>#saveAll()")
+    // console.log("-> <#Projet %s>#saveAll()")
 
     my.saving = true
     my.saved  = false
@@ -403,13 +403,13 @@ class Projet
 
     my.saveEachPanneau( () => {
 
-      console.log("callback de la sauvegarde des panneaux.")
+      // console.log("callback de la sauvegarde des panneaux.")
 
       /*- Sauvegarde de tous les parags -*/
 
       this.saveParags( () => {
 
-        console.log("Callback de la sauvegarde des paragraphes.")
+        // console.log("Callback de la sauvegarde des paragraphes.")
 
         my.saving = false
         my.saved  = true
@@ -420,7 +420,7 @@ class Projet
 
     })
 
-    console.log("<- <#Projet %s>#saveAll()")
+    // console.log("<- <#Projet %s>#saveAll()")
 
   }
 
@@ -632,6 +632,9 @@ class Projet
   *
   * La méthode appelle ensuite la méthode qui parse la donnée pour en
   * faire une vraie instance Parag
+  *
+  * NOTE Doit devenir OBSOLÈTE avec l'utilisation des Promises
+  * (cf. Parag#PRload)
   **/
   readParag (fd, pid)
   {

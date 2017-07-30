@@ -168,7 +168,8 @@ class PanProjet
   **/
   PRloadAllParags ()
   {
-
+    const my = this
+    return Promise.all( my.parags.map( p => p.PRload.bind(p).call() ) )
   }
 
   /**
@@ -179,7 +180,8 @@ class PanProjet
   **/
   PRdisplayAllParags ()
   {
-
+    const my = this
+    return Promise.all( my.parags.map( p => p.PRdisplay.bind(p).call() ) )
   }
 
   /**

@@ -5,7 +5,7 @@
 */
 
 
-describe.only('Activation d’un panneau', function () {
+describe('Activation d’un panneau', function () {
 
   describe('Méthodes PanProjet utiles', function () {
 
@@ -45,8 +45,12 @@ describe.only('Activation d’un panneau', function () {
       expect(panneauNotes.actif).to.be.true
       expect(panneauNotes.container.className).to.equal('panneau actif')
 
+      // ==========> TEST <=========
       return panneauManuscrit.PRhideCurrent()
         .then( () => {
+
+          // ======== VÉRIFICATIONS ==========
+
           expect(panneauNotes.displayed, "le displayed du panneau doit être encore à true").to.be.true
           expect(panneauNotes.actif, "le panneau Notes ne doit plus être 'actif'").to.be.false
           expect(panneauNotes.container.className, 'la class du container devrait être "panneau"').to.equal('panneau')

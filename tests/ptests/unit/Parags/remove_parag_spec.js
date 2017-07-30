@@ -49,7 +49,7 @@ describe("Destruction d'un paragraphe",[
         expect(panneau.parags._items[1].id,'parags._items[1].id').to.equal(4)
       })
       , it("retire le paragraphe de parags._dict", () => {
-        expect(panneau.parags._dict[10],'panneau.parags._dict[10]').to.equal(undefined)
+        expect(panneau.parags._dict.get(10),'panneau.parags._dict.get(10)').to.equal(undefined)
       })
       , it("retire le paragraphe des relations qu'il entretient", ()=>{
         expect(projet.relatives.areRelatifs(parag10, parag1),'areRelatifs(parag10, parag1)').to.equal(false)

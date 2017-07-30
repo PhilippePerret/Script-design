@@ -1,3 +1,7 @@
+
+* Créer les méthodes `PRload` et `PRdisplay` de Parag. Ce sont des méthodes qui doivent retourner des promises.
+
+
 * On peut utiliser les promesses pour :
 
   * activer un panneau :
