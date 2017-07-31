@@ -184,7 +184,7 @@ class Projet
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
       my.panneau(pan_id).modified && ( mod = true )
     })
-    this.modified = mod // changera l'indicateur de sauvegarde
+    my.modified = mod // changera l'indicateur de sauvegarde
   }
 
   /* --- publiques --- */
@@ -406,8 +406,11 @@ class Projet
     let panos_modified = []
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
       ( all || my.panneau(pan_id)._modified ) && panos_modified.push( my.panneau(pan_id) )
+      // Attention = si on met une ligne de code avant ce ( all || ... ) il
+      // faut impérativement la terminer par un ';' pour que JS ne croie pas
+      // qu'il s'agit d'une fonction
     })
-    return Promise.all( panos_modified.map( p => { return p.save() } ) )
+    return Promise.all( panos_modified.map( p => { return p.save.bind(p).call() } ) )
   }
 
   /**
@@ -442,7 +445,7 @@ class Projet
     for (let pid in Parags.items )
     {
       if ( Parags.items.hasOwnProperty(pid) ) {
-        let parag = Parags.get(pid)
+        let parag = Parags.get(pid) ; // ATTENTION ";" obligatoire !
         ( all || parag.modified ) && ( modified_parags.push( parag ) )
       }
     }
@@ -457,7 +460,7 @@ class Projet
   {
     let
           prop = o.id // par exemple 'authors' ou 'title'
-        , newValue = o.innerHTML.replace(/<br>/,"\n").trim()
+        , newValue = o.innerHTML.trim()
 
     // Traitement des valeurs pour certains champs spéciaux
     switch(prop)

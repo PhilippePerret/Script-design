@@ -301,12 +301,14 @@ class Parags
 
   /**
   * - public -
+  *
   * Permet de boucler sur les parags comme dans un Array
   *
   * @return {Array} Liste des résultats obtenus sur chaque Parag
   **/
   map ( method ) {
     const my = this
+    my._dict || my.reset()
     let res = []
     my._dict.forEach( (v, k) => {
       res.push( method.call(null, v, k) )
@@ -321,11 +323,12 @@ class Parags
   forEach ( method )
   {
     const my = this
+    my._dict || my.reset()
     my._dict.forEach( (v, k) => { method.call(null, v, k)})
   }
 
 
-  
+
   /**
   * Méthode qui reçoit l'argument envoyé aux principales fonctions et
   * qui retourne un Array d'instances Parags qui seront traités.

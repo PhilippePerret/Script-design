@@ -65,17 +65,38 @@ class Relatives
   * Sauve les données relatives de façon asynchrone
   *
   * @return {Promise}
+  *
+  * NOTE La méthode peut être appelée sans vérification de la modification
+  * des données, donc il faut le faire ici.
   **/
-  save () { return this.store.save() }
+  save () {
+    if ( this.modified ) { return this.store.save() }
+    else { return Promise.resolve() }
+  }
 
   get data ()
   {
     this._data || this.loadData() // bon tant que c'est synchrone…
     return this._data
   }
+  set data (v) { this._data = v }
+
+  /**
+  * Chargement (synchrone) des données des relatives.
+  *
+  * NOTE Pour le moment, il est synchrone, mais il se peut qu'il ne le soit
+  * plus dans quelques temps.
+  **/
   loadData ()
   {
-    this.store.loadSync()
+    if ( this.store.exists() )
+    {
+      this.store.loadSync()
+    }
+    else
+    {
+      this.data = this.defaultData
+    }
   }
 
   /**
@@ -94,10 +115,7 @@ class Relatives
 
   get store ()
   {
-    if ( ! this._store ) {
-      this._store = new Store(this.relative_path)
-      this._store.defaults = this.defaultData
-    }
+    this._store || ( this._store = new Store(this.relative_path, this) )
     return this._store
   }
   get relative_path ()

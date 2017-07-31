@@ -90,7 +90,12 @@ class PanData
   get authors       () { return this.data.authors       }
   get created_at    () { return this.data.created_at    }
   get updated_at    () { return this.data.updated_at    }
-  get last_parag_id () { return this.data.last_parag_id }
+  get last_parag_id () {
+    if (undefined === this.data.last_parag_id) {
+      this.last_parag_id = -1
+    }
+    return this.data.last_parag_id
+  }
 
   set data          (v){ this._data = v }
   set title         (v){ this.data.title = v        ; this.setModified()  }

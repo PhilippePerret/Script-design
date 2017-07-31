@@ -1,3 +1,8 @@
+# 0.1.12
+
+  * Utilisation des Promises pour gérer tous les enregistrements/chargements de données.
+  * Panneau Data isolé des autres panneaux
+
 # 0.1.11
 
   * Une seule inclusion pour les tests et le programme lui-même pour définir les globales.

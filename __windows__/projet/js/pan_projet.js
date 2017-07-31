@@ -181,7 +181,8 @@ class PanProjet
     else
     {
       return new Promise( (ok, notok) => {
-        my.store.loadAndTreatSync( my.prepareData.bind(my) )
+        my.store.loadSync()
+        my.prepareData()
         ok(true)
       })
     }
@@ -201,13 +202,11 @@ class PanProjet
     let instances = my.pids.map( pid => {
       return new Parag( {id: pid, projet: proj, panneau_id: panid })
     })
-    // console.log('[PanProjet#prepareData] Panneau "%s" / instances créées', this.id)
 
     /*  Ajoute les parags au panneau (sans les afficher)
         Note : même s'il n'y a pas de parags, on le fait, pour le reset */
 
     my.parags.addNotNew( instances, {reset: true, display: false} )
-    // console.log('[PanProjet#prepareData] Panneau "%s" / Instances introduites dans le panneau', this.id)
 
   }
 
@@ -371,8 +370,9 @@ class PanProjet
   get modified () { return this._modified || false }
   set modified (v)
   {
+    console.log("-> PanProjet#modified (panneau %s) avec la valeur %s", this.id, v)
     this._modified = !!v
-    this.projet.modified = true
+    this.projet.modified = !!v
   }
 
   setModeDouble (cote)
@@ -418,53 +418,68 @@ class PanProjet
   *** --------------------------------------------------------------------- */
 
   /**
-  * Procède à la sauvegarde des données actuelles
+  * Procède à la sauvegarde des données actuelles du panneau
   **/
   save ( callback )
   {
     const my = this
     // console.log("-> save")
-    if ( ! my.modified )
-    {
-      alert(`Le panneau ${my.projet.id}/${my.name} n'est pas marqué modifié, normalement, je ne devrais pas avoir à le sauver.`)
-    }
+    if ( ! my.modified ) { return UILog(`Panneau ${my.projet.id}/${my.id} non modifié.`)}
+
     // La sauvegarde est asynchrone, on doit donc attendre qu'elle soit
     // faite pour poursuivre.
     // console.log(`-> PanProjet#save sauvegarde du panneau '${this.id}'`, this.data2save)
     // console.log("<- save"))
-    my.store._data = my.data2save
-    my.store.save(my.onFinishSave.bind(my, callback) )
-    // console.log("<- PanProjet#save")
+    return my.store.save()
+      .then( my.projet.relatives.save.bind(my.projet.relatives) )
+      .then( my.onFinishSave.bind(my) )
+      .catch((err) => { throw err })
   }
+
+  // Utiliser par Store pour envoyer les données
+  set data (h) {
+    if ( h ){
+      for( let k in h ) {
+        if ( h.hasOwnProperty(k) ) { this[k] = h[k] }
+      }
+    }
+  }
+  get data () {
+    return this.data2save
+  }
+
   /**
-  * Méthode appelée lorsque la sauvegarde est terminée, avec succès
+  * Méthode appelée lorsque la sauvegarde s'est terminée avec succès
   *
   * Elle est appelée par la class Store, dans Store#save
   **/
-  onFinishSave (callback)
+  onFinishSave ()
   {
-    // console.log("-> onFinishSave")
-    // Si nécessaire, on procède à la sauvegarde des relatives
-    this.projet.relatives.modified && this.projet.relatives.save()
-    this.setAllParagsUnmodified()
-    this.modified = false
-    this.projet.checkModifiedState()
-    if ( callback ) { callback.call() }
-    // console.log("<- onFinishSave")
+    const my = this
+
+    return new Promise( (ok, ko) => {
+      // console.log('-> Promise de PanProjet#onFinishSave (panneau %s)', my.id)
+      my.setAllParagsUnmodified.bind(my).call()
+      my.projet.checkModifiedState.bind(my.projet).call()
+      ok()
+    })
   }
 
   /**
   * @return {Object} La table des données à sauver
+  *
+  * Note : updated_at sera actualisé par Store.
+  *
+  * (1) Remplacé dans l'instance Store
   **/
   get data2save ()
   {
-    let now = moment().format()
     return {
         name        : this.id
       , prefs       : this.prefs
-      , pids        : this.pids
-      , updated_at  : now
-      , created_at  : this.created_at || now
+      , pids        : this.parags._ids || this.pids
+      , created_at  : this.created_at || moment().format()
+      , updated_at  : true // (1)
     }
   }
 

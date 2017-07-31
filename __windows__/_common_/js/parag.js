@@ -74,27 +74,19 @@ class Parag
   **/
   static newID ()
   {
+    const curProjet = Projet.current
+
     // console.log("-> Parag.newID", this._lastID)
-    if( undefined === this._lastID)
-    {
-      this._lastID = undefined === Projet.current.data_generales.last_parag_id
-                      ? -1
-                      : Projet.current.data_generales.last_parag_id
-    }
+    if( undefined === this._lastID) { this._lastID = curProjet.data.last_parag_id }
     ++ this._lastID
     // On enregistre toujours le nouveau dernier ID dans les données
     // du projet
-    Projet.current.store_data.set({
-        updated_at: moment().format()
-      , last_parag_id: this._lastID
-      },
-      undefined,
-      true /* synchrone */
-    )
+    curProjet.data.last_parag_id = this._lastID
+    curProjet.data.save()
 
     /* Retourne le nouvel ID après l'avoir enregistré */
 
-    return Number(this._lastID)
+    return this._lastID
   }
 
 
@@ -205,7 +197,10 @@ class Parag
   }
   set ucontents (v){
     this._ucontents = v
-    this._contents  = JSON.parse(`"${v.trim()}"`)
+    v = v.replace(/\n/g, '[[RC]]')
+    v = JSON.parse(`"${v.trim()}"`)
+    v = v.replace(/\[\[RC\]\]/g,"\n")
+    this._contents  = v
   }
   get panneau_let ()  {
     if (undefined === this._panneau_let && this.panneau_id )
@@ -242,7 +237,7 @@ class Parag
   *
   **/
   get contents    ()  { return this._contents    }
-  set contents    (v) { this._contents = v ; this.reset()  }
+  set contents    (v) { this._contents = v.replace(/\n/g,'<br>') ; this.reset()  }
   get panneau_id  ()  { return this._panneau_id   }
   set panneau_id  (v) { this._panneau_id = v      }
 
@@ -277,7 +272,7 @@ class Parag
     {
       return my.PRloadInFile()
         .then(my.PRparse.bind(my))
-        .catch(console.log.bind(console))
+        .catch((err) => { throw err })
     }
   }
 
@@ -395,21 +390,6 @@ class Parag
     let d = '', p
     for(let p in Parag.DATA) { d += this.xBytesData(p) }
     return d + "\n\n"
-  }
-
-  /**
-  * Lit la valeur de la donnée du paragraphe dans le fichier et la
-  * retourne telle quelle.
-  *
-  * @return {String} La donnée brute, non parsée
-  **/
-  read ( callback )
-  {
-    // console.log('-> Parag#read')
-    this.after_read_callback = callback
-    this.parsed   = false
-    this.reading  = true
-    this.projet.readParags(this.id, this.parse_data_infile.bind(this))
   }
 
   /**
@@ -673,7 +653,6 @@ class Parag
     c = c.trim()
     this._contents_formated = c
     this.formated           = true
-
 
     if ( missing_parags_list.length > 0 )
     {
@@ -1337,7 +1316,7 @@ class Parag
     o.contentEditable = 'true'
     try
     {
-      realContents = this.contents.replace(/\n/g,'<br>')
+      realContents = this.contents.replace(/<br>/g,"\n")
     }
     catch(err)
     {
@@ -1400,12 +1379,20 @@ class Parag
 
   /**
   * @return {String} Le nouveau contenu (non formaté, donc pour enregistrement)
+  *
+  * L'idée est d'obtenir un texte où les retours-chariots sont tous remplacés
+  * par des <br>, pour ne pas avoir à les corriger lorsqu'on parse par JSON et
+  * pour ne pas avoir à ajouter les <br> chaque fois qu'on inscrit le parag
+  * dans la page.
   **/
   defineNewContents ()
   {
-    let c = this.divContents.innerHTML.replace(/<br>/g,"\n")
-    c = c.replace(/<div>/g,'')
-    c = c.replace(/<\/?div>/g,"\n").trim()
+    let c = this.divContents.innerHTML
+    c = c.replace(/<\/div>/g,'').trim()
+    c = c.replace(/<div>/g, "\n").trim()
+    c = c.replace(/\r/g, "\n")
+    c = c.replace(/\n\n+/g, "\n") // pas de double-retours
+    c = c.replace(/\n/g,'<br>') // on garde des BR pour simplifier
     this.newContents = c
   }
 
