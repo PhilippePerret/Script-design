@@ -60,14 +60,17 @@ class Relatives
     *   Méthodes fonctionnelle
     *
   *** --------------------------------------------------------------------- */
-  save ( callback )
-  {
-    return this.store.save()
-  }
+
+  /**
+  * Sauve les données relatives de façon asynchrone
+  *
+  * @return {Promise}
+  **/
+  save () { return this.store.save() }
 
   get data ()
   {
-    this._data || this.loadData()
+    this._data || this.loadData() // bon tant que c'est synchrone…
     return this._data
   }
   loadData ()

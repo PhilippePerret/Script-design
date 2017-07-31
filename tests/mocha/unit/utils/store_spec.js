@@ -55,6 +55,23 @@ describe('Class Store', function () {
     });
 
 
+    describe('#exists', function () {
+      it("répond", function(){
+        expect(store).to.respondsTo('exists')
+      })
+      it("retourne true si le fichier du store existe", function(){
+        owner.data = {1:'un'}
+        return owner.store.save()
+          .then( () => {
+            expect(owner.store.exists()).to.be.true
+          })
+      })
+      it("retourne false si le fichier du store n'existe pas", function(){
+        deleteFiles()
+        expect(store.exists()).to.be.false
+      })
+    });
+
 
     describe('#saveSync', function () {
       it("répond", function(){

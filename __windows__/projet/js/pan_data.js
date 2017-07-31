@@ -16,7 +16,7 @@ class PanData
 
   constructor (projet)
   {
-    if(!projet){throw(new Error("Un panneau doit obligatoirement être initialisé avec son projet."))}
+    if(!projet){throw(new Error("Le panneau Data doit être initialisé avec son projet."))}
     this.id       = 'data'
     this.name     = 'data'
     this.projet   = projet
@@ -75,7 +75,14 @@ class PanData
   *** --------------------------------------------------------------------- */
 
   get data          () {
-    this._data || this.store.loadSync()
+    if ( undefined === this._data )
+    {
+      if ( this.store.exists() ) {
+        this.store.loadSync()
+      } else {
+        this.setDefaultData()
+      }
+    }
     return this._data
   }
   get title         () { return this.data.title         }
@@ -83,7 +90,7 @@ class PanData
   get authors       () { return this.data.authors       }
   get created_at    () { return this.data.created_at    }
   get updated_at    () { return this.data.updated_at    }
-  get last_parag_id () {return this.data.last_parag_id  }
+  get last_parag_id () { return this.data.last_parag_id }
 
   set data          (v){ this._data = v }
   set title         (v){ this.data.title = v        ; this.setModified()  }
@@ -96,7 +103,6 @@ class PanData
   setModified ()
   {
     this.modified = true
-    this.updated_at = moment().format()
   }
 
   /**
@@ -124,8 +130,10 @@ class PanData
     const my = this
 
     return my.PRloadData()
-      .then(  my.PRhideCurrent.bind(my)       )
-      .then(  my.PRshow.bind(my)              )
+      .then( my.PRafficheData.bind(my)  )
+      .then( my.PRhideCurrent.bind(my)  )
+      .then( my.PRshow.bind(my)         )
+      .then( my.PRsetDisplayed.bind(my) )
       .catch( (err) => { throw err } )
   }
 
@@ -159,24 +167,39 @@ class PanData
     else
     {
       return new Promise( (ok, notok) => {
-        my.store.loadSync( my.prepareData.bind(my) )
+        my.store.loadSync()
         ok(true)
       })
     }
   }
 
   /**
-  * Méthode qui prépare les données après les avoir chargées
-  *
-  * Noter qu'elles ont déjà été dispatchées dans la méthode `loadAndTreatSync`
+  * Méthode faussement synchrone affichant toutes les données dans le
+  * panneau au moment de son activation.
   **/
-  prepareData ()
+  PRafficheData ()
   {
-    const my    = this
-    const proj  = my.projet
-    const panid = my.id
-
-    // Rien à faire pour le moment sur ce panneau
+    const my = this
+    let prop, selector, value
+    for(let prop in my.data)
+    {
+      if ( ! my.data.hasOwnProperty(prop) ) { continue }
+      if ( selector = my.container.querySelector(`span#${prop}`))
+      {
+        switch(prop)
+        {
+          case 'created_at':
+          case 'updated_at':
+            let c = moment(my[prop])
+            value = `${c.format('LLL')} (${c.fromNow()})`
+            break
+          default:
+            value = my[prop]
+        }
+        selector.innerHTML = value
+      }
+    }
+    return Promise.resolve()
   }
 
   /**
@@ -358,6 +381,8 @@ class PanData
         title         : 'Projet indéfini'
       , summary       : 'Résumé non défini du projet'
       , last_parag_id : 0
+      , created_at    : moment().format()
+      , updated_at    : moment().format()
     }
   }
 

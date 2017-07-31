@@ -90,7 +90,7 @@ class Projet
   static load (data)
   {
     this.current = new Projet(data.projet_id)
-    this.current.load.bind(this.current)()
+    this.current.prepare()
   }
 
   /**
@@ -199,17 +199,12 @@ class Projet
   * Note : ce sont les données qui s'affichent toujours en premier, pour
   * le moment.
   **/
-  load ()
+  prepare ()
   {
-
-    this.set_title()
-    this.set_authors()
-    this.set_summary()
-    this.set_created_at()
-    this.set_updated_at()
-
-    this.observeEditableFields()
-    this.options.load(this.prepareSuivantOptions.bind(this))
+    const my = this
+    my.current_panneau.PRactivate()
+    my.observeEditableFields()
+    my.options.load(my.prepareSuivantOptions.bind(my))
   }
 
   /** ---------------------------------------------------------------------
@@ -422,7 +417,7 @@ class Projet
   **/
   saveRelatives ()
   {
-    return this.relatives.save.bind(this).call()
+    return this.relatives.save.bind(this.relatives).call()
   }
 
   /** ---------------------------------------------------------------------
@@ -499,6 +494,10 @@ class Projet
     this._ui || ( this._ui = new ProjetUI(this) )
     return this._ui
   }
+  /**
+  * @property {PanData} Le panneau 'data', qui s'occupe des données
+  * générales du projet.
+  **/
   get data ()
   {
     this._data || ( this._data = this.panneau('data') )
