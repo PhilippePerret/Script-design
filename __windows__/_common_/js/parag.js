@@ -8,9 +8,7 @@
   *   Despite its name, a <Parag> can own several real paragraphs.
   *
 *** --------------------------------------------------------------------- */
-let path        = require('path')
-  , moment      = require('moment')
-  , Kramdown    = require(path.resolve(path.join('.','lib','utils','kramdown_class.js')))
+let Kramdown    = require(path.resolve(path.join('.','lib','utils','kramdown_class.js')))
 
 class Parag
 {
@@ -100,6 +98,10 @@ class Parag
   }
 
 
+
+
+
+
   /** ---------------------------------------------------------------------
     *
     *   INSTANCE Parag
@@ -129,6 +131,40 @@ class Parag
     Parags.add(this) // (2)
 
   }
+
+  /* - public - */
+
+  /**
+  * Sauve le parag dans le fichier à longueurs fixes.
+  *
+  * @return {Promise} Pour le chainage
+  **/
+  save ()
+  {
+    const my        = this
+    const openFlag  = fs.existsSync(my.parags_file_path) ? 'r+' : 'w'
+
+    return new Promise( (ok, ko) => {
+      fs.open(my.parags_file_path, openFlag, (err, fd) => {
+        if ( err ) throw err
+        fs.write(fd, my.data_infile, my.startPos, 'utf8', (err, sizew, writen) => {
+          if (err) { ko(err) }
+          else {
+            my.modified = false
+            ok()
+          }
+        })
+      })
+    })
+
+  }
+
+  /**
+  * @return {String} Le path du fichier texte contenant tous les paragraphes
+  * en longueur fixe (appartient à tout le projet).
+  *
+  **/
+  get parags_file_path () { return Projet.current.parags_file_path }
 
   /** ---------------------------------------------------------------------
     *

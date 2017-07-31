@@ -78,6 +78,7 @@ class PanData
     this._data || this.store.loadSync()
     return this._data
   }
+  get title         () { return this.data.title         }
   get summary       () { return this.data.summary       }
   get authors       () { return this.data.authors       }
   get created_at    () { return this.data.created_at    }
@@ -85,6 +86,7 @@ class PanData
   get last_parag_id () {return this.data.last_parag_id  }
 
   set data          (v){ this._data = v }
+  set title         (v){ this.data.title = v        ; this.setModified()  }
   set summary       (v){ this.data.summary = v      ; this.setModified()  }
   set authors       (v){ this.data.authors = v      ; this.setModified()  }
   set created_at    (v){ this.data.created_at = v   ; this.setModified()  }
@@ -333,27 +335,17 @@ class PanData
 
   /**
   * Procède à la sauvegarde des données actuelles
+  *
+  * @return {Promise} Une promise pour pouvoir être appelé comme les
+  * autres panneaux modifiés par Promise.all
   **/
   save ( callback )
   {
     const my = this
-    // console.log("-> save")
-    if ( ! my.modified )
-    {
-      alert(`Le panneau ${my.projet.id}/${my.name} n'est pas marqué modifié, normalement, je ne devrais pas avoir à le sauver.`)
-    }
+    if ( ! my.modified ) { return UILog("Data générales non modifiées…")}
     my.store.saveSync()
-    my.onFinishsave()
-    // console.log("<- PanProjet#save")
-  }
-  /**
-  * Méthode appelée lorsque la sauvegarde est terminée, avec succès
-  *
-  * Elle est appelée par la class Store, dans Store#save
-  **/
-  onFinishSave ()
-  {
-    this.projet.checkModifiedState()
+    my.projet.checkModifiedState()
+    return Promise.resolve()
   }
 
   /**
@@ -362,10 +354,11 @@ class PanData
    */
   setDefaultData ()
   {
-    const my = this
-    my.title          = 'Projet indéfini'
-    my.summary        = 'Résumé non défini du projet'
-    my.last_parag_id  = 0
+    this.data = {
+        title         : 'Projet indéfini'
+      , summary       : 'Résumé non défini du projet'
+      , last_parag_id : 0
+    }
   }
 
   /**
@@ -387,13 +380,6 @@ class PanData
     this._store_path || (this._store_path = path.join('projets',this.projet.id,this.name))
     return this._store_path
   }
-
-  /**
-  * @return {String} Le path du fichier texte contenant tous les paragraphes
-  * en longueur fixe (appartient à tout le projet).
-  *
-  **/
-  get parags_file_path () { return this.projet.parags_file_path }
 
 }// /fin class PanProjet
 

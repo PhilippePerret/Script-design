@@ -529,13 +529,6 @@ class PanProjet
     return this._store_path
   }
 
-  /**
-  * @return {String} Le path du fichier texte contenant tous les paragraphes
-  * en longueur fixe (appartient à tout le projet).
-  *
-  **/
-  get parags_file_path () { return this.projet.parags_file_path }
-
 }// /fin class PanProjet
 
 

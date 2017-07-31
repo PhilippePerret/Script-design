@@ -373,7 +373,6 @@ class Projet
   /**
   * Sauve tout
   * ----------
-  * Pour le moment, ça ne sauve que les panneaux et les relatives.
   *
   * Noter que l'appel de la sauvegarde des relatives et le check du nouvel
   * état du projet est inutile puisque ces deux méthodes sont appelées à
@@ -384,81 +383,47 @@ class Projet
   saveAll ( callback )
   {
     const my = this
-
-    // console.log("-> <#Projet %s>#saveAll()")
-
     my.saving = true
     my.saved  = false
-
-    /*- Sauvegarde des données du projet (synchrone) -*/
-
-    // my.saveData()
-    // console.log("Après saveData")
-
     /*- Sauvegarde de tous les panneaux modifiés -*/
-
-    my.saveEachPanneau( () => {
-
-      // console.log("callback de la sauvegarde des panneaux.")
-
+    return my.saveAllPanneaux()
       /*- Sauvegarde de tous les parags -*/
-
-      this.saveParags( () => {
-
-        // console.log("Callback de la sauvegarde des paragraphes.")
-
+      .then( my.saveParags.bind(my) )
+      .then( my.saveRelatives.bind(my) )
+      .then( () => {
         my.saving = false
         my.saved  = true
-
-        callback && callback.call()
-
       })
+      .catch( (err) => { throw err } )
 
+  }
+
+
+  /**
+  * Sauvegarde de tous les panneaux modifiés (et seulement les panneaux
+  * modifiés, sauf si +all+ est true)
+  *
+  * @return {Promise}
+  **/
+  saveAllPanneaux ( all )
+  {
+    const my = this
+    let panos_modified = []
+    Projet.PANNEAU_LIST.forEach( (pan_id) => {
+      ( all || my.panneau(pan_id)._modified ) && panos_modified.push( my.panneau(pan_id) )
     })
-
-    // console.log("<- <#Projet %s>#saveAll()")
-
+    return Promise.all( panos_modified.map( p => { return p.save() } ) )
   }
 
   /**
-  * Sauve les données générales du film
+  * Raccourci pour l'enregistrement des relatives
   *
-  * Rappel : `this.data` est le panneau 'data' de classe `PanData`
+  * @return {Promise}
   **/
-  saveData () { this.data.saveSync() }
-
-  saveEachPanneau ( callback )
+  saveRelatives ()
   {
-    const my = this
-    let pano = null
-
-    if ( undefined === my.panneaux2save )
-    {
-      my.panneaux2save = []
-      Projet.PANNEAU_LIST.forEach( (pan_id) => {
-        my.panneau(pan_id)._modified && my.panneaux2save.push( my.panneau(pan_id) )
-      })
-    }
-
-    if ( pano = my.panneaux2save.shift() )
-    {
-
-      /*- On sauve le panneau -*/
-
-      pano.save.bind(pano, my.saveEachPanneau.bind(my, callback) )
-
-    }
-    else
-    {
-
-      /*= Tous les panneaux modifiés ont été enregistrés =*/
-
-      callback && callback.call()
-
-    }
-
+    return this.relatives.save.bind(this).call()
   }
-
 
   /** ---------------------------------------------------------------------
     *
@@ -469,189 +434,26 @@ class Projet
     *
   *** --------------------------------------------------------------------- */
 
-  saveParags (callback )
-  {
-    this.writeParags(undefined, callback)
-  }
   /**
-  * Main méthode appelée pour sauver les paragraphes dans le fichier de
-  * données des paragraphes.
-  * La méthode prend soit la liste +parag_list+ soit relève tous les paragraphes
-  * qui ont été modifiés.
+  * Enregistre tous les paragraphes modifiés
   *
-  * Après l'enregistrement, la méthode +callback+, si elle est spécifiée,
-  * est appelée.
-  **/
-  writeParags (parag_list, callback)
-  {
-    const my = this
-    my.saving = true
-    my.saved  = false
-    my.saved_parags_count = 0
-
-    if ( ! parag_list )
-    {
-      my.defineListeParagsToSave()
-    }
-    else
-    {
-      my.liste_parags_to_save = parag_list
-    }
-    // console.log("Liste des paragraphes à sauver", this.liste_parags_to_save)
-
-    my.methode_after_saving = callback // même si non défini
-
-    const openFlag = fs.existsSync(my.parags_file_path) ? 'r+' : 'w'
-
-    fs.open(my.parags_file_path, openFlag, (err, filedescriptor) => {
-      if ( err ) {
-        console.log("Une erreur est survenue, je dois renoncer à l'enregistrement :", err)
-        throw err
-      }
-      my.writeNextParag(filedescriptor)
-    })
-
-  }
-  /**
-  * Méthode de boucle qui procède à l'écriture du paragraphe courant de la
-  * liste this.liste_parags_to_save, soit en termine avec l'enregistrement
+  * @param {Boolean} all  Si true, on enregistre tous les parags
   *
+  * @return {Promise} Pour pouvoir chainer l'enregistrement
   **/
-  writeNextParag (fd)
+  saveParags ( all )
   {
-    const my = this
-    let iparag = my.liste_parags_to_save.shift()
-    if ( undefined !== iparag )
+    let modified_parags = []
+    for (let pid in Parags.items )
     {
-      if ('number' === typeof iparag) { iparag = Parags.get(iparag) }
-      my.writeParag(fd, iparag)
-    }
-    else
-    {
-      // console.log("=== Tous les paragraphes ont été sauvés. ===")
-
-      /*- On appelle le callback -*/
-
-      my.methode_after_saving && my.methode_after_saving.call()
-    }
-  }
-
-
-  writeParag( fd, iparag )
-  {
-    const my = this
-    fs.write(fd, iparag.data_infile, iparag.startPos, 'utf8', (err, sizew, writen) => {
-      if (err){ throw err }
-      iparag.modified = false
-      my.saved_parags_count += 1
-      // console.log("Longueur copiée dans le fichier", sizew)
-      // On passe au paragraphe suivant
-      my.writeNextParag(fd)
-    })
-  }
-
-  /**
-  * Méthode qui place dans this.liste_parags_to_save et @return la liste
-  * des paragraphes à sauver, c'est-à-dire ceux qui ont été modifiés.
-  **/
-  defineListeParagsToSave ()
-  {
-    // let arr = this.items.filter( p => { return p._modified === true })
-    const my = this
-    let arr = []
-      , p, pid
-    for ( pid = 0 ; pid <= Parag._lastID ; ++pid )
-    {
-      if ( p = Parags.get(pid) )
-      {
-        if ( p._modified === true ) { arr.push( p ) }
+      if ( Parags.items.hasOwnProperty(pid) ) {
+        let parag = Parags.get(pid)
+        ( all || parag.modified ) && ( modified_parags.push( parag ) )
       }
     }
-    my.liste_parags_to_save = arr
-    return arr
+    return Promise.all( modified_parags.map( p => { return p.save() } ))
   }
-  //
-  // // ---------------------------------------------------------------------
-  // //  MÉTHODES DE LECTURE DES PARAGRAPHES
-  //
-  // /**
-  // * Méthode principale qui charge la liste des parags définis dans
-  // * +ids+, en fait des instances ou les renseigne en lisant le fichier
-  // * de données, puis appelle la méthode +callback+
-  // *
-  // * @param {Array} ids Liste des identifiants à charger (ou un seul)
-  // * @param {Function} callback  La méthode à appeler à la fin.
-  // **/
-  // readParags ( ids, callback )
-  // {
-  //   // console.log('-> Projet#readParags')
-  //   const my = this
-  //
-  //   my.loading = true
-  //   my.loaded  = false
-  //
-  //   if ('number' === typeof ids) { ids = [ids]}
-  //   my.list_parags_to_read  = ids
-  //   my.after_reading_parags = callback
-  //   fs.open(my.parags_file_path, 'r', (err, fd) => {
-  //     if ( err ) { throw err }
-  //     my.readNextParag(fd)
-  //   })
-  // }
-  //
-  // /**
-  // * Méthode fonctionnelle, utilisée par `readParags` ci-dessus, qui lit
-  // * un paragraphe dans le fichier de données et le parse.
-  // **/
-  // readNextParag (fd)
-  // {
-  //   const my = this
-  //   let parag_id = my.list_parags_to_read.shift()
-  //   if ( undefined !== parag_id )
-  //   {
-  //     my.readParag( fd, parag_id )
-  //   }
-  //   else
-  //   {
-  //     // console.log("J'ai fini de lire les paragraphes, je peux continuer.")
-  //     my.loading = false
-  //     my.loaded  = true   // sauf si erreur
-  //     if ( 'function' === typeof my.after_reading_parags )
-  //     {
-  //       my.after_reading_parags.call()
-  //     }
-  //   }
-  // }
-  //
-  // /**
-  // * Lit les données du paragraphe dans le fichier de données
-  // *
-  // * La méthode appelle ensuite la méthode qui parse la donnée pour en
-  // * faire une vraie instance Parag
-  // *
-  // * NOTE Doit devenir OBSOLÈTE avec l'utilisation des Promises
-  // * (cf. Parag#PRload)
-  // **/
-  // readParag (fd, pid)
-  // {
-  //   const my = this
-  //   let startPos = pid * Parag.dataLengthInFile
-  //   let buffer   = new Buffer(Parag.dataLengthInFile)
-  //   fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
-  //     if ( err ) { throw err }
-  //     my.parseParag(fd, pid, buf.toString() )
-  //   })
-  // }
-  // parseParag( fd, pid, rawdata )
-  // {
-  //   const my = this
-  //   let parag = Parags.get(pid)
-  //   parag || ( parag = new Parag({id: pid}) )
-  //   parag.parse_data_infile( rawdata )
-  //   // On peut poursuivre en s'occupant du paragraphe suivant, ou en
-  //   // poursuivant avec la méthode de callback
-  //   my.readNextParag(fd)
-  // }
+
 
   /**
   * Méthode appelée quand on change de donnée par l'interface
@@ -671,7 +473,7 @@ class Projet
     }
     // On enregistre la donnée et on l'actualise dans l'affichage
     this.data[prop] = newValue // dans PanData (panneau('data'))
-    this[`set_${prop}`]()
+    this[`set_${prop}`](newValue)
     this.set_updated_at()
   }
 
@@ -740,16 +542,19 @@ class Projet
   *
   **/
   set_title (v) {
-    this.title = v
+    v || ( v = "Projet sans titre")
+    if ( v != this.data.title ) this.data.title = v
     DOM.setTitle(v)
     DOM.inner('title', v)
   }
   set_authors (v) {
-    this.authors = v
+    v || ( v = ['pas d’auteur'])
+    if ( v != this.data.authors ) this.data.authors = v
     DOM.inner('authors', (v||[]).join(', '))
   }
   set_summary (v) {
-    this.summary = v
+    v || ( v = 'Projet sans résumé' )
+    if ( v != this.data.summary ) this.data.summary = v
     DOM.inner('summary', (v||'').split("\n").join('<br>'))
   }
   set_created_at(){

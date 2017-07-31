@@ -32,7 +32,7 @@ function deleteFiles ()
 // Pour exposition sur tout le test
 let res, h
 
-describe.only('Class Store', function () {
+describe('Class Store', function () {
 
 
   describe('Classe', function () {
@@ -53,6 +53,9 @@ describe.only('Class Store', function () {
         expect(store.path.endsWith('projet_exemple/pourtestsansowner.json')).to.be.true
       })
     });
+
+
+
     describe('#saveSync', function () {
       it("répond", function(){
         expect(store).to.respondsTo('saveSync')
@@ -73,6 +76,16 @@ describe.only('Class Store', function () {
         owner.modified = true
         store_with_owner.saveSync()
         expect(owner.modified).to.be.false
+      })
+      it("actualise la donnée updated_at si elle existe dans les data", function(){
+        owner.data = {'pour':'voir', 'updated_at': true}
+        owner.store.saveSync()
+        expect(owner.data.updated_at).to.not.equal(true)
+      })
+      it("n'ajoute pas la propriété updated_at si elle n'existe pas initialement dans les data", function(){
+        owner.data = {'pour':'voir'}
+        owner.store.saveSync()
+        expect(owner.data.updated_at).to.be.undefined
       })
     })
 
@@ -208,8 +221,23 @@ describe.only('Class Store', function () {
             expect(code).to.equal(hjson)
 
           })
-
       })
+
+      it("actualise la donnée updated_at si elle existe dans les data", function(){
+        owner.data = {'pour':'voir', 'updated_at': true}
+        return owner.store.save()
+          .then( () => {
+            expect(owner.data.updated_at).to.not.equal(true)
+          })
+      })
+      it("n'ajoute pas la propriété updated_at si elle n'existe pas initialement dans les data", function(){
+        owner.data = {'pour':'voir'}
+        return owner.store.save()
+          .then( () => {
+            expect(owner.data.updated_at).to.be.undefined
+          })
+      })
+
     });
 
   }) // /fin comme Instance

@@ -62,20 +62,17 @@ class Relatives
   *** --------------------------------------------------------------------- */
   save ( callback )
   {
-    const my = this
-    my.data.updated_at = moment().format()
-    my.store._data = my.data
-    my.store.save((err) => {
-      if (err) { throw err }
-      my.modified = false
-      if ( callback ) { callback.call() }
-    } )
+    return this.store.save()
   }
 
   get data ()
   {
-    this._data || ( this._data = this.store.data || this.defaultData )
+    this._data || this.loadData()
     return this._data
+  }
+  loadData ()
+  {
+    this.store.loadSync()
   }
 
   /**
