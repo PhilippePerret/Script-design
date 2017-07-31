@@ -1,5 +1,16 @@
 
 * Il faut absolument traiter autrement le panneau 'data'
+  Comment faire pour séparer ?
+  Peut-être faut-il déjà le supprimer des panneau_data ?
+  On le laisse dans le manu, mais c'est le Projet.activatePanneauPerTabulator
+  qui envoie vers une instance différente.
+  Cette instance gère les données complètement différemment.
+  => Ne plus mettre 'data' en tableau par défaut, mais mettre le premier,
+     c'est-à-dire le scénier, peut-être.
+
+  Ou alors, réfléchir au fait que les données du projet peuvent se définir comme des parags, avec simplement une amorce précisant ce que c'est. Par exemple :
+  titre = Le titre de mon projet.
+  Mais ça me semble très compliqué à gérer.
 
 * Soit le parag 19
   Il est demandé sa synchronisation

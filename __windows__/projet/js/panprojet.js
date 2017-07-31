@@ -63,9 +63,8 @@ class PanProjet
     this.loading    = false
 
     // Mis à true quand les paragraphes ont été affichés
-    this.paragsDisplayed  = false
-    this.built            = false
-    this.displayed        = false
+    this.displayed  = false
+    this.built      = false
 
     /*  Réinitialisation complète de sa donnée Parags */
 
@@ -97,9 +96,7 @@ class PanProjet
   **/
   get loaded ()
   {
-    if ( ! this._loaded ) {
-      this._loaded = this.pids !== undefined
-    }
+    this._loaded || ( this._loaded = (this.pids !== undefined) )
     return this._loaded
   }
 
@@ -152,28 +149,15 @@ class PanProjet
   }
 
   PRdesactivate () {
-    // console.log("-> desactivate panneau#%s", this.id)
 
     this.parags.selection.reset()
     // Avant de désactiver le panneau, on déselectionne les sélections
     // et la marque de paragraphe courant.
 
-    this.section.className = 'panneau'
-    // Ici, avant, j'utilisais DOM.removeClass, mais ça ne retirait pas la
-    // class 'actif', en tout cas pas à tous les coups.
+    return this.PRhideCurrent()
+    // Comme le panneau est le panneau courant, il suffit de le
+    // rendre non courant.
 
-    // On supprime aussi l'annulation possible
-    delete this.projet.cancelableMethod
-
-    /* - le panneau n'est plus actif - */
-
-    this.actif = false
-
-    /*- Il faut retourner une promesse -*/
-
-    return Promise.resolve()
-
-    // console.log("<- desactivate panneau#%s", this.id)
   }
 
   /**
@@ -267,18 +251,24 @@ class PanProjet
   * Méthode asynchrone qui masque le panneau courant
   *
   * @return {Promise}
+  *
+  * Noter que cette méthode est aussi bien appelée lorsque l'on
+  * désactive un autre panneau que le panneau présent.
   **/
   PRhideCurrent ()
   {
     const my      = this
+
     const curPan  = my.projet.current_panneau
+    // C'est l'instance présence si le panneau est le panneau courant
+
     return new Promise(function(ok, notok){
       if ( curPan )
       {
         curPan.section.className = 'panneau'
         curPan.actif = false
-        my.projet.current_panneau   = undefined // donc 'data'
-        // my.projet._current_panneau  = undefined
+        my.projet.current_panneau  = undefined // donc 'data'
+        my.projet.cancelableMethod = undefined
       }
       ok(true)
     })
@@ -294,6 +284,7 @@ class PanProjet
       my.section.className = 'panneau actif'
       my.actif      = true
       my.displayed  = true
+      my.projet.current_panneau = my
       ok(true)
     })
   }
@@ -477,29 +468,22 @@ class PanProjet
     }
   }
 
+  /**
+   * On définit les données par défaut du panneau.
+   *
+   * Note : pour le moment, ça se fait même pour le panneau des données
+   * générales.
+   *
+   */
   setDefaultData ()
   {
     const my = this
     my.pids = []
 
   }
-  // /**
-  // * @return {Object} Les données par défaut pour le panneau. C'est celle qui
-  // * sont transmises à l'instanciation du store du panneau.
-  // *
-  // * Doit devenir OBSOLÈTE car Store prend les données et on les dispatche
-  // **/
-  // get defaultData () {
-  //   return {
-  //       name    : this.id
-  //     , id      : this.id
-  //     , prefs   : this.prefs
-  //     , pids    : []
-  //   }
-  // }
 
   /**
-  * Nouvelle propriété `parags' d'instance Parags
+  * @property Instance des parags du panneau
   **/
   get parags ()
   {

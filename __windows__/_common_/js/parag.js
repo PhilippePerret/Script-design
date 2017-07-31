@@ -267,7 +267,7 @@ class Parag
   {
     const my = this
     return new Promise( (ok, notok) => {
-      let startPos = pid * Parag.dataLengthInFile
+      let startPos = my.id * Parag.dataLengthInFile
       let buffer   = new Buffer(Parag.dataLengthInFile)
       fs.open(my.projet.parags_file_path, 'r', (err, fd) => {
         fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
@@ -712,7 +712,7 @@ class Parag
   updateTitleInLink ( panneau )
   {
     const my = this
-    let as = panneau.container.querySelectorsAll(`a.p-${my.id}`)
+    let as = panneau.container.querySelectorAll(`a.p-${my.id}`)
     as.forEach( a => a.setAttribute('title', my.contentsSimple) )
   }
 

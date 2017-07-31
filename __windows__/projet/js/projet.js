@@ -8,16 +8,6 @@
   ----------
 
 */
-// let
-//       fs      = require('fs')
-//     , moment  = require('moment')
-// moment.locale('fr')
-
-// log, DOM et Select sont utiles
-
-  //   C.LOG_MODULE_PATH
-  // , C.DOM_MODULE_PATH     // => DOM
-  // , C.SELECT_MODULE_PATH  // => Select
 
 /** ---------------------------------------------------------------------
   *
@@ -113,10 +103,16 @@ class Projet
   static activatePanneauByTabulator ( keys )
   {
     const curProj = this.current
-    // console.log('-> loadPanneauByTabulator avec:', keys)
     if ( keys.length == 1 )
     {
-      curProj.activatePanneau(keys[0])
+      if ( keys[0] == 'data' )
+      {
+        alert("Je ne sais pas encore afficher le panneau des données.")
+      }
+      else
+      {
+        activatePanneau(keys[0]) // handy méthode
+      }
     }
     else
     {
@@ -356,13 +352,13 @@ class Projet
   **/
   prepareSuivantOptions ()
   {
-    console.log('-> Projet#prepareSuivantOptions')
+    // console.log('-> Projet#prepareSuivantOptions')
     if ( this.option('autosave') )
     {
       console.log('   * activation de l’autosave')
       this.options.activateAutosave()
     }
-    console.log('<- Projet#prepareSuivantOptions')
+    // console.log('<- Projet#prepareSuivantOptions')
   }
 
   /**
@@ -746,11 +742,11 @@ class Projet
   }
   set_authors (v) {
     this.authors = v
-    DOM.inner('authors', v.join(', '))
+    DOM.inner('authors', (v||[]).join(', '))
   }
   set_summary (v) {
     this.summary = v
-    DOM.inner('summary', v.split("\n").join('<br>'))
+    DOM.inner('summary', (v||'').split("\n").join('<br>'))
   }
   set_created_at(){
     let c = moment(this.created_at)
@@ -791,11 +787,16 @@ class Projet
   // Les données remontées des différents stores
   get data_generales    () { return this.store_data.data }
 
-  get title       (){ return this.data_generales.title  || "Projet sans titre" }
-  get authors     (){ return this.data_generales.authors || [] }
-  get summary     (){ return this.data_generales.summary || '[Résumé à définir]'}
-  get created_at  (){ return this.data_generales.created_at}
-  get updated_at  (){ return this.data_generales.updated_at}
+  get title       ()  {return this.data_generales.title  || "Projet sans titre"}
+  set title       (v) {this.data_generales.title = v}
+  get authors     ()  {return this.data_generales.authors || [] }
+  set authors     (v) {this.data_generales.authors = v}
+  get summary     ()  {return this.data_generales.summary || '[Résumé à définir]'}
+  set summary     (v) {this.data_generales.summary = v}
+  get created_at  ()  {return this.data_generales.created_at}
+  set created_at  (v) {this.data_generales.created_at = v}
+  get updated_at  ()  {return this.data_generales.updated_at}
+  set updated_at  (v) {this.data_generales.updated_at = v}
 
 }// fin class Projet
 
