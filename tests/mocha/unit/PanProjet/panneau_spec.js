@@ -52,9 +52,9 @@ describe('PanProjet', function () {
         expect(panneauScenier.id).to.equal('scenier')
       })
     })
-    describe('@parags_ids', function () {
+    describe('@pids', function () {
       it('existe', function(){
-        expect(panneauNotes.parags_ids).not.to.be.undefined
+        expect(panneauNotes.pids).not.to.be.undefined
       });
 
     });

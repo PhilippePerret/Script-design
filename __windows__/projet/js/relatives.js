@@ -60,22 +60,43 @@ class Relatives
     *   Méthodes fonctionnelle
     *
   *** --------------------------------------------------------------------- */
-  save ( callback )
-  {
-    const my = this
-    my.data.updated_at = moment().format()
-    my.store._data = my.data
-    my.store.save(false, (err) => {
-      if (err) { throw err }
-      my.modified = false
-      if ( callback ) { callback.call() }
-    } )
+
+  /**
+  * Sauve les données relatives de façon asynchrone
+  *
+  * @return {Promise}
+  *
+  * NOTE La méthode peut être appelée sans vérification de la modification
+  * des données, donc il faut le faire ici.
+  **/
+  save () {
+    if ( this.modified ) { return this.store.save() }
+    else { return Promise.resolve() }
   }
 
   get data ()
   {
-    this._data || ( this._data = this.store.data || this.defaultData )
+    this._data || this.loadData() // bon tant que c'est synchrone…
     return this._data
+  }
+  set data (v) { this._data = v }
+
+  /**
+  * Chargement (synchrone) des données des relatives.
+  *
+  * NOTE Pour le moment, il est synchrone, mais il se peut qu'il ne le soit
+  * plus dans quelques temps.
+  **/
+  loadData ()
+  {
+    if ( this.store.exists() )
+    {
+      this.store.loadSync()
+    }
+    else
+    {
+      this.data = this.defaultData
+    }
   }
 
   /**
@@ -94,7 +115,7 @@ class Relatives
 
   get store ()
   {
-    this._store || (this._store = new Store(this.relative_path, this.defaultData))
+    this._store || ( this._store = new Store(this.relative_path, this) )
     return this._store
   }
   get relative_path ()

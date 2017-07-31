@@ -1,6 +1,3 @@
-console.log('-> projet/js/main.js')
-
-
 global.path               = require('path')
 global.PROJET_JS_FOLDER   = path.resolve('./__windows__/projet/js')
 
@@ -8,10 +5,9 @@ const
     remote          = require('electron').remote
   , app             = remote.require('electron').app
   , APP_PATH        = app.getAppPath()
-  , CONSTANTS_PATH  = path.join(APP_PATH,'lib','constants.js')
   , ipc             = require('electron').ipcRenderer
   , requirejs       = require('requirejs')
-  , C               = require(CONSTANTS_PATH)
+  , C               = require(path.join(APP_PATH,'lib','constants.js'))
 
 
 requirejs(
@@ -111,5 +107,3 @@ requirejs(
   )// /setInterval
 
 })
-
-console.log('<- projet/js/main.js')

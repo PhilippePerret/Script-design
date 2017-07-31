@@ -3,8 +3,7 @@ const
   , {app}           = remote.require('electron')
   , path            = require('path')
   , requirejs       = require('requirejs')
-  , CONSTANTS_PATH  = path.join(app.getAppPath(),'lib','constants.js')
-  , C               = require(CONSTANTS_PATH)
+  , C               = require(path.join(app.getAppPath(),'lib','constants.js'))
 
 const ipc   = require('electron').ipcRenderer
 

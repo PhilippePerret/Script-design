@@ -8,9 +8,7 @@
   *   Despite its name, a <Parag> can own several real paragraphs.
   *
 *** --------------------------------------------------------------------- */
-let path        = require('path')
-  , moment      = require('moment')
-  , Kramdown    = require(path.resolve(path.join('.','lib','utils','kramdown_class.js')))
+let Kramdown    = require(path.resolve(path.join('.','lib','utils','kramdown_class.js')))
 
 class Parag
 {
@@ -76,28 +74,24 @@ class Parag
   **/
   static newID ()
   {
+    const curProjet = Projet.current
+
     // console.log("-> Parag.newID", this._lastID)
-    if( undefined === this._lastID)
-    {
-      this._lastID = undefined === Projet.current.data_generales.last_parag_id
-                      ? -1
-                      : Projet.current.data_generales.last_parag_id
-    }
+    if( undefined === this._lastID) { this._lastID = curProjet.data.last_parag_id }
     ++ this._lastID
     // On enregistre toujours le nouveau dernier ID dans les données
     // du projet
-    Projet.current.store_data.set({
-        updated_at: moment().format()
-      , last_parag_id: this._lastID
-      },
-      undefined,
-      true /* synchrone */
-    )
+    curProjet.data.last_parag_id = this._lastID
+    curProjet.data.save()
 
     /* Retourne le nouvel ID après l'avoir enregistré */
 
-    return Number(this._lastID)
+    return this._lastID
   }
+
+
+
+
 
 
   /** ---------------------------------------------------------------------
@@ -128,9 +122,41 @@ class Parag
     for(let p in data){if(data.hasOwnProperty(p)){this[p] = data[p]}}
     Parags.add(this) // (2)
 
-    this.loaded = data.loaded || false
+  }
+
+  /* - public - */
+
+  /**
+  * Sauve le parag dans le fichier à longueurs fixes.
+  *
+  * @return {Promise} Pour le chainage
+  **/
+  save ()
+  {
+    const my        = this
+    const openFlag  = fs.existsSync(my.parags_file_path) ? 'r+' : 'w'
+
+    return new Promise( (ok, ko) => {
+      fs.open(my.parags_file_path, openFlag, (err, fd) => {
+        if ( err ) throw err
+        fs.write(fd, my.data_infile, my.startPos, 'utf8', (err, sizew, writen) => {
+          if (err) { ko(err) }
+          else {
+            my.modified = false
+            ok()
+          }
+        })
+      })
+    })
 
   }
+
+  /**
+  * @return {String} Le path du fichier texte contenant tous les paragraphes
+  * en longueur fixe (appartient à tout le projet).
+  *
+  **/
+  get parags_file_path () { return Projet.current.parags_file_path }
 
   /** ---------------------------------------------------------------------
     *
@@ -148,7 +174,7 @@ class Parag
   get modified () { return this._modified || false }
   set modified (v){
     this._modified = v
-    this.panneau && ( this.panneau.modified = true )
+    this._modified && this.panneau && ( this.panneau.modified = true )
   }
   /** ---------------------------------------------------------------------
   *
@@ -171,7 +197,10 @@ class Parag
   }
   set ucontents (v){
     this._ucontents = v
-    this._contents  = JSON.parse(`"${v.trim()}"`)
+    v = v.replace(/\n/g, '[[RC]]')
+    v = JSON.parse(`"${v.trim()}"`)
+    v = v.replace(/\[\[RC\]\]/g,"\n")
+    this._contents  = v
   }
   get panneau_let ()  {
     if (undefined === this._panneau_let && this.panneau_id )
@@ -194,7 +223,7 @@ class Parag
 
 
   /** ---------------------------------------------------------------------
-  * Les propriétés volatiles calculées à la volée
+  * Les propriétés volatiles
   **/
   /**
   * Le contenu textuel du Parag. Il est transformé en Unicode pour être
@@ -208,11 +237,83 @@ class Parag
   *
   **/
   get contents    ()  { return this._contents    }
-  set contents    (v) { this._contents = v ; this.reset()  }
+  set contents    (v) { this._contents = v.replace(/\n/g,'<br>') ; this.reset()  }
   get panneau_id  ()  { return this._panneau_id   }
   set panneau_id  (v) { this._panneau_id = v      }
 
+  get loaded () {
+    (undefined === this._loaded) && ( this._loaded = 'string' == typeof(this.contents) )
+    return this._loaded
+  }
 
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES GÉNÉRALES
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * Méthode qui charge le paragraphe si nécessaire et retourne une promesse.
+  *
+  * Si le paragraphe est déjà chargé, on retourne tout de suite le résultat,
+  * sinon on utilise une promesse pour le charger.
+  *
+  * @return {Promise}
+  **/
+  PRload ()
+  {
+    const my = this
+
+    if ( my.loaded )
+    {
+      return Promise.resolve()
+    }
+    else
+    {
+      return my.PRloadInFile()
+        .then(my.PRparse.bind(my))
+        .catch((err) => { throw err })
+    }
+  }
+
+  /**
+  * Méthode affichant le parag dans son panneau et retournant une promesse
+  *
+  * NOTE Pour le moment, on en fait une méthode synchrone (dans un cycle de
+  * méthode asynchrone) mais ensuite on pourra imaginer que le paragraphe
+  * sera entièrement construit par ce biais, et donc qu'il faudra charger
+  * d'autres parags pour compléter l'affichage.
+  *
+  * @return {Promise}
+  *
+  **/
+  PRdisplay ()
+  {
+    const my = this
+    my.panneau.container.appendChild( my.mainDiv )
+    return Promise.resolve()
+  }
+
+  PRloadInFile ()
+  {
+    const my = this
+    return new Promise( (ok, notok) => {
+      let startPos = my.id * Parag.dataLengthInFile
+      let buffer   = new Buffer(Parag.dataLengthInFile)
+      fs.open(my.projet.parags_file_path, 'r', (err, fd) => {
+        fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
+          if ( err ) { throw err }
+          ok( buf.toString() )
+        })
+      })
+    })
+  }
+
+  PRparse ( code )
+  {
+    this.parse_data_infile( code )
+    return Promise.resolve()
+  }
 
   /**
   * Méthode qui initialise tout pour forcer le recalcul des valeurs,
@@ -226,6 +327,7 @@ class Parag
     delete this._contents_formated
     delete this._contents_simple
     delete this._duration_formated
+    delete this._loaded
     this.formated = false
   }
 
@@ -291,21 +393,6 @@ class Parag
   }
 
   /**
-  * Lit la valeur de la donnée du paragraphe dans le fichier et la
-  * retourne telle quelle.
-  *
-  * @return {String} La donnée brute, non parsée
-  **/
-  read ( callback )
-  {
-    // console.log('-> Parag#read')
-    this.after_read_callback = callback
-    this.parsed   = false
-    this.reading  = true
-    this.projet.readParags(this.id, this.parse_data_infile.bind(this))
-  }
-
-  /**
   * Méthode qui récupère la valeur brute de la donnée dans le fichier à
   * longueur fixe et qui la parse pour renseigner toutes les données du
   * paragraphe.
@@ -346,7 +433,6 @@ class Parag
     this.ucontents = this._ucontents // pour forcer this.contents
 
     this.parsed = true
-    this.loaded = true
 
     if ( 'function' == typeof this.after_read_callback )
     {
@@ -558,7 +644,7 @@ class Parag
         /*  Le parag n'est pas encore chargé, on met un contenu provisoire */
 
         missing_parags_list.push(pid)
-        return (new Parag({id:pid, loaded: false})).as_link(
+        return (new Parag({id:pid})).as_link(
           {title: 'Chargement du contenu en cours…'}
         )
 
@@ -567,7 +653,6 @@ class Parag
     c = c.trim()
     this._contents_formated = c
     this.formated           = true
-
 
     if ( missing_parags_list.length > 0 )
     {
@@ -642,7 +727,7 @@ class Parag
   updateTitleInLink ( panneau )
   {
     const my = this
-    let as = panneau.container.querySelectorsAll(`a.p-${my.id}`)
+    let as = panneau.container.querySelectorAll(`a.p-${my.id}`)
     as.forEach( a => a.setAttribute('title', my.contentsSimple) )
   }
 
@@ -932,7 +1017,7 @@ class Parag
     my.contents = my.newContents
     // pour forcer l'actualisation du contenu mis en forme
     delete my._contents_formated
-    my.setModified()
+    my.modified = true
     if ( my.sync_after_save )
     {
       my.sync( callback )
@@ -940,20 +1025,6 @@ class Parag
     }
     my.panneau.modified = true
   }
-
-  /**
-   * Pour marquer le parag modifié
-   */
-  setModified ()
-  {
-    this.updated_at = moment().format('YYMMDD')
-    this.modified = true
-  }
-  /** ---------------------------------------------------------------------
-    *   EVENTS Méthodes
-    *
-  *** --------------------------------------------------------------------- */
-
 
   /** ---------------------------------------------------------------------
     * DOM Methods
@@ -1231,7 +1302,7 @@ class Parag
     o.contentEditable = 'true'
     try
     {
-      realContents = this.contents.replace(/\n/g,'<br>')
+      realContents = this.contents.replace(/<br>/g,"\n")
     }
     catch(err)
     {
@@ -1294,12 +1365,20 @@ class Parag
 
   /**
   * @return {String} Le nouveau contenu (non formaté, donc pour enregistrement)
+  *
+  * L'idée est d'obtenir un texte où les retours-chariots sont tous remplacés
+  * par des <br>, pour ne pas avoir à les corriger lorsqu'on parse par JSON et
+  * pour ne pas avoir à ajouter les <br> chaque fois qu'on inscrit le parag
+  * dans la page.
   **/
   defineNewContents ()
   {
-    let c = this.divContents.innerHTML.replace(/<br>/g,"\n")
-    c = c.replace(/<div>/g,'')
-    c = c.replace(/<\/?div>/g,"\n").trim()
+    let c = this.divContents.innerHTML
+    c = c.replace(/<\/div>/g,'').trim()
+    c = c.replace(/<div>/g, "\n").trim()
+    c = c.replace(/\r/g, "\n")
+    c = c.replace(/\n\n+/g, "\n") // pas de double-retours
+    c = c.replace(/\n/g,'<br>') // on garde des BR pour simplifier
     this.newContents = c
   }
 

@@ -18,6 +18,7 @@ class Parags
     *   items     La liste (Array) de tous les parags du panneau
     *   _dict     Le dictionnaire avec en clé l'identifiant du parag et
     *             en valeur son instance Parag.
+    *             Note : c'est une Map()
   *** --------------------------------------------------------------------- */
 
   /**
@@ -35,7 +36,7 @@ class Parags
   **/
   instanceFromElement (odom)
   {
-    return this._dict[ Number(odom.getAttribute('data-id')) ]
+    return this._dict.get( Number(odom.getAttribute('data-id') ) )
   }
 
   /**
@@ -47,7 +48,8 @@ class Parags
   {
     this.selection.reset()
     this._items = []
-    this._dict  = {}
+    // this._dict  = {}
+    this._dict = new Map()
     this._ids   = []
     this._count = 0
     this.panneau.container.innerHTML = ''
@@ -173,9 +175,9 @@ class Parags
 
     argp.forEach( (iparag) => {
 
-      my._dict[iparag.id] = iparag
-      my._items.push(iparag)
-      my._ids.push(iparag.id)
+      my._dict  .set(iparag.id, iparag)
+      my._items .push(iparag)
+      my._ids   .push(iparag.id)
       ++ my._count
 
       options.display && displayParag(iparag)
@@ -275,7 +277,7 @@ class Parags
         my._items.push(iparag)
         my._ids.push(iparag.id)
       }
-      my._dict[iparag.id] = iparag
+      my._dict.set(iparag.id, iparag )
 
       /* Ajout d'une donnée relative pour ce parag */
 
@@ -297,6 +299,36 @@ class Parags
   }
 
   /**
+  * - public -
+  *
+  * Permet de boucler sur les parags comme dans un Array
+  *
+  * @return {Array} Liste des résultats obtenus sur chaque Parag
+  **/
+  map ( method ) {
+    const my = this
+    my._dict || my.reset()
+    let res = []
+    my._dict.forEach( (v, k) => {
+      res.push( method.call(null, v, k) )
+    })
+    return res
+  }
+
+  /**
+  * Méthode qui boucle sur chaque Parag du panneau en exécutant la méthode
+  * donnée en premier argument. Identique à `forEach` des Maps
+  **/
+  forEach ( method )
+  {
+    const my = this
+    my._dict || my.reset()
+    my._dict.forEach( (v, k) => { method.call(null, v, k)})
+  }
+
+
+
+  /**
   * Méthode qui reçoit l'argument envoyé aux principales fonctions et
   * qui retourne un Array d'instances Parags qui seront traités.
   * @param  {Array}  argp Une liste soit d'instances {Parag} soit d'ID
@@ -308,7 +340,7 @@ class Parags
     let my = this
     if ( ! Array.isArray(argp) ) { argp = [argp] }
     argp = argp.map( (p) => {
-      if ( 'number' == typeof p ) { return my._dict[p] }
+      if ( 'number' == typeof p ) { return my._dict.get(p) }
       else { return p }
     })
     return argp
@@ -381,9 +413,15 @@ class Parags
   * @return {Parag} Le premier parag du panneau
   **/
   get first () {
-    return this.count
-      ? this.instanceFromElement(this.domElements[0])
-      : null
+    const my = this
+    if ( my.panneau.actif )
+    {
+      return my.count
+        ? my.instanceFromElement(my.domElements[0])
+        : null
+    } else {
+      return Parags.get( my._ids[0] )
+    }
   }
   /**
   * @return {Parag} Le dernier parag du panneau
@@ -614,7 +652,7 @@ class Parags
         me._ids   = old_ids
         me._count = old_count
         me.panneau.container.insertBefore(iparag.mainDiv, nextO)
-        me._dict[iparag.id] = iparag
+        me._dict.set(iparag.id, iparag)
         iparag.data_relatives = old_relatifs
         me.projet.relatives.deCancellisable(canc)
       }
@@ -622,7 +660,7 @@ class Parags
       // Supprimer de la liste des items et du dictionnaire des Parags
       my._items .splice(i, 1)
       my._ids   .splice(i, 1)
-      delete my._dict[iparag.id]
+      my._dict  .delete(iparag.id)
       my._count --
 
       this.cancelFunctions.push(cancelF)
@@ -704,7 +742,7 @@ class Parags
   * @param {Number} parag_id Identifiant du paragraphe
   * @return {Parag} L'instance du paragraphe
   **/
-  get ( parag_id ) { return this._dict[parag_id] }
+  get ( parag_id ) { return this._dict.get(parag_id) }
 
   /** ---------------------------------------------------------------------
     *
@@ -803,7 +841,7 @@ class ParagsSelection
   resetList ()
   {
     this._count = 0
-    this._dict  = {}
+    this._dict  = new Map()
     this._items = []
     this._ids   = []
   }
@@ -849,7 +887,7 @@ class ParagsSelection
     }
     argp.select()
     this._items.push(argp)
-    this._dict[argp.id] = argp
+    this._dict.set(argp.id, argp)
     this._ids.push(argp.id)
     ++ this._count
     this.setCurrent( argp )
@@ -865,7 +903,7 @@ class ParagsSelection
       update_current = true
     }
     if( undefined === index) { index = this._ids.indexOf(argp.id) }
-    delete this._dict[argp.id]
+    this._dict  .delete(argp.id)
     this._items .splice(index, 1)
     this._ids   .splice(index, 1)
     argp.deselect()

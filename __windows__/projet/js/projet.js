@@ -8,16 +8,6 @@
   ----------
 
 */
-// let
-//       fs      = require('fs')
-//     , moment  = require('moment')
-// moment.locale('fr')
-
-// log, DOM et Select sont utiles
-
-  //   C.LOG_MODULE_PATH
-  // , C.DOM_MODULE_PATH     // => DOM
-  // , C.SELECT_MODULE_PATH  // => Select
 
 /** ---------------------------------------------------------------------
   *
@@ -100,7 +90,7 @@ class Projet
   static load (data)
   {
     this.current = new Projet(data.projet_id)
-    this.current.load.bind(this.current)()
+    this.current.prepare()
   }
 
   /**
@@ -113,10 +103,9 @@ class Projet
   static activatePanneauByTabulator ( keys )
   {
     const curProj = this.current
-    // console.log('-> loadPanneauByTabulator avec:', keys)
     if ( keys.length == 1 )
     {
-      curProj.activatePanneau(keys[0])
+      activatePanneau(keys[0]) // handy méthode
     }
     else
     {
@@ -195,7 +184,7 @@ class Projet
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
       my.panneau(pan_id).modified && ( mod = true )
     })
-    this.modified = mod // changera l'indicateur de sauvegarde
+    my.modified = mod // changera l'indicateur de sauvegarde
   }
 
   /* --- publiques --- */
@@ -210,17 +199,12 @@ class Projet
   * Note : ce sont les données qui s'affichent toujours en premier, pour
   * le moment.
   **/
-  load ()
+  prepare ()
   {
-
-    this.set_title()
-    this.set_authors()
-    this.set_summary()
-    this.set_created_at()
-    this.set_updated_at()
-
-    this.observeEditableFields()
-    this.options.load(this.prepareSuivantOptions.bind(this))
+    const my = this
+    my.current_panneau.PRactivate()
+    my.observeEditableFields()
+    my.options.load(my.prepareSuivantOptions.bind(my))
   }
 
   /** ---------------------------------------------------------------------
@@ -255,7 +239,14 @@ class Projet
     // Pour la transition de Projet.panneaux à projet.panneaux
     my._panneaux = {}
     Projet.PANNEAU_LIST.forEach( (panid) => {
-      my._panneaux[panid] = new PanProjet(panid, my)
+      if ( panid === 'data')
+      {
+        my._panneaux[panid] = new PanData(my)
+      }
+      else
+      {
+        my._panneaux[panid] = new PanProjet(panid, my)
+      }
     })
   }
 
@@ -356,13 +347,13 @@ class Projet
   **/
   prepareSuivantOptions ()
   {
-    console.log('-> Projet#prepareSuivantOptions')
+    // console.log('-> Projet#prepareSuivantOptions')
     if ( this.option('autosave') )
     {
       console.log('   * activation de l’autosave')
       this.options.activateAutosave()
     }
-    console.log('<- Projet#prepareSuivantOptions')
+    // console.log('<- Projet#prepareSuivantOptions')
   }
 
   /**
@@ -377,7 +368,6 @@ class Projet
   /**
   * Sauve tout
   * ----------
-  * Pour le moment, ça ne sauve que les panneaux et les relatives.
   *
   * Noter que l'appel de la sauvegarde des relatives et le check du nouvel
   * état du projet est inutile puisque ces deux méthodes sont appelées à
@@ -388,81 +378,50 @@ class Projet
   saveAll ( callback )
   {
     const my = this
-
-    console.log("-> <#Projet %s>#saveAll()")
-
     my.saving = true
     my.saved  = false
-
-    /*- Sauvegarde des données du projet (synchrone) -*/
-
-    // my.saveData()
-    // console.log("Après saveData")
-
     /*- Sauvegarde de tous les panneaux modifiés -*/
-
-    my.saveEachPanneau( () => {
-
-      console.log("callback de la sauvegarde des panneaux.")
-
+    return my.saveAllPanneaux()
       /*- Sauvegarde de tous les parags -*/
-
-      this.saveParags( () => {
-
-        console.log("Callback de la sauvegarde des paragraphes.")
-
+      .then( my.saveParags.bind(my) )
+      .then( my.saveRelatives.bind(my) )
+      .then( () => {
         my.saving = false
         my.saved  = true
-
-        callback && callback.call()
-
       })
+      .catch( (err) => { throw err } )
 
+  }
+
+
+  /**
+  * Sauvegarde de tous les panneaux modifiés (et seulement les panneaux
+  * modifiés, sauf si +all+ est true)
+  *
+  * @return {Promise}
+  **/
+  saveAllPanneaux ( all )
+  {
+    const my = this
+    let panos_modified = []
+    Projet.PANNEAU_LIST.forEach( (pan_id) => {
+      ( all || my.panneau(pan_id)._modified ) && panos_modified.push( my.panneau(pan_id) )
+      // Attention = si on met une ligne de code avant ce ( all || ... ) il
+      // faut impérativement la terminer par un ';' pour que JS ne croie pas
+      // qu'il s'agit d'une fonction
     })
-
-    console.log("<- <#Projet %s>#saveAll()")
-
+    return Promise.all( panos_modified.map( p => { return p.save.bind(p).call() } ) )
   }
 
-  saveData ()
+  /**
+  * Raccourci pour l'enregistrement des relatives
+  *
+  * @return {Promise}
+  **/
+  saveRelatives ()
   {
-    const my = this
-
-    my.store_data.save(true)
+    return this.relatives.save.bind(this.relatives).call()
   }
-
-  saveEachPanneau ( callback )
-  {
-    const my = this
-    let pano = null
-
-    if ( undefined === my.panneaux2save )
-    {
-      my.panneaux2save = []
-      Projet.PANNEAU_LIST.forEach( (pan_id) => {
-        my.panneau(pan_id)._modified && my.panneaux2save.push( my.panneau(pan_id) )
-      })
-    }
-
-    if ( pano = my.panneaux2save.shift() )
-    {
-
-      /*- On sauve le panneau -*/
-
-      pano.save.bind(pano, my.saveEachPanneau.bind(my, callback) )
-
-    }
-    else
-    {
-
-      /*= Tous les panneaux modifiés ont été enregistrés =*/
-
-      callback && callback.call()
-
-    }
-
-  }
-
 
   /** ---------------------------------------------------------------------
     *
@@ -473,186 +432,26 @@ class Projet
     *
   *** --------------------------------------------------------------------- */
 
-  saveParags (callback )
-  {
-    this.writeParags(undefined, callback)
-  }
   /**
-  * Main méthode appelée pour sauver les paragraphes dans le fichier de
-  * données des paragraphes.
-  * La méthode prend soit la liste +parag_list+ soit relève tous les paragraphes
-  * qui ont été modifiés.
+  * Enregistre tous les paragraphes modifiés
   *
-  * Après l'enregistrement, la méthode +callback+, si elle est spécifiée,
-  * est appelée.
-  **/
-  writeParags (parag_list, callback)
-  {
-    const my = this
-    my.saving = true
-    my.saved  = false
-    my.saved_parags_count = 0
-
-    if ( ! parag_list )
-    {
-      my.defineListeParagsToSave()
-    }
-    else
-    {
-      my.liste_parags_to_save = parag_list
-    }
-    // console.log("Liste des paragraphes à sauver", this.liste_parags_to_save)
-
-    my.methode_after_saving = callback // même si non défini
-
-    const openFlag = fs.existsSync(my.parags_file_path) ? 'r+' : 'w'
-
-    fs.open(my.parags_file_path, openFlag, (err, filedescriptor) => {
-      if ( err ) {
-        console.log("Une erreur est survenue, je dois renoncer à l'enregistrement :", err)
-        throw err
-      }
-      my.writeNextParag(filedescriptor)
-    })
-
-  }
-  /**
-  * Méthode de boucle qui procède à l'écriture du paragraphe courant de la
-  * liste this.liste_parags_to_save, soit en termine avec l'enregistrement
+  * @param {Boolean} all  Si true, on enregistre tous les parags
   *
+  * @return {Promise} Pour pouvoir chainer l'enregistrement
   **/
-  writeNextParag (fd)
+  saveParags ( all )
   {
-    const my = this
-    let iparag = my.liste_parags_to_save.shift()
-    if ( undefined !== iparag )
+    let modified_parags = []
+    for (let pid in Parags.items )
     {
-      if ('number' === typeof iparag) { iparag = Parags.get(iparag) }
-      my.writeParag(fd, iparag)
-    }
-    else
-    {
-      // console.log("=== Tous les paragraphes ont été sauvés. ===")
-
-      /*- On appelle le callback -*/
-
-      my.methode_after_saving && my.methode_after_saving.call()
-    }
-  }
-
-
-  writeParag( fd, iparag )
-  {
-    const my = this
-    fs.write(fd, iparag.data_infile, iparag.startPos, 'utf8', (err, sizew, writen) => {
-      if (err){ throw err }
-      iparag.modified = false
-      my.saved_parags_count += 1
-      // console.log("Longueur copiée dans le fichier", sizew)
-      // On passe au paragraphe suivant
-      my.writeNextParag(fd)
-    })
-  }
-
-  /**
-  * Méthode qui place dans this.liste_parags_to_save et @return la liste
-  * des paragraphes à sauver, c'est-à-dire ceux qui ont été modifiés.
-  **/
-  defineListeParagsToSave ()
-  {
-    // let arr = this.items.filter( p => { return p._modified === true })
-    const my = this
-    let arr = []
-      , p, pid
-    for ( pid = 0 ; pid <= Parag._lastID ; ++pid )
-    {
-      if ( p = Parags.get(pid) )
-      {
-        if ( p._modified === true ) { arr.push( p ) }
+      if ( Parags.items.hasOwnProperty(pid) ) {
+        let parag = Parags.get(pid) ; // ATTENTION ";" obligatoire !
+        ( all || parag.modified ) && ( modified_parags.push( parag ) )
       }
     }
-    my.liste_parags_to_save = arr
-    return arr
+    return Promise.all( modified_parags.map( p => { return p.save() } ))
   }
 
-  // ---------------------------------------------------------------------
-  //  MÉTHODES DE LECTURE DES PARAGRAPHES
-
-  /**
-  * Méthode principale qui charge la liste des parags définis dans
-  * +ids+, en fait des instances ou les renseigne en lisant le fichier
-  * de données, puis appelle la méthode +callback+
-  *
-  * @param {Array} ids Liste des identifiants à charger (ou un seul)
-  * @param {Function} callback  La méthode à appeler à la fin.
-  **/
-  readParags ( ids, callback )
-  {
-    // console.log('-> Projet#readParags')
-    const my = this
-
-    my.loading = true
-    my.loaded  = false
-
-    if ('number' === typeof ids) { ids = [ids]}
-    my.list_parags_to_read  = ids
-    my.after_reading_parags = callback
-    fs.open(my.parags_file_path, 'r', (err, fd) => {
-      if ( err ) { throw err }
-      my.readNextParag(fd)
-    })
-  }
-
-  /**
-  * Méthode fonctionnelle, utilisée par `readParags` ci-dessus, qui lit
-  * un paragraphe dans le fichier de données et le parse.
-  **/
-  readNextParag (fd)
-  {
-    const my = this
-    let parag_id = my.list_parags_to_read.shift()
-    if ( undefined !== parag_id )
-    {
-      my.readParag( fd, parag_id )
-    }
-    else
-    {
-      // console.log("J'ai fini de lire les paragraphes, je peux continuer.")
-      my.loading = false
-      my.loaded  = true   // sauf si erreur
-      if ( 'function' === typeof my.after_reading_parags )
-      {
-        my.after_reading_parags.call()
-      }
-    }
-  }
-
-  /**
-  * Lit les données du paragraphe dans le fichier de données
-  *
-  * La méthode appelle ensuite la méthode qui parse la donnée pour en
-  * faire une vraie instance Parag
-  **/
-  readParag (fd, pid)
-  {
-    const my = this
-    let startPos = pid * Parag.dataLengthInFile
-    let buffer   = new Buffer(Parag.dataLengthInFile)
-    fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
-      if ( err ) { throw err }
-      my.parseParag(fd, pid, buf.toString() )
-    })
-  }
-  parseParag( fd, pid, rawdata )
-  {
-    const my = this
-    let parag = Parags.get(pid)
-    parag || ( parag = new Parag({id: pid}) )
-    parag.parse_data_infile( rawdata )
-    // On peut poursuivre en s'occupant du paragraphe suivant, ou en
-    // poursuivant avec la méthode de callback
-    my.readNextParag(fd)
-  }
 
   /**
   * Méthode appelée quand on change de donnée par l'interface
@@ -661,7 +460,7 @@ class Projet
   {
     let
           prop = o.id // par exemple 'authors' ou 'title'
-        , newValue = o.innerHTML.replace(/<br>/,"\n").trim()
+        , newValue = o.innerHTML.trim()
 
     // Traitement des valeurs pour certains champs spéciaux
     switch(prop)
@@ -671,10 +470,8 @@ class Projet
         break
     }
     // On enregistre la donnée et on l'actualise dans l'affichage
-    let d2u = { updated_at: moment().format() }
-    d2u[prop] = newValue
-    this.store_data.set(d2u)
-    this[`set_${prop}`]()
+    this.data[prop] = newValue // dans PanData (panneau('data'))
+    this[`set_${prop}`](newValue)
     this.set_updated_at()
   }
 
@@ -700,6 +497,16 @@ class Projet
     this._ui || ( this._ui = new ProjetUI(this) )
     return this._ui
   }
+  /**
+  * @property {PanData} Le panneau 'data', qui s'occupe des données
+  * générales du projet.
+  **/
+  get data ()
+  {
+    this._data || ( this._data = this.panneau('data') )
+    return this._data
+  }
+
   // ----------------- OPTIONS ---------------------
 
   /**
@@ -737,17 +544,20 @@ class Projet
   *
   **/
   set_title (v) {
-    this.title = v
+    v || ( v = "Projet sans titre")
+    if ( v != this.data.title ) this.data.title = v
     DOM.setTitle(v)
     DOM.inner('title', v)
   }
   set_authors (v) {
-    this.authors = v
-    DOM.inner('authors', v.join(', '))
+    v || ( v = ['pas d’auteur'])
+    if ( v != this.data.authors ) this.data.authors = v
+    DOM.inner('authors', (v||[]).join(', '))
   }
   set_summary (v) {
-    this.summary = v
-    DOM.inner('summary', v.split("\n").join('<br>'))
+    v || ( v = 'Projet sans résumé' )
+    if ( v != this.data.summary ) this.data.summary = v
+    DOM.inner('summary', (v||'').split("\n").join('<br>'))
   }
   set_created_at(){
     let c = moment(this.created_at)
@@ -756,12 +566,6 @@ class Projet
   set_updated_at(){
     let c = moment(this.updated_at)
     DOM.inner('updated_at', `${c.format('LLL')} (${c.fromNow()})`)
-  }
-
-  // Les différents stores du projet
-  get store_data        () {
-    if(!this.id){throw new Error("Impossible de récupérer le fichier data : id est indéfini")}
-    return new Store(`projets/${this.id}/data`)
   }
 
   /**
@@ -785,14 +589,13 @@ class Projet
     return this._folder
   }
 
-  // Les données remontées des différents stores
-  get data_generales    () { return this.store_data.data }
+  // Raccourcis
+  get title       ()  {return this.data.title  || "Projet sans titre"}
+  get authors     ()  {return this.data.authors || [] }
+  get summary     ()  {return this.data.summary || '[Résumé à définir]'}
+  get created_at  ()  {return this.data.created_at}
+  get updated_at  ()  {return this.data.updated_at}
 
-  get title       (){ return this.data_generales.title  || "Projet sans titre" }
-  get authors     (){ return this.data_generales.authors || [] }
-  get summary     (){ return this.data_generales.summary || '[Résumé à définir]'}
-  get created_at  (){ return this.data_generales.created_at}
-  get updated_at  (){ return this.data_generales.updated_at}
 
 }// fin class Projet
 
