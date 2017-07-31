@@ -1,6 +1,8 @@
 require('../../spec_helper.js')
 
-describe('PanProjet', function () {
+let pan = null
+
+describe.only('PanProjet', function () {
   describe('Instanciation', function () {
     it("répond à constructor", function(){
       expect(panneauSynopsis).to.respondsTo('constructor')
@@ -52,12 +54,6 @@ describe('PanProjet', function () {
         expect(panneauScenier.id).to.equal('scenier')
       })
     })
-    describe('@pids', function () {
-      it('existe', function(){
-        expect(panneauNotes.pids).not.to.be.undefined
-      });
-
-    });
   })
   describe('Méthodes', function () {
     describe('#add', function () {
@@ -68,17 +64,16 @@ describe('PanProjet', function () {
         expect(()=>{panneauNotes.add()}).to.throw("Il faut fournir un Parag en premier argument de `add`.")
         expect(()=>{panneauNotes.add(12)}).to.throw("Il faut fournir un Parag en premier argument de `add`.")
       })
-      it("ajoute le parag à la liste des parags_ids du panneau", function(){
+      it("ajoute le parag à la liste des parags._ids du panneau", function(){
         panneauNotes.parags.reset()
         panneauNotes.add(parag6)
-        expect(panneauNotes.parags_ids).to.deep.equal([6])
+        expect(panneauNotes.parags._ids).to.deep.equal([6])
       })
-      it("place le Parag à l'endroit voulu avec l'option `before`", function(done){
+      it("place le Parag à l'endroit voulu avec l'option `before`", function(){
         panneauNotes.parags.reset()
         panneauNotes.add([parag1, parag2, parag3, parag4])
         panneauNotes.add(parag5, {before:parag2})
-        expect(panneauNotes.parags_ids).to.deep.equal([1, 5, 2, 3, 4])
-        done()
+        expect(panneauNotes.parags._ids).to.deep.equal([1, 5, 2, 3, 4])
       })
       it("marque le panneau modifié", function(){
         panneauManuscrit._modified = false
@@ -91,35 +86,60 @@ describe('PanProjet', function () {
       it("répond", function(){
         expect(panneauScenier).to.respondsTo('save')
       })
-    }) // #save
-    describe('#activate', function () {
-      it("répond", function(){
-        expect(panneauNotes).to.respondsTo('activate')
+      it("retourne une Promise si le panneau est modifié", function(){
+        panneauScenier._modified = true
+        expect(panneauScenier.save()).to.be.instanceOf(Promise)
       })
-      it("charge le panneau s'il n'est pas encore chargé", function(done){
+      it("retourne une Promise même si le panneau N'est PAS modifié", function(){
+        panneauScenier._modified = false
+        expect(panneauScenier.save()).to.be.instanceOf(Promise)
+      })
+      it("enregistre les données du panneau de façon asynchrone", function(){
+        this.skip()
+      })
+      it("remet le modified à false", function(){
+        this.skip()
+      })
+    }) // #save
+
+
+    describe('#PRactivate', function () {
+      it("répond", function(){
+        expect(panneauNotes).to.respondsTo('PRactivate')
+      })
+      it("retourne une promise", function(){
+        expect(panneauNotes.PRactivate()).to.be.instanceOf(Promise)
+      })
+      it("charge le panneau s'il n'est pas encore chargé", function(){
         // ==== ON CRÉE DES PARAGRAPHES DANS LE SCÉNIER ===
         let parags = [parag0, parag1, parag2, parag4, parag8]
         panneauScenier.add(parags)
         parags.forEach( p => p._modified = true)
         panneauScenier.modified = true
-        projet.saveAll( () => {
+        pan = new PanProjet('scenier', projet)
+        return projet.saveAll()
           // ========= PRÉ-TEST ========
-          resetTests()
-          // ======> TEST <========
-          let pan = new PanProjet('scenier', projet)
-          expect(pan.loaded).to.be.false
-          expect(pan.parags_ids).to.be.undefined
-          pan.activate( () => {
+          .then( () => {
+            resetTests()
+            // ======> TEST <========
+            expect(pan.loaded).to.be.false
+            expect(pan.parags_ids).to.be.undefined
+            return Promise.resolve()
+          })
+
+          // =======> TEST <=========
+          .then(pan.PRactivate.bind(pan))
+
+          // ======== VÉRIFICATIONS =========
+          .then( () => {
             expect(pan.loaded, `loaded du panneau '${pan.id}' devrait être true`).to.be.true
             expect(pan.actif, `actif du panneau '${pan.id}' devrait être true`).to.be.true
             expect(pan.section, `Le panneau ${pan.id} devrait avoir la classe CSS 'actif'`).to.haveClass('actif')
-            expect(pan.parags_ids, `parags_ids du paneau ${pan.id} ne devrait pas être undefined`).not.to.be.undefined
-            expect(pan.parags_ids, `parags_ids du panneau ${pan.id} devrait être une liste`).to.be.instanceOf(Array)
-            done()
+            expect(pan.parags._ids, `parags._ids du paneau ${pan.id} ne devrait pas être undefined`).not.to.be.undefined
+            expect(pan.parags._ids, `parags._ids du panneau ${pan.id} devrait être une liste`).to.be.instanceOf(Array)
           })
 
-        })
       })
-    }) // #activate
-  });
+    })
+  }) // #activate
 })

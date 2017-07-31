@@ -242,7 +242,8 @@ class PanProjet
    */
   PRsetDisplayed ()
   {
-    this.displayed = true
+    this.displayed  = true
+    this.built      = true
     return Promise.resolve()
   }
 
@@ -403,11 +404,14 @@ class PanProjet
   /**
   * Procède à la sauvegarde des données actuelles du panneau
   **/
-  save ( callback )
+  save ()
   {
     const my = this
     // console.log("-> save")
-    if ( ! my.modified ) { return UILog(`Panneau ${my.projet.id}/${my.id} non modifié.`)}
+    if ( ! my.modified ) {
+      UILog(`Panneau ${my.projet.id}/${my.id} non modifié.`)
+      return Promise.resolve()
+    }
 
     // La sauvegarde est asynchrone, on doit donc attendre qu'elle soit
     // faite pour poursuivre.

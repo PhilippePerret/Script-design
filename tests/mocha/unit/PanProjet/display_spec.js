@@ -6,44 +6,37 @@ describe('Affichage des panneaux', function () {
 
   describe('Méthodes PanProjet', function () {
 
-    describe('#displayParags', function () {
-      before(function () {
-        resetTests({nombre_parags: 0})
-      });
+    describe('PRactivate', function () {
       it("répond", function(){
-        expect(panneauNotes).to.respondsTo('displayParags')
+        expect(panneauNotes).to.respondsTo('PRactivate')
       })
-    }) // /#displayParags
+
+    })
 
   }) // Méthodes PanProjet
 
 
   describe('construction d’un panneau après chargement', function () {
-    before(function (done) {
+    before(function () {
       resetTests({nombre_parags: 10})
       panneauNotes.parags.add([parag2, parag0, parag5, parag6])
       panneauNotes.modified = true
-      projet.saveAll(done)
+      return projet.saveAll()
     })
 
     it("le panneau n'est pas encore construit", function(){
-
       expect(panneauNotes.container.childNodes.length).to.equal(0)
       expect(panneauNotes.built, 'la marque "built" du panneau Notes est à false').to.be.false
     })
 
-    it("on demande la construction du panneau en l'activant", function(done){
+    it("on demande la construction du panneau en l'activant", function(){
 
-      panneauNotes.activate( () => {
-
-        expect(panneauNotes.built, "la marque 'built' du panneau Notes devrait être à true").to.be.true
-        expect(panneauNotes.container.childNodes.length).to.equal(4)
-        done()
-
-      })
-
+      return panneauNotes.PRactivate()
+        .then( () => {
+          expect(panneauNotes.built, "la marque 'built' du panneau Notes devrait être à true").to.be.true
+          expect(panneauNotes.container.childNodes.length).to.equal(4)
+        })
     })
-
   })
 })
 describe('Chargement d’un projet avec des parags', function () {
@@ -53,25 +46,25 @@ describe('Chargement d’un projet avec des parags', function () {
     Pour ce faire, on crée un autre projet que le projet utilisé pour tous
     les tests.
   */
-  before(function (done) {
+  before(function () {
     resetTests()
 
     let p = Projet.new('autreProjetTest')
+    this.autreProj = p
     p.panneau('data').modified = true
     p.panneau('notes').add([parag0, parag2, parag10])
     p.panneau('scenier').add([parag15, parag9, parag5])
     p.panneau('manuscrit').add([parag11, parag1])
-    p.saveAll( done )
-
-    this.autreProj = p
+    return p.saveAll()
   })
 
   it("possède bien les fichiers voulus", function(){
     const p = this.autreProj
     expect(this.autreProj.id).to.equal('autreProjetTest')
-    p.set_title("Le nouveau projet provisoire")
-    p.set_authors(["Phil", "Marion"])
-    p.set_symmary("Le résumé du projet provisoire, pour voir l'affichage.")
+    p.data.title    = "Le nouveau projet provisoire"
+    p.data.authors  = ["Phil", "Marion"]
+    p.data.symmary  = "Le résumé du projet provisoire, pour voir l'affichage."
+    let stores = new Map()
     stores.set(p.store_data, 'data')
     stores.set(p.panneau('notes').store, 'données du panneau Notes')
     stores.set(p.panneau('scenier').store, 'données du panneau Scénier')
