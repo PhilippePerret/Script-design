@@ -6,7 +6,7 @@
 
 const cons = console.log.bind(console)
 
-describe.only('Activation d’un panneau', function () {
+describe('Activation d’un panneau', function () {
 
   describe('Méthodes PanProjet utiles', function () {
 

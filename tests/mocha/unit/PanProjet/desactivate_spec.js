@@ -5,7 +5,7 @@
 */
 
 
-describe.only('Désactivation d’un panneau', function () {
+describe('Désactivation d’un panneau', function () {
 
   describe('#PRdesactivate', function () {
     it("répond", function(){

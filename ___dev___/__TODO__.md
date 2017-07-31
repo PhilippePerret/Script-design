@@ -1,4 +1,6 @@
-
+* Poursuivre la vérification de tous les tests
+  J'en suis au dossier Parag
+  
 * Soit le parag 19
   Il est demandé sa synchronisation
   On crée le #20 dans le panneau Notes

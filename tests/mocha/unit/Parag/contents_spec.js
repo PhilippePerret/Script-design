@@ -3,7 +3,7 @@
 */
 require('../../spec_helper.js')
 
-describe('Contenu de Parag', function () {
+describe.only('Contenu de Parag', function () {
   describe('méthode', function () {
 
 
@@ -19,19 +19,30 @@ describe('Contenu de Parag', function () {
         expect(parag1._contents_formated).to.equal("<p>Un <a href=\"http://www.atelier-icare.net\">lien vers l&#39;atelier</a> qui fonctionne.</p>")
         // expect(parag1.contents).
       })
-      it("transforme les marques de formatage markdown", function(){
+      it("transforme les marques de formatage markdown (italique et graisse)", function(){
         parag1.contents = "Un texte *en italique* et **en gras**."
         parag1.formateContents()
         expect(parag1._contents_formated).to.equal('<p>Un texte <em>en italique</em> et <strong>en gras</strong>.</p>')
       })
+      it("transforme les titres markdown dièse en mettant l'id", function(){
+        parag1.contents = "# Ceci est un titre {#id-du-titre}"
+        parag1.formateContents()
+        expect(parag1._contents_formated).to.equal('<h1 id="id-du-titre">Ceci est un titre</h1>')
+      })
 
       it("transforme les balises PARAG#xxx", function(done){
+
+        // TODO ICI, S'ARRANGER POUR QUE LE PARAG #3 NE SOIT PAS
+        // CHARGÉ. IL FAUDRAIT EN FAIT UNE MÉTHODE QUI PERMETTE DE
+        // DÉCHARGER UN PARAG POUR LES TESTS
+        
         let t = "Un lien vers PARAG#3 pour voir !"
         parag2.contents = t
         // ==========> TEST <==========
         parag2.formateContents()
         // ========== VÉRIFICATION ===========
         let val = parag2._contents_formated
+
 
         // let texp = '<p>Un lien vers <a href="#" onclick="return showParag(3)" class=\"p-al p-3\" title=\"Contenu du paragraphe #3\">#3</a> pour voir !</p>'
         let texp = '<p>Un lien vers <a href="#" onclick="return showParag(3)" class=\"p-al p-3\" title=\"Chargement du contenu en cours…\">#3</a> pour voir !</p>'

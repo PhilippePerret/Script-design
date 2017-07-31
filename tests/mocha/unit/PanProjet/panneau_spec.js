@@ -2,7 +2,7 @@ require('../../spec_helper.js')
 
 let pan = null
 
-describe.only('PanProjet', function () {
+describe('PanProjet', function () {
   describe('Instanciation', function () {
     it("répond à constructor", function(){
       expect(panneauSynopsis).to.respondsTo('constructor')
@@ -94,11 +94,16 @@ describe.only('PanProjet', function () {
         panneauScenier._modified = false
         expect(panneauScenier.save()).to.be.instanceOf(Promise)
       })
-      it("enregistre les données du panneau de façon asynchrone", function(){
-        this.skip()
-      })
-      it("remet le modified à false", function(){
-        this.skip()
+      it("enregistre les données du panneau de façon asynchrone et remet modified à false", function(){
+        resetTests({nombre_parags:10})
+        expect(panneauNotes.store.exists()).to.be.false
+        panneauNotes.add([parag5, parag0, parag3])
+        panneauNotes.modified = true
+        return panneauNotes.save()
+          .then( () => {
+            expect(panneauNotes.store.exists()).to.be.true
+            expect(panneauNotes.modified).to.be.false
+          })
       })
     }) // #save
 
@@ -111,6 +116,7 @@ describe.only('PanProjet', function () {
         expect(panneauNotes.PRactivate()).to.be.instanceOf(Promise)
       })
       it("charge le panneau s'il n'est pas encore chargé", function(){
+        resetTests({nombre_parags:10})
         // ==== ON CRÉE DES PARAGRAPHES DANS LE SCÉNIER ===
         let parags = [parag0, parag1, parag2, parag4, parag8]
         panneauScenier.add(parags)
