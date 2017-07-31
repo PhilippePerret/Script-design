@@ -174,7 +174,7 @@ class Parag
   get modified () { return this._modified || false }
   set modified (v){
     this._modified = v
-    this.panneau && ( this.panneau.modified = true )
+    this._modified && this.panneau && ( this.panneau.modified = true )
   }
   /** ---------------------------------------------------------------------
   *
@@ -1017,7 +1017,7 @@ class Parag
     my.contents = my.newContents
     // pour forcer l'actualisation du contenu mis en forme
     delete my._contents_formated
-    my.setModified()
+    my.modified = true
     if ( my.sync_after_save )
     {
       my.sync( callback )
@@ -1025,20 +1025,6 @@ class Parag
     }
     my.panneau.modified = true
   }
-
-  /**
-   * Pour marquer le parag modifié
-   */
-  setModified ()
-  {
-    this.updated_at = moment().format('YYMMDD')
-    this.modified = true
-  }
-  /** ---------------------------------------------------------------------
-    *   EVENTS Méthodes
-    *
-  *** --------------------------------------------------------------------- */
-
 
   /** ---------------------------------------------------------------------
     * DOM Methods

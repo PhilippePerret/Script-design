@@ -371,6 +371,13 @@ class PanProjet
   set modified (v)
   {
     console.log("-> PanProjet#modified (panneau %s) avec la valeur %s", this.id, v)
+    // if ( v == true )
+    // {
+    //   try{throw new Error("Pour voir quand on met modified à true")}
+    //   catch(err){
+    //     console.log(err)
+    //   }
+    // }
     this._modified = !!v
     this.projet.modified = !!v
   }
@@ -384,22 +391,6 @@ class PanProjet
     DOM.removeClass(this.section, `modedblleft`)
     DOM.removeClass(this.section, `modedblright`)
   }
-
-  /** ---------------------------------------------------------------------
-    *
-    *   Raccourcis
-    *
-  *** --------------------------------------------------------------------- */
-  select          (e) { return this.parags.select(e)            }
-  deselect        (e) { return this.parags.deselect(e)          }
-  deselectAll     ()  { return this.parags.deselectAll()        }
-  selectNext      (e) { return this.parags.selectNext(e)        }
-  selectPrevious  (e) { return this.parags.selectPrevious(e)    }
-  moveCurrentUp   (e) { return this.parags.moveCurrentUp(e)     }
-  moveCurrentDown (e) { return this.parags.moveCurrentDown(e)   }
-  hasCurrent      (e) { return this.parags.hasCurrent()         }
-  removeCurrent   ()  { return this.parags.removeCurrent()      }
-  editCurrent     ()  { return this.parags.editCurrent()        }
 
   /** ---------------------------------------------------------------------
     *
@@ -518,11 +509,30 @@ class PanProjet
     return this._oneletter
   }
 
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *   Raccourcis pour les paragraphes
+    *
+  *** --------------------------------------------------------------------- */
+  select          (e) { return this.parags.select(e)            }
+  deselect        (e) { return this.parags.deselect(e)          }
+  deselectAll     ()  { return this.parags.deselectAll()        }
+  selectNext      (e) { return this.parags.selectNext(e)        }
+  selectPrevious  (e) { return this.parags.selectPrevious(e)    }
+  moveCurrentUp   (e) { return this.parags.moveCurrentUp(e)     }
+  moveCurrentDown (e) { return this.parags.moveCurrentDown(e)   }
+  hasCurrent      (e) { return this.parags.hasCurrent()         }
+  removeCurrent   ()  { return this.parags.removeCurrent()      }
+  editCurrent     ()  { return this.parags.editCurrent()        }
+
   /**
   * Marque tous les paragraphes comme non modifiés.
   * Cette méthode sert après l'enregistrement du panneau.
   **/
   setAllParagsUnmodified () { this.parags.setUnmodified('all') }
+
 
   /**
   * @return {Store} L'instance store qui va permettre d'enregistrer les
@@ -543,6 +553,8 @@ class PanProjet
     this._store_path || (this._store_path = path.join('projets',this.projet.id,this.name))
     return this._store_path
   }
+
+
 
 }// /fin class PanProjet
 
