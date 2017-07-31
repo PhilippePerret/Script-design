@@ -36,8 +36,7 @@ class Parags
   **/
   instanceFromElement (odom)
   {
-    // return this._dict[ Number(odom.getAttribute('data-id')) ]
-    this._dict.get( Number(odom.getAttribute('data-id') ) )
+    return this._dict.get( Number(odom.getAttribute('data-id') ) )
   }
 
   /**
@@ -414,9 +413,15 @@ class Parags
   * @return {Parag} Le premier parag du panneau
   **/
   get first () {
-    return this.count
-      ? this.instanceFromElement(this.domElements[0])
-      : null
+    const my = this
+    if ( my.panneau.actif )
+    {
+      return my.count
+        ? my.instanceFromElement(my.domElements[0])
+        : null
+    } else {
+      return Parags.get( my._ids[0] )
+    }
   }
   /**
   * @return {Parag} Le dernier parag du panneau

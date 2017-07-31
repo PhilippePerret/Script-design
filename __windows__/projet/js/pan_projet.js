@@ -370,16 +370,8 @@ class PanProjet
   get modified () { return this._modified || false }
   set modified (v)
   {
-    console.log("-> PanProjet#modified (panneau %s) avec la valeur %s", this.id, v)
-    // if ( v == true )
-    // {
-    //   try{throw new Error("Pour voir quand on met modified à true")}
-    //   catch(err){
-    //     console.log(err)
-    //   }
-    // }
-    this._modified = !!v
-    this.projet.modified = !!v
+    this._modified        = !!v
+    this._modified && (this.projet.modified  = !!v)
   }
 
   setModeDouble (cote)
