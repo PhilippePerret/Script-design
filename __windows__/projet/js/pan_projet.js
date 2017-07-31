@@ -433,7 +433,7 @@ class PanProjet
     // console.log(`-> PanProjet#save sauvegarde du panneau '${this.id}'`, this.data2save)
     // console.log("<- save"))
     my.store._data = my.data2save
-    my.store.save(false, my.onFinishSave.bind(my, callback) )
+    my.store.save(my.onFinishSave.bind(my, callback) )
     // console.log("<- PanProjet#save")
   }
   /**
@@ -515,7 +515,7 @@ class PanProjet
   **/
   get store ()
   {
-    this._store || (this._store = new Store(this.store_path, this.defaultData, this))
+    this._store || (this._store = new Store(this.store_path, this))
     return this._store
   }
 

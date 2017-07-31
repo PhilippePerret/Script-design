@@ -105,14 +105,7 @@ class Projet
     const curProj = this.current
     if ( keys.length == 1 )
     {
-      if ( keys[0] == 'data' )
-      {
-        alert("Je ne sais pas encore afficher le panneau des données.")
-      }
-      else
-      {
-        activatePanneau(keys[0]) // handy méthode
-      }
+      activatePanneau(keys[0]) // handy méthode
     }
     else
     {
@@ -251,7 +244,14 @@ class Projet
     // Pour la transition de Projet.panneaux à projet.panneaux
     my._panneaux = {}
     Projet.PANNEAU_LIST.forEach( (panid) => {
-      my._panneaux[panid] = new PanProjet(panid, my)
+      if ( panid === 'data')
+      {
+        my._panneaux[panid] = new PanData(my)
+      }
+      else
+      {
+        my._panneaux[panid] = new PanProjet(panid, my)
+      }
     })
   }
 
@@ -420,12 +420,12 @@ class Projet
 
   }
 
-  saveData ()
-  {
-    const my = this
-
-    my.store_data.save(true)
-  }
+  /**
+  * Sauve les données générales du film
+  *
+  * Rappel : `this.data` est le panneau 'data' de classe `PanData`
+  **/
+  saveData () { this.data.saveSync() }
 
   saveEachPanneau ( callback )
   {
@@ -570,88 +570,88 @@ class Projet
     my.liste_parags_to_save = arr
     return arr
   }
-
-  // ---------------------------------------------------------------------
-  //  MÉTHODES DE LECTURE DES PARAGRAPHES
-
-  /**
-  * Méthode principale qui charge la liste des parags définis dans
-  * +ids+, en fait des instances ou les renseigne en lisant le fichier
-  * de données, puis appelle la méthode +callback+
-  *
-  * @param {Array} ids Liste des identifiants à charger (ou un seul)
-  * @param {Function} callback  La méthode à appeler à la fin.
-  **/
-  readParags ( ids, callback )
-  {
-    // console.log('-> Projet#readParags')
-    const my = this
-
-    my.loading = true
-    my.loaded  = false
-
-    if ('number' === typeof ids) { ids = [ids]}
-    my.list_parags_to_read  = ids
-    my.after_reading_parags = callback
-    fs.open(my.parags_file_path, 'r', (err, fd) => {
-      if ( err ) { throw err }
-      my.readNextParag(fd)
-    })
-  }
-
-  /**
-  * Méthode fonctionnelle, utilisée par `readParags` ci-dessus, qui lit
-  * un paragraphe dans le fichier de données et le parse.
-  **/
-  readNextParag (fd)
-  {
-    const my = this
-    let parag_id = my.list_parags_to_read.shift()
-    if ( undefined !== parag_id )
-    {
-      my.readParag( fd, parag_id )
-    }
-    else
-    {
-      // console.log("J'ai fini de lire les paragraphes, je peux continuer.")
-      my.loading = false
-      my.loaded  = true   // sauf si erreur
-      if ( 'function' === typeof my.after_reading_parags )
-      {
-        my.after_reading_parags.call()
-      }
-    }
-  }
-
-  /**
-  * Lit les données du paragraphe dans le fichier de données
-  *
-  * La méthode appelle ensuite la méthode qui parse la donnée pour en
-  * faire une vraie instance Parag
-  *
-  * NOTE Doit devenir OBSOLÈTE avec l'utilisation des Promises
-  * (cf. Parag#PRload)
-  **/
-  readParag (fd, pid)
-  {
-    const my = this
-    let startPos = pid * Parag.dataLengthInFile
-    let buffer   = new Buffer(Parag.dataLengthInFile)
-    fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
-      if ( err ) { throw err }
-      my.parseParag(fd, pid, buf.toString() )
-    })
-  }
-  parseParag( fd, pid, rawdata )
-  {
-    const my = this
-    let parag = Parags.get(pid)
-    parag || ( parag = new Parag({id: pid}) )
-    parag.parse_data_infile( rawdata )
-    // On peut poursuivre en s'occupant du paragraphe suivant, ou en
-    // poursuivant avec la méthode de callback
-    my.readNextParag(fd)
-  }
+  //
+  // // ---------------------------------------------------------------------
+  // //  MÉTHODES DE LECTURE DES PARAGRAPHES
+  //
+  // /**
+  // * Méthode principale qui charge la liste des parags définis dans
+  // * +ids+, en fait des instances ou les renseigne en lisant le fichier
+  // * de données, puis appelle la méthode +callback+
+  // *
+  // * @param {Array} ids Liste des identifiants à charger (ou un seul)
+  // * @param {Function} callback  La méthode à appeler à la fin.
+  // **/
+  // readParags ( ids, callback )
+  // {
+  //   // console.log('-> Projet#readParags')
+  //   const my = this
+  //
+  //   my.loading = true
+  //   my.loaded  = false
+  //
+  //   if ('number' === typeof ids) { ids = [ids]}
+  //   my.list_parags_to_read  = ids
+  //   my.after_reading_parags = callback
+  //   fs.open(my.parags_file_path, 'r', (err, fd) => {
+  //     if ( err ) { throw err }
+  //     my.readNextParag(fd)
+  //   })
+  // }
+  //
+  // /**
+  // * Méthode fonctionnelle, utilisée par `readParags` ci-dessus, qui lit
+  // * un paragraphe dans le fichier de données et le parse.
+  // **/
+  // readNextParag (fd)
+  // {
+  //   const my = this
+  //   let parag_id = my.list_parags_to_read.shift()
+  //   if ( undefined !== parag_id )
+  //   {
+  //     my.readParag( fd, parag_id )
+  //   }
+  //   else
+  //   {
+  //     // console.log("J'ai fini de lire les paragraphes, je peux continuer.")
+  //     my.loading = false
+  //     my.loaded  = true   // sauf si erreur
+  //     if ( 'function' === typeof my.after_reading_parags )
+  //     {
+  //       my.after_reading_parags.call()
+  //     }
+  //   }
+  // }
+  //
+  // /**
+  // * Lit les données du paragraphe dans le fichier de données
+  // *
+  // * La méthode appelle ensuite la méthode qui parse la donnée pour en
+  // * faire une vraie instance Parag
+  // *
+  // * NOTE Doit devenir OBSOLÈTE avec l'utilisation des Promises
+  // * (cf. Parag#PRload)
+  // **/
+  // readParag (fd, pid)
+  // {
+  //   const my = this
+  //   let startPos = pid * Parag.dataLengthInFile
+  //   let buffer   = new Buffer(Parag.dataLengthInFile)
+  //   fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
+  //     if ( err ) { throw err }
+  //     my.parseParag(fd, pid, buf.toString() )
+  //   })
+  // }
+  // parseParag( fd, pid, rawdata )
+  // {
+  //   const my = this
+  //   let parag = Parags.get(pid)
+  //   parag || ( parag = new Parag({id: pid}) )
+  //   parag.parse_data_infile( rawdata )
+  //   // On peut poursuivre en s'occupant du paragraphe suivant, ou en
+  //   // poursuivant avec la méthode de callback
+  //   my.readNextParag(fd)
+  // }
 
   /**
   * Méthode appelée quand on change de donnée par l'interface
@@ -670,9 +670,7 @@ class Projet
         break
     }
     // On enregistre la donnée et on l'actualise dans l'affichage
-    let d2u = { updated_at: moment().format() }
-    d2u[prop] = newValue
-    this.store_data.set(d2u)
+    this.data[prop] = newValue // dans PanData (panneau('data'))
     this[`set_${prop}`]()
     this.set_updated_at()
   }
@@ -699,6 +697,12 @@ class Projet
     this._ui || ( this._ui = new ProjetUI(this) )
     return this._ui
   }
+  get data ()
+  {
+    this._data || ( this._data = this.panneau('data') )
+    return this._data
+  }
+
   // ----------------- OPTIONS ---------------------
 
   /**
@@ -757,12 +761,6 @@ class Projet
     DOM.inner('updated_at', `${c.format('LLL')} (${c.fromNow()})`)
   }
 
-  // Les différents stores du projet
-  get store_data        () {
-    if(!this.id){throw new Error("Impossible de récupérer le fichier data : id est indéfini")}
-    return new Store(`projets/${this.id}/data`)
-  }
-
   /**
   * @return {String} Le path du fichier TEXT contenant tous les paragraphes
   * en longueur fixe.
@@ -784,19 +782,13 @@ class Projet
     return this._folder
   }
 
-  // Les données remontées des différents stores
-  get data_generales    () { return this.store_data.data }
+  // Raccourcis
+  get title       ()  {return this.data.title  || "Projet sans titre"}
+  get authors     ()  {return this.data.authors || [] }
+  get summary     ()  {return this.data.summary || '[Résumé à définir]'}
+  get created_at  ()  {return this.data.created_at}
+  get updated_at  ()  {return this.data.updated_at}
 
-  get title       ()  {return this.data_generales.title  || "Projet sans titre"}
-  set title       (v) {this.data_generales.title = v}
-  get authors     ()  {return this.data_generales.authors || [] }
-  set authors     (v) {this.data_generales.authors = v}
-  get summary     ()  {return this.data_generales.summary || '[Résumé à définir]'}
-  set summary     (v) {this.data_generales.summary = v}
-  get created_at  ()  {return this.data_generales.created_at}
-  set created_at  (v) {this.data_generales.created_at = v}
-  get updated_at  ()  {return this.data_generales.updated_at}
-  set updated_at  (v) {this.data_generales.updated_at = v}
 
 }// fin class Projet
 

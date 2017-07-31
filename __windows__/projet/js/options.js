@@ -130,8 +130,7 @@ class ProjetOptions
   **/
   save ()
   {
-    this.store_options._data = this.data
-    this.store_options.save()
+    this.store_options.saveSync()
   }
 
   /**
@@ -146,13 +145,13 @@ class ProjetOptions
   {
     if ( fs.existsSync(this.store_path) )
     {
-      this._data = this.store_options.getData(null, callback) || {}
+      this._data = this.store_options.loadSync() || {}
     }
     else
     {
       this._data = {}
-      if ('function' == typeof callback){ callback.call() }
     }
+    if ('function' == typeof callback){ callback.call() }
   }
 
   /**
@@ -176,7 +175,7 @@ class ProjetOptions
 
 
   get store_options     () {
-    this._store_options || (this._store_options = new Store(`projets/${this.projet.id}/options`, {}) )
+    this._store_options || (this._store_options = new Store(`projets/${this.projet.id}/options`) )
     return this._store_options
   }
 

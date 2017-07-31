@@ -109,6 +109,29 @@ Object.defineProperties(PanProjet.prototype, {
   }
 })
 
+Object.defineProperties(PanData.prototype, {
+  'section': {
+    get: function(){
+      this._section || (this._section = DOM.create('div', {id: `panneau-data`, class:'panneau'}))
+      return this._section
+    }
+  },
+  'container': {
+    get: function(){
+      if ( ! this._container ) {
+        this._container = PanProjet.getContainer(this.id)
+        if ( ! this._container )
+        {
+          this._container = DOM.create('div', {id:`panneau-contents-data`, 'index': (++container_index)})
+          // l'attribut 'index' ci-dessus a été ajouté pour vérifier qu'on avait bien le même
+          // container.
+          PanProjet.keepContainer(this.id, this._container)
+        }
+      }
+      return this._container
+    }
+  }
+})
 
 
 // ---------------------------------------------------------------------
@@ -214,8 +237,11 @@ global.resetAllPanneaux = function( params)
     if ( fs.existsSync(pan.store.path) ) { fs.unlinkSync(pan.store.path)}
     pan._modified = false
     pan.container.innerHTML = ''
-    pan.parags.reset()
-    pan.parags._projet = projet
+    if ( pan_id != 'data')
+    {
+      pan.parags.reset()
+      pan.parags._projet = projet
+    }
     // On crée des propriétés globales pour faire `panneauNotes`
     eval(`global.panneau${pan_id.titleize()} = projet.panneau('${pan_id}');`)
   })
@@ -229,9 +255,8 @@ global.resetAllPanneaux = function( params)
     , 'updated_at'    : now
     , 'last_parag_id' : 0
   }
-  projet.data_generales = h
-  panneauData.store._data = h
-  panneauData.store.save(true)
+  panneauData.data = h
+  panneauData.store.saveSync()
 
 }
 
@@ -260,7 +285,7 @@ global.initTests = function ( params )
   resetCurrentProjet( params )
   resetAllPanneaux( params )
   let lastid = resetAllParags( params )
-  projet.data_generales = { last_parag_id: lastid }
+  projet.data.last_parag_id = lastid
   Parag._lastID = lastid
   // console.log("=== RÉINITIALISATION DES TESTS ===")
 }

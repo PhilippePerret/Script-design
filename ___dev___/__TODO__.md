@@ -1,4 +1,8 @@
 
+* Voir comment intégrer projet.data_generales dans la nouvelle gestion du
+  panneau data, en sachant qu'il ne faut pas que ce soit redondant.
+  C'est pandata qui contient les données et projet ne devrait pouvoir posséder
+  que des raccourcis vers ces données.
 * Il faut absolument traiter autrement le panneau 'data'
   Comment faire pour séparer ?
   Peut-être faut-il déjà le supprimer des panneau_data ?

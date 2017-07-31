@@ -65,7 +65,7 @@ class Relatives
     const my = this
     my.data.updated_at = moment().format()
     my.store._data = my.data
-    my.store.save(false, (err) => {
+    my.store.save((err) => {
       if (err) { throw err }
       my.modified = false
       if ( callback ) { callback.call() }
@@ -94,7 +94,10 @@ class Relatives
 
   get store ()
   {
-    this._store || (this._store = new Store(this.relative_path, this.defaultData))
+    if ( ! this._store ) {
+      this._store = new Store(this.relative_path)
+      this._store.defaults = this.defaultData
+    }
     return this._store
   }
   get relative_path ()
