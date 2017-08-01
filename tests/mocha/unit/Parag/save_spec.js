@@ -15,7 +15,7 @@ describe('Enregistrement des paragraphes dans le fichier', function () {
 
 
   describe('Création de deux parags avec la méthode Parags::createNewParag (sans auto-synchronisation)', function () {
-    it("crée un premier parag #14", function(done){
+    it("crée un premier parag #14", function(){
       projet.option('autosync', 0)
       resetTest({nombre_parags : 0})
       expect(()=>{return parag0}).to.throw()
@@ -30,7 +30,7 @@ describe('Enregistrement des paragraphes dans le fichier', function () {
       expect(newP).to.be.instanceOf(Parag)
       expect(newP.id).to.equal(newP_id)
       newP.contents = "Contenu paragraphe #14"
-      expect(newP).to.respondsTo('sync')
+      expect(newP).to.respondsTo('PRsync')
       expect(newP._modified).to.be.true
 
       // Le panneau contient ce parag #14
@@ -42,33 +42,28 @@ describe('Enregistrement des paragraphes dans le fichier', function () {
 
       // On sauve le projet pour enregistrer le paragraphe
 
-      projet.saveParags( () => {
+      return projet.saveAll()
+        .then( () => {
 
-        expect(fs.existsSync(projet.parags_file_path), 'le fichier PARAGS.txt devrait exister').to.be.true
+          expect(fs.existsSync(projet.parags_file_path), 'le fichier PARAGS.txt devrait exister').to.be.true
 
-        // On s'assure que
-        let codeinfile = fs.readFileSync(projet.parags_file_path,'utf8')
-        // console.log(`CODE FICHIER : '${codeinfile}'`)
-        expect(newP.startPos).to.equal(newP.id * Parag.dataLengthInFile)
-        expect(newP.startPos).to.be.at.least(5000)
-        let codePinfile = codeinfile.substr(newP.startPos, Parag.dataLengthInFile)
-        // console.log("Segment data parag: '%s'", codePinfile)
+          // On s'assure que
+          let codeinfile = fs.readFileSync(projet.parags_file_path,'utf8')
 
-        // On scanne un peu le contenu, mais c'est surtout le test save_spec
-        // qui va se charger de voir si c'est bon.
+          // console.log(`CODE FICHIER : '${codeinfile}'`)
+          expect(newP.startPos).to.equal(newP.id * Parag.dataLengthInFile)
+          expect(newP.startPos).to.be.at.least(5000)
+          let codePinfile = codeinfile.substr(newP.startPos, Parag.dataLengthInFile)
 
-        expect(codePinfile[0]).to.equal('n')
-        expect(codePinfile.substr(1, Parag.DATA['id'].length).trim()).to.equal(String(newP_id))
+          // console.log("Segment data parag: '%s'", codePinfile)
 
-        // - on finit -
-
-        done()
-
-      })
+          expect(codePinfile[0]).to.equal('n')
+          expect(codePinfile.substr(1, Parag.DATA['id'].length).trim()).to.equal(String(newP_id))
+        })
     })
 
 
-    it("crée un second parag #5", function(done){
+    it("crée un second parag #5", function(){
 
       // le fichier des paragraphs doit exister après le cas précédent
 
@@ -90,54 +85,52 @@ describe('Enregistrement des paragraphes dans le fichier', function () {
 
       // On sauve à nouveau les paragraphe
 
-      projet.saveParags( () => {
+      return projet.saveAll()
+        .then( () => {
+          /*  On va vérifier que l'instance 14 et l'instance 5 ont bien leurs
+              données dans le fichier.
+          */
 
-        /*  On va vérifier que l'instance 14 et l'instance 5 ont bien leurs
-            données dans le fichier.
-        */
+          const lenData = Parag.dataLengthInFile
 
-        const lenData = Parag.dataLengthInFile
+          // Le code complet du fichier
 
-        // Le code complet du fichier
+          let codeinfile = fs.readFileSync(projet.parags_file_path,'utf8')
 
-        let codeinfile = fs.readFileSync(projet.parags_file_path,'utf8')
+          // Les données de l'instance 14
 
-        // Les données de l'instance 14
+          let code14 = codeinfile.substr( 14 * lenData, lenData)
+          let code5  = codeinfile.substr( 5  * lenData, lenData)
 
-        let code14 = codeinfile.substr( 14 * lenData, lenData)
-        let code5  = codeinfile.substr( 5  * lenData, lenData)
+          const now = moment().format('YYMMDD')
 
-        const now = moment().format('YYMMDD')
+          let arrExp = [
+              {id: 'id',          type: 'n', exp5: '5', exp14: '14'}
+            , {id:'panneau_let',  type: 's', exp5: 'm', exp14: 's' }
+            , {id:'ucontents',    type: 's', exp5: "en été ça marche !".toUnicode(), exp14: 'Contenu paragraphe #14' }
+            , {id:'duration',     type: 'n', exp5: "90", exp14: '60'}
+            , {id:'created_at',   type: 'e', exp5: now, exp14: now}
+            , {id:'updated_at',   type: 'e', exp5: now, exp14: now}
+          ]
+          let rest5  = code5, type5, data5
+          let rest14 = code14, type14, data14
+          arrExp.forEach( (hexp) => {
 
-        let arrExp = [
-            {id: 'id',          type: 'n', exp5: '5', exp14: '14'}
-          , {id:'panneau_let',  type: 's', exp5: 'm', exp14: 's' }
-          , {id:'ucontents',    type: 's', exp5: "en été ça marche !".toUnicode(), exp14: 'Contenu paragraphe #14' }
-          , {id:'duration',     type: 'n', exp5: "90", exp14: '60'}
-          , {id:'created_at',   type: 'e', exp5: now, exp14: now}
-          , {id:'updated_at',   type: 'e', exp5: now, exp14: now}
-        ]
-        let rest5  = code5, type5, data5
-        let rest14 = code14, type14, data14
-        arrExp.forEach( (hexp) => {
+            type5 = rest5[0]
+            expect(type5).to.equal(hexp.type)
+            data5 = rest5.substr(1, Parag.DATA[hexp.id].length).trim()
+            expect(data5).to.equal(hexp.exp5)
+            rest5 = rest5.substr(Parag.DATA[hexp.id].length + 1)
 
-          type5 = rest5[0]
-          expect(type5).to.equal(hexp.type)
-          data5 = rest5.substr(1, Parag.DATA[hexp.id].length).trim()
-          expect(data5).to.equal(hexp.exp5)
-          rest5 = rest5.substr(Parag.DATA[hexp.id].length + 1)
+            type14 = rest14[0]
+            expect(type14).to.equal(hexp.type)
+            data14 = rest14.substr(1, Parag.DATA[hexp.id].length).trim()
+            expect(data14).to.equal(hexp.exp14)
+            rest14 = rest14.substr(Parag.DATA[hexp.id].length + 1)
 
-          type14 = rest14[0]
-          expect(type14).to.equal(hexp.type)
-          data14 = rest14.substr(1, Parag.DATA[hexp.id].length).trim()
-          expect(data14).to.equal(hexp.exp14)
-          rest14 = rest14.substr(Parag.DATA[hexp.id].length + 1)
+          })
 
         })
-
-        done()
-      })
-
     })
   })
 })

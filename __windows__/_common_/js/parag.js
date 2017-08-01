@@ -237,7 +237,10 @@ class Parag
   *
   **/
   get contents    ()  { return this._contents    }
-  set contents    (v) { this._contents = v.replace(/\n/g,'<br>') ; this.reset()  }
+  set contents    (v) {
+    v && ( v = v.replace(/\n/g,'<br>') )
+    this._contents = v ; this.reset()
+  }
   get panneau_id  ()  { return this._panneau_id   }
   set panneau_id  (v) { this._panneau_id = v      }
 
@@ -372,8 +375,6 @@ class Parag
   PRsync ()
   {
     const my = this
-
-    console.log("-> PRsync du parag#%d", this.id)
 
     my.projet.busy = true
     // Il faut indiquer au projet qu'on est occupé pour qu'aucune
@@ -581,7 +582,7 @@ class Parag
   get contentsSimple () {
     this._contents_simple || (
       this._contents_simple =
-          this.contentsFormated
+          (this.contentsFormated || '')
             .replace(/[\n\r]/g,' ')
             .replace(/\t/g, ' ')
             .replace(/<(.*?)>/g, '')
@@ -1079,7 +1080,7 @@ class Parag
     my.contents = my.newContents
 
     /*- Marquer le parag (+ panneau + projet) modifié -*/
-    
+
     my.modified = true
 
     /*- Synchronisation automatique -*/

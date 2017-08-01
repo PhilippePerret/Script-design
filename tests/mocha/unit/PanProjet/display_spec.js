@@ -65,13 +65,11 @@ describe('Chargement d’un projet avec des parags', function () {
     p.data.authors  = ["Phil", "Marion"]
     p.data.symmary  = "Le résumé du projet provisoire, pour voir l'affichage."
     let stores = new Map()
-    stores.set(p.store_data, 'data')
     stores.set(p.panneau('notes').store, 'données du panneau Notes')
     stores.set(p.panneau('scenier').store, 'données du panneau Scénier')
     stores.set(p.panneau('manuscrit').store, 'données du panneau Manuscrit')
 
     stores.forEach( (nom, st) => {
-      console.log(st.path)
       expect(fs.existsSync(st.path),`Le fichier des '${nom}' devrait exister`).to.be.true
     })
   })

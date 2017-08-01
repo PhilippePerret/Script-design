@@ -1,6 +1,8 @@
 
 describe('PRload et PRdisplay', function () {
-
+  before(function () {
+    resetTests({nombre_parags: 30})
+  });
   describe('PRload', function () {
 
     it("répond", function(){

@@ -441,6 +441,7 @@ class Projet
   **/
   saveParags ( all )
   {
+    const my = this
     let modified_parags = []
     for (let pid in Parags.items )
     {
@@ -449,6 +450,7 @@ class Projet
         ( all || parag.modified ) && ( modified_parags.push( parag ) )
       }
     }
+    my.saved_parags_count = modified_parags.length
     return Promise.all( modified_parags.map( p => { return p.save() } ))
   }
 

@@ -40,7 +40,7 @@ describe('Création d’un nouveau Parag', function () {
         let newP = panneauScenier.parags.createNewParag()
         expect(newP).to.be.instanceOf(Parag)
         expect(newP.id).to.equal(newP_id)
-        expect(newP).to.respondsTo('sync')
+        expect(newP).to.respondsTo('PRsync')
         expect(newP._modified).to.be.true
         // Un seul paragraphe doit avoir été créé
         expect(panneauScenier.parags._ids).to.deep.equal([newP.id])
