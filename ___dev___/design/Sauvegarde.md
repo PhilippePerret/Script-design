@@ -10,3 +10,5 @@ Deux moyens de sauvegarde peuvent être envisagés :
 Dans le dossier de l'user et de l'application.
 
 Sur mac : `~/Library/Support Applications/script-design/`
+
+C'est cette méthode qui a été choisie, sauf pour les `parags` qui sont enregistrés dans un fichier texte simple avec des longueurs fixes (pour un accès plus souple).

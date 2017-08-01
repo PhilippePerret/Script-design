@@ -7,6 +7,32 @@
       projet.option(option,value)
 */
 
+
+/** ---------------------------------------------------------------------
+  *
+  *   PROPRIÉTÉS GLOBALES
+  *
+*** --------------------------------------------------------------------- */
+Object.defineProperties(global,{
+  /**
+  * @return {PanProjet|PanData} Le panneau courant
+  **/
+  'currentPanneau':{
+    get:function(){return projet().current_panneau}
+  }
+
+  /** @return le parag courant ou undefined */
+  , 'currentParag':{
+    get:function(){ return currentPanneau.parags.selection.current || undefined }
+  }
+})
+
+/** ---------------------------------------------------------------------
+  *
+  *     MÉTHODES GLOBALES
+  *
+*** --------------------------------------------------------------------- */
+
 /*  - PROJET -  */
 
 /**
@@ -17,6 +43,8 @@ function projet () { return Projet.current }
 global.setOptionProjet    = function( option, value) {projet().option(option, value)}
 
 /*  - PANNEAUX -  */
+
+
 
 global.activatePanneau    = function (panid) {
   const pan = projet().panneau(panid)

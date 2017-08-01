@@ -1,22 +1,20 @@
 <form id="parag_verso_form" action="" method="POST" style="display:none">
-
+  <span id="span-id">
+    #<span id="parag_id">XXX</span>
+  </span>
   <span id="span-duration">
     <label for="parag-duration">Durée</label>
-    <span id="parag-duration" class="editable">0:00</span>
+    <span id="duration" class="editable" owner="currentParag">0:00</span>
   </span>
 
   <span id="span-position">
     <label for="parag-position">Position</label>
-    <span id="parag-position" class="editable">0:00:00</span>
-    <input type="text" name="parag[position]" class="horloge" id="parag-position" value="" placeholder="Position">
+    <span id="parag-position" class="editable" owner="currentParag">0:00:00</span>
   </span>
 
   <span id="span-type">
-    <select name="parag[type]" id="parag-type">
-      <option value="1">Type #1</option>
-      <option value="2">Type #2</option>
-      <option value="3">Type #3</option>
-    </select>
+    <label for="parag_type">Type</label>
+    <span class="editable" id="parag_type" owner="currentParag">Action</span>
   </span>
 
 

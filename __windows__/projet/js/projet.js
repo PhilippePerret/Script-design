@@ -328,7 +328,7 @@ class Projet
       editables[i].addEventListener('click', (evt) => {
         let o = evt.target
         o.contentEditable = 'true'
-        o.focus()
+        UI.setSelectionPerOption(o, my.option('seloneditpar') ? 'all' : false)
         this.mode_edition = true
       })
       editables[i].addEventListener('blur', (evt) => {
@@ -461,20 +461,36 @@ class Projet
   onChangeData (o)
   {
     let
-          prop = o.id // par exemple 'authors' ou 'title'
-        , newValue = o.innerHTML.trim()
+          prop      = o.id // par exemple 'authors' ou 'title'
+        , newValue  = o.innerHTML.trim()
+        , owner     = this
 
-    // Traitement des valeurs pour certains champs spéciaux
-    switch(prop)
+    if (o.getAttribute('owner'))
     {
-      case 'authors':
-        newValue = newValue.split(/[ ,]/).map(p =>{return p.trim()}).filter(p => {return p != ''})
-        break
+      // <= Le champ à un propriétaire propre, qui n'est pas le projet
+      // => Il faut utiliser ses méthodes pour actualiser la donnée
+      owner = eval(o.getAttribute('owner'))
+
     }
+    else
+    {
+      // <= L'objet n'a pas de propriétaire propre
+      // => C'est une propriété du projet courant
+      // Traitement des valeurs pour certains champs spéciaux
+      switch(prop)
+      {
+        case 'authors':
+          newValue = newValue.split(/[ ,]/).map(p =>{return p.trim()}).filter(p => {return p != ''})
+          break
+      }
+      this.data[prop] = newValue // dans PanData (panneau('data'))
+    }
+
     // On enregistre la donnée et on l'actualise dans l'affichage
-    this.data[prop] = newValue // dans PanData (panneau('data'))
-    this[`set_${prop}`](newValue)
-    this.set_updated_at()
+    // pour le Projet comme pour tout autre propriétaire défini dans l'attribut
+    // `owner` du champ.
+    owner[`redefine_${prop}`](newValue)
+
   }
 
   /**
@@ -552,32 +568,28 @@ class Projet
   * dans le document)
   *
   * Noter que le nom de ces méthodes ne doivent pas être modifiée, car elles
-  * sont appelées de façon dynamique en construisant "set_<propriété>"
+  * sont appelées de façon dynamique en construisant "redefine_<propriété>"
   *
   **/
-  set_title (v) {
+  redefine_title (v) {
     v || ( v = "Projet sans titre")
     if ( v != this.data.title ) this.data.title = v
     DOM.setTitle(v)
     DOM.inner('title', v)
   }
-  set_authors (v) {
+  redefine_authors (v) {
     v || ( v = ['pas d’auteur'])
     if ( v != this.data.authors ) this.data.authors = v
     DOM.inner('authors', (v||[]).join(', '))
   }
-  set_summary (v) {
+  redefine_summary (v) {
     v || ( v = 'Projet sans résumé' )
     if ( v != this.data.summary ) this.data.summary = v
     DOM.inner('summary', (v||'').split("\n").join('<br>'))
   }
-  set_created_at(){
+  redefine_created_at(){
     let c = moment(this.created_at)
     DOM.inner('created_at', `${c.format('LLL')} (${c.fromNow()})`)
-  }
-  set_updated_at(){
-    let c = moment(this.updated_at)
-    DOM.inner('updated_at', `${c.format('LLL')} (${c.fromNow()})`)
   }
 
   /**

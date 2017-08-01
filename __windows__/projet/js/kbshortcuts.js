@@ -96,10 +96,10 @@ const KBShortcuts = class {
   static onkeyup (evt)
   {
     const curProj = Projet.current
-        , curpan  = curProj.current_panneau
+        , curPano = curProj.current_panneau
 
     // console.log("[kbshortcuts] Projet.current.mode_edition = ",Projet.current.mode_edition)
-    // console.log('[kbshortcuts] selection courante', curpan.parags.selection.current)
+    // console.log('[kbshortcuts] selection courante', curPano.parags.selection.current)
     // On ne passe à la suite que si l'on n'est plus en mode Édition
     if ( curProj.mode_edition ){ return 'poursuivre' }
     switch ( evt.key )
@@ -109,7 +109,7 @@ const KBShortcuts = class {
       //   return Projet.loadPanneau('data')
       case 'e':
         // <=> Enter
-        curpan.hasCurrent() && curpan.editCurrent.bind(curpan)()
+        curPano.hasCurrent() && curPano.editCurrent.bind(curPano)()
         return true
       case 'Enter':
         // Suivant le mode, on fait quelque chose de différent
@@ -119,31 +119,38 @@ const KBShortcuts = class {
         {
           case curProj.mode_double_panneaux :
             return Parags.setSelectedsAsRelatives()
-          case curpan.hasCurrent() :
-            return curpan.editCurrent.bind(curpan)()
+          case curPano.hasCurrent() :
+            return curPano.editCurrent.bind(curPano)()
         }
         break
 
       case 'I':
       case 'i':
       case 'ArrowUp':
-        curpan.selectPrevious.bind(curpan)(evt)
+        curPano.selectPrevious.bind(curPano)(evt)
         return DOM.stopEvent(evt)
 
       case 'k':
       case 'K':
       case 'ArrowDown':
-        curpan.selectNext.bind(curpan)(evt)
+        curPano.selectNext.bind(curPano)(evt)
+        return DOM.stopEvent(evt)
+
+      case 'l':
+      case 'L':
+      case 'ArrowRight':
+        const curSel = curPano.parags.selection.current ;
+        curSel && curSel.toggleRectoVerso.call(curSel)
         return DOM.stopEvent(evt)
       case 'Escape':
-        curpan.deselectAll.bind(curpan)()
+        curPano.deselectAll.bind(curPano)()
         return DOM.stopEvent(evt)
       case 'Backspace':
-        curpan.removeCurrent.bind(curpan)()
+        curPano.removeCurrent.bind(curPano)()
         return DOM.stopEvent(evt)
       case 'n': // en dehors du mode édition, 'n' provoque la création d'un paragraphe
         // return Parags.create()
-        return curProj.current_panneau.parags.createAndEdit()
+        return curPano.parags.createAndEdit()
       case 'o':
         alert("La fenêtre des outils n'est pas encore implémentée")
         break

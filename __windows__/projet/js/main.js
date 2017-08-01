@@ -13,11 +13,9 @@ const
 requirejs(
   [
       C.LOG_MODULE_PATH
-    , C.COMMON_UI_MODULE_PATH
   ]
 , function(
     log
-  , UI
 ){
 
   require(path.join(PROJET_JS_FOLDER,'_includes.js'))

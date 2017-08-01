@@ -1,3 +1,8 @@
+# 0.1.13
+
+  * Implémentation du verso du paragraphe, avec des informations utiles et éditables.
+  * Utilisation systématique des Promises
+  
 # 0.1.12
 
   * Utilisation des Promises pour gérer tous les enregistrements/chargements de données.

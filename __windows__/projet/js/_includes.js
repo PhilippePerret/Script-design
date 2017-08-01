@@ -1,4 +1,3 @@
-// global.fs     = require('fs')
 global.fs     = require('fs-extra')
 global.moment = require('moment')
 moment.locale('fr')
@@ -9,6 +8,7 @@ global.FOLDER_COMMON_JS  = path.resolve('./__windows__/_common_/js')
 
 global.C              = require(path.resolve('./lib/constants.js'))
 
+global.UI             = require(path.join(FOLDER_COMMON_JS,   'ui.js'))
 global.DOM            = require(path.join(LIB_UTILS_JS,       'dom_class.js'))
 global.Store          = require(path.join(LIB_UTILS_JS,       'store_class.js'))
 global.Projet         = require(path.join(PROJET_JS_FOLDER,   'projet.js'))

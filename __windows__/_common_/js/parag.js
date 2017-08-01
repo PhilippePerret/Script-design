@@ -249,6 +249,23 @@ class Parag
     return this._loaded
   }
 
+
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES D'ÉDITION DES DONNÉES
+    *
+  *** --------------------------------------------------------------------- */
+  redefine_duration (newDuration)
+  {
+    console.log("Je dois mettre la durée de parag#%d à '%s'", this.id, newDuration)
+
+  }
+  redefine_parag_type( newType)
+  {
+
+  }
+
+
   /** ---------------------------------------------------------------------
     *
     *   MÉTHODES GÉNÉRALES
@@ -1362,12 +1379,13 @@ class Parag
   doEdit (evt)
   {
     if ( evt && evt.metaKey ) { return true }
-    let o = this.divContents
+    const my = this
+    let o = my.divContents
     let realContents
     o.contentEditable = 'true'
     try
     {
-      realContents = this.contents.replace(/<br>/g,"\n")
+      realContents = my.contents.replace(/<br>/g,"\n")
     }
     catch(err)
     {
@@ -1376,26 +1394,11 @@ class Parag
       realContents = ''
     }
     o.innerHTML = realContents
-    o.focus()
 
-    let startNode = o.firstChild
-      , endNode   = o.firstChild
+    UI.setSelectionPerOption(o, my.projet.option('seloneditpar') ? 'all' : false)
 
-    if ( startNode )
-    {
-      let range     = document.createRange()
-      // Ci dessous, si on met '0', on sélectionne tout.
-      // À mettre dans les options : soit on se place à la fin soit on
-      // sélectionne tout
-      range.setStart(startNode, realContents.length /* 0 */ )
-      range.setEnd(endNode, realContents.length)
-      let sel = window.getSelection()
-      sel.removeAllRanges()
-      sel.addRange(range)
-    }
-
-    this.projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
-    this.actualContents = String(this.contents)
+    my.projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
+    my.actualContents = String(my.contents)
   }
   // Sortir le champ contents du mode édition (et enregistrer
   // la nouvelle donnée si nécessaire)
@@ -1404,6 +1407,7 @@ class Parag
     this.contentsHasChanged() && this.onChangeContents.bind(this)()
     this.endEdit()
   }
+
 
   /**
   * Sortir du champ contents en mode édition
@@ -1586,11 +1590,39 @@ class Parag
     *
   *** --------------------------------------------------------------------- */
 
+  /**
+  * @property {HTMLElement} Le div du recto du parag
+  **/
+  get recto ()
+  {
+    this._recto || (this._recto = this.mainDiv.querySelector('div.p-recto'))
+    return this._recto
+  }
+
+  /**
+  * @property {HTMLElement} Le div du verso du parag
+  **/
+  get verso ()
+  {
+    this._verso || ( this._verso = this.mainDiv.querySelector('div.p-verso'))
+    return this._verso
+  }
+
   isRecto ()
   {
     if ( undefined === this._isRecto ) { this._isRecto = true }
     return this._isRecto
   }
+
+  /**
+  * Méthode principale qui bascule l'affiche du parag en fonction de
+  * son état actuel.
+  **/
+  toggleRectoVerso ()
+  {
+    this[ this.isRecto() ? 'showVerso' : 'showRecto' ].call(this)
+  }
+
   /**
    * Méthode qui demande l'affichage du recto du parag
    *
@@ -1601,6 +1633,9 @@ class Parag
   {
     const my = this
     my.mainDiv.querySelector('div.p-verso').appendChild(Parag.paragVersoForm)
+    Parag.paragVersoForm.style.display = 'block'
+    my.recto.className = 'p-recto hidden'
+    my.verso.className = 'p-verso'
     my._isRecto = false
     return true
   }
@@ -1608,7 +1643,8 @@ class Parag
   showRecto ()
   {
     const my = this
-
+    my.recto.className = 'p-recto'
+    my.verso.className = 'p-verso hidden'
     my._isRecto = true
   }
 

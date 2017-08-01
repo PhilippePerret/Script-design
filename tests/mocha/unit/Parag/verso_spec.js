@@ -9,6 +9,20 @@
 */
 require('../../spec_helper.js')
 
+
+// Le premier before
+// Je le mets dans une méthode séparée, car il faudra revenir
+// à ça en cours de test
+function reinitialisationInitiale ()
+{
+  resetTests({nombre_parags: 20})
+
+  /*- Introduction du parag #12 dans le panneau Scénier -*/
+
+  panneauScenier.parags.add(parag12)
+
+}
+
 function expectRectoVisibleFor (parag)
 {
   expect(parag.panneau.container).not.to.haveTag(
@@ -33,54 +47,120 @@ function expectVersoNotVisibleFor (parag) {
 
 describe.only('Verso du parag', function () {
   before(function () {
-    resetTests({nombre_parags: 20})
 
-    /*- Introduction du parag #12 dans le panneau Scénier -*/
-
-    panneauScenier.parags.add(parag12)
+    reinitialisationInitiale()
 
   });
 
   describe('Méthodes impliquées', function () {
+
+    describe('Propriété Parag@recto', function () {
+      it("existe", function(){
+        expect(parag12.recto).to.not.be.undefined
+        expect(parag12.recto).to.be.instanceOf(HTMLDivElement)
+      })
+    });
+
+    describe('Propriété Parag@verso', function () {
+      it("existe", function(){
+        expect(parag12.verso).to.not.be.undefined
+        expect(parag12.verso).to.be.instanceOf(HTMLDivElement)
+      })
+    });
 
     describe('Parag#isRecto', function () {
       it("répond", function(){
         expect(parag12).to.respondsTo('isRecto')
       })
       it("retourne true si le recto est affiché", function(){
-        this.skip()
+        parag12.showVerso()
+        expect(parag12.isRecto()).to.be.false
+        parag12.showRecto()
+        expect(parag12.isRecto()).to.be.true
       })
       it("retourne false si le verso est affiché", function(){
-        this.skip()
+        parag12.showRecto()
+        expect(parag12.isRecto()).to.be.true
+        parag12.showVerso()
+        expect(parag12.isRecto()).to.be.false
       })
     });
 
+    describe('#toggleRectoVerso', function () {
+      it("répond", function(){
+        expect(parag12).to.respondsTo('toggleRectoVerso')
+      })
+      describe('Appel de la méthode dans les deux cas', function () {
+        before(function () {
+          const my = this
+          // Mocker les méthodes showVerso et showRecto
+          this.methodShowVersoOriginale = Parag.prototype.showVerso
+          Parag.prototype.showVerso = undefined
+          Parag.prototype.showVerso = function(){
+            my.methode_utilised = 'showVerso'
+            return 'showVerso'
+          }
+          this.methodShowRectoOriginale = Parag.prototype.showRecto
+          Parag.prototype.showRecto = undefined
+          Parag.prototype.showRecto = function(){
+            my.methode_utilised = 'showRecto'
+            return 'showRecto'
+          }
+        });
+        after(function () {
+          // Remettre les méthode original
+          Parag.prototype.showRecto = this.methodShowRectoOriginale
+          delete this.methodShowRectoOriginale
+          Parag.prototype.showVerso = this.methodShowVersoOriginale
+          delete this.methodShowVersoOriginale
+        });
+        it("appelle la méthode showVerso si c'est le recto", function(){
+          parag12._isRecto = true
+          // =========> TEST <==========
+          parag12.toggleRectoVerso()
+          // ========== VÉRIFICATION ==========
+          expect(this.methode_utilised).to.equal('showVerso')
+        })
+        it("appelle la méthode showRecto si c'est le verso", function(){
+          parag12._isRecto = false
+          // =========> TEST <==========
+          parag12.toggleRectoVerso()
+          // ========== VÉRIFICATION ==========
+          expect(this.methode_utilised).to.equal('showRecto')
+        })
+      });
+    });
 
     describe('showVerso', function () {
       it("répond", function(){
         expect(parag12).to.respondsTo('showVerso')
       })
 
-      it("affiche le formulaire et masque le content", function(){
+      it("affiche le verso (formulaire) et masque le recto", function(){
 
         // ======== PRÉPARATION ==========
+        resetTests({nombre_parags: 20})
         panneauScenier.parags.add(parag12)
-        panneauScenier.reset()
+        return panneauScenier.PRactivate()
+        .then( () => {
 
-        // ======= VÉRIFICATIONS PRÉLIMINAIRES =======
+          // ======= VÉRIFICATIONS PRÉLIMINAIRES =======
 
-        expectRectoVisibleFor(parag12)
-        expectVersoNotVisibleFor(parag12)
-        expect(parag12.isRecto()).to.be.true
+          // Par défaut, c'est le recto qui est évidemment affiché
+          expectRectoVisibleFor(parag12)
+          expectVersoNotVisibleFor(parag12)
+          expect(parag12.isRecto()).to.be.true
 
-        // ========> TEST <========
-        parag12.showVerso()
+          // ========> TEST <========
+          parag12.showVerso()
 
-        // ========== VÉRIFICATIONS ========
+          // ========== VÉRIFICATIONS ========
 
-        expectRectoNotVisibleFor(parag12)
-        expectVersoVisibleFor(parag12)
-        expect(parag12.isRecto()).to.be.false
+          expectRectoNotVisibleFor(parag12)
+          expectVersoVisibleFor(parag12)
+          expect(parag12.isRecto()).to.be.false
+
+        })
 
       })
     });
@@ -89,9 +169,36 @@ describe.only('Verso du parag', function () {
       it("répond", function(){
         expect(parag12).to.respondsTo('showRecto')
       })
-      it("réaffiche le recto", function(){
-        this.skip()
-      })
+      describe('Réaffichage du recto', function () {
+        before(function () {
+          resetTests()
+          panneauNotes.add(parag4)
+
+        })
+        after(function(){
+          reinitialisationInitiale()
+        })
+        it("réaffiche le recto", function(){
+
+          return panneauNotes.PRactivate()
+          .then( () => {
+
+            parag4.showVerso()
+            expect(parag4.isRecto()).to.be.false
+            expectRectoNotVisibleFor(parag4)
+            expectVersoVisibleFor(parag4)
+
+            // ==========> TEST <==========
+            parag4.showRecto()
+            expect(parag4.isRecto()).to.be.true
+            expectRectoVisibleFor(parag4)
+            expectVersoNotVisibleFor(parag4)
+
+          })
+
+        })
+
+      });
       it("remet isRecto à true", function(){
         parag12.showVerso()
         expect(parag12.isRecto()).to.be.false
@@ -147,9 +254,6 @@ describe.only('Verso du parag', function () {
       it("un champ pour la position (soit fixe soit calculée)", function(){
         expect(verso).to.haveTag('span', {id:'span-position'})
         expect(verso.querySelector('span#span-position')).to.haveTag(
-          'input', {type:'text', name:'parag[position]', id:'parag-position'}
-        )
-        .and.haveTag(
           'span', {id:'parag-position', class:'editable', text: '0:00:00'}
         )
         .and.haveTag(
