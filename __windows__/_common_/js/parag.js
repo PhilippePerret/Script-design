@@ -1,6 +1,6 @@
 /** ---------------------------------------------------------------------
-  *   class Parag
-  *   ------------
+  *   Parag (classe)
+  *   --------------
   *   Classe des textes en tant qu'entité {Parag}
   *   Dans l'application, tous les textes des projets sont des Parag(s),
   *   que ce soit un paragraphe de synopsis ou un évènement du scénier.
@@ -324,11 +324,21 @@ class Parag
   **/
   reset ()
   {
-    delete this._contents_formated
-    delete this._contents_simple
-    delete this._duration_formated
-    delete this._loaded
-    this.formated = false
+    const my = this
+    delete my._contents_formated
+    delete my._contents_simple
+    delete my._duration_formated
+    delete my._loaded
+    delete my._relatives
+    delete my._relatifs
+
+    // delete my.sync_after_save
+    // Ne surtout pas mettre ça ici, car s'il est mis à true au cours du
+    // programme, une méthode quelconque (par exemple `contents=`) pourrait
+    // remettre cette valeur à undefined. Ce type de reset doit être effectué
+    // là où il n'agit plus (en l'occurrence, après la synchronisation)
+
+    my.formated = false
   }
 
   /**
@@ -359,22 +369,90 @@ class Parag
     callback && callback.call()
   }
 
-  /**
-  * Méthode appelée pour synchroniser le parag dans les autres panneaux,
-  * à sa création ou n'importe quand après.
-  *
-  * C'est une méthode asynchrone car il faut peut-être charger le panneau
-  * qui va recevoir le nouvel élément.
-  **/
-  sync ( callback )
+  PRsync ()
   {
-    // console.log('-> sync() du parag#%d', this.id)
-    // console.log("Nombre d'enfants du panneau Scénier : %d", projet.panneau('scenier').container.childNodes.length)
-    this.projet.busy = true         // pour empêcher la sauvegarde
-    this.parags2sync_list = [this]  // liste des parags qui seront associés
-    this.syncAllPanneaux( callback )
+    const my = this
+
+    console.log("-> PRsync du parag#%d", this.id)
+
+    my.projet.busy = true
+    // Il faut indiquer au projet qu'on est occupé pour qu'aucune
+    // sauvegarde ne se fasse pendant ce temps
+
+    /*- Liste pour synchroniser tous les parags -*/
+
+    my.parags2sync_list = [my]
+
+    /*- On procède à la synchronisation -*/
+
+    return my.PRloadAllPanneaux()
+      .then( my.PRsyncAllPanneaux.bind(my) )
+      .then( my.PRendSync.bind(my) )
+      .catch( err => { my.projet.busy = false ; throw err } )
+
   }
 
+  /**
+  * Méthode chargeant les données de tous les panneaux
+  *
+  * @return {Promise} pour chainage
+  **/
+  PRloadAllPanneaux ()
+  {
+    const my = this
+    return Promise.all( my.allPanneauxButMine.map( panid => {
+      return Projet.current.panneau(panid).PRloadData()
+    }))
+  }
+
+  /**
+  * Méthode synchronisant tous les panneau sauf le panneau courant
+  *
+  * @return {Promise} Pour le chainage
+  **/
+  PRsyncAllPanneaux ()
+  {
+    const my = this
+    return Promise.all( my.allPanneauxButMine.map( panid => {
+      return my.PRsyncInPanneau.bind(my, panid).call()
+    }))
+  }
+
+  /**
+  * Pour terminer la synchronisation
+  *
+  * @return {Promise} Pour le chainage
+  **/
+  PRendSync ()
+  {
+    const my = this
+    my.projet.busy = false
+
+    /*- Associer les différents parags créés -*/
+
+    my.projet.relatives.associateWithNoReferent(my.parags2sync_list)
+
+    my.reset()
+    delete my.sync_after_save
+    // surtout pas dans my.reset (voir l'explication dans my.reset())
+
+    return Promise.resolve()
+  }
+
+  /**
+  * @return {Array} Une liste de tous les IDENTIFIANTS des panneaux
+  * synchronisables à part celui du parag courant.
+  **/
+  get allPanneauxButMine ()
+  {
+    if ( undefined === this._allPanneauxButMine )
+    {
+      const thispanId = this.panneau_id
+      this._allPanneauxButMine =
+        Projet.PANNEAUX_SYNC.filter(panid => {return panid != thispanId})
+    }
+    return this._allPanneauxButMine
+  }
   /** ---------------------------------------------------------------------
     *
     *   Méthodes d'I/O permettant d'enregistrer les données paragraphe
@@ -587,12 +665,14 @@ class Parag
   **/
   formateContents ( callback )
   {
+    const my = this
+
     // console.log(`Parag#${this.id} -> formateContents()`)
-    if ( ! this.contents ) {
+    if ( ! my.contents ) {
       if ( 'function' === typeof callback ) { callback.call() }
       return ''
     }
-    let c = Kramdown.parse(this.contents)
+    let c = Kramdown.parse(my.contents)
 
     // === Les balises PARAG#xxx ===
     // Pour mettre la liste des paragraphes qui n'ont pas été trouvés
@@ -645,14 +725,14 @@ class Parag
 
         missing_parags_list.push(pid)
         return (new Parag({id:pid})).as_link(
-          {title: 'Chargement du contenu en cours…'}
+          {title: `Chargement du parag #${pid} en cours…`}
         )
 
       }
     })
     c = c.trim()
-    this._contents_formated = c
-    this.formated           = true
+    my._contents_formated = c
+    my.formated           = true
 
     if ( missing_parags_list.length > 0 )
     {
@@ -661,7 +741,7 @@ class Parag
       // => Il faut charger ces paragraphes pour remplacer les titles dans
       //    les liens.
 
-      this.loadAndReplaceTitleInLinks( missing_parags_list, callback )
+      my.loadAndReplaceTitleInLinks( missing_parags_list, callback )
 
     }
     else
@@ -684,38 +764,16 @@ class Parag
   * les liens, qui affichent le contenu du parag lié au survol de la souris.
   *
   **/
-  loadAndReplaceTitleInLinks (ids, callback)
+  loadAndReplaceTitleInLinks (pids, callback)
   {
-    const my = this
-
-    /*  On charge tous les parags manquant */
-    my.projet.readParags( ids, my.replaceTitleInLinks(ids, callback) )
-  }
-
-  /**
-  * Méthode qui remplace tous les contenus des `title` dans les liens
-  * des parags de la liste `ids` puis appelle la méthode callback
-  *
-  * @param {Array} ids Liste des identifiants des parags
-  * @param {Function|Null} callback Méthode de callback
-  *
-  **/
-  replaceTitleInLinks ( ids, callback )
-  {
-    const my = this
-
-    /*  On corrige tous les liens dans le panneau */
-
-    ids.forEach( pid => Parags.get(pid).updateTitleInLink(my.panneau) )
-
-    /*  On peut passer à la suite */
-
-    // console.log(`Parag#${this.id} Fin du traitement des paragraphes manquants`)
-
-    /*  On appelle le callback s'il est défini */
-
-    if ('function' === typeof callback) { callback.call() }
-
+    let p
+    let promises = pids.map( pid => {
+      p = Parags.get(pid)
+      return p.PRload()
+              .then(p.updateTitleInItsLink.bind(p, this))
+              .catch( err => { throw err } )
+    })
+    return Promise.all(promises)
   }
 
   /**
@@ -723,12 +781,27 @@ class Parag
   * simple.
   * Cette méthode est utile lorsque le parag n'était pas encore chargé au
   * moment où un autre parag contenait un lien vers lui.
+  *
+  * @param {Parag} destParag  Le Parag qui possède le lien vers le parag
+  *                           courant.
   **/
-  updateTitleInLink ( panneau )
+  updateTitleInItsLink (destParag)
   {
-    const my = this
-    let as = panneau.container.querySelectorAll(`a.p-${my.id}`)
+    const my = this // le parag lié (courant)
+    const pan = destParag.panneau
+
+    /*- Correction dans le panneau -*/
+
+    let as = pan.container.querySelectorAll(`a.p-${my.id}`)
     as.forEach( a => a.setAttribute('title', my.contentsSimple) )
+
+    /*- Correction dans le texte formaté du destinataire -*/
+
+    let re = new RegExp(`title="Chargement du parag #${my.id} en cours…"`, 'g')
+    destParag._contents_formated =
+      destParag._contents_formated.replace(re, `title="${my.contentsSimple}"`)
+
+    return Promise.resolve()
   }
 
   /** ---------------------------------------------------------------------
@@ -856,48 +929,48 @@ class Parag
     this.doEdit.bind(this)()
   }
 
-  syncAllPanneaux( callback )
-  {
-    // console.log('-> syncAllPanneaux')
-    const my      = this
-        , proj    = my.projet
+  // syncAllPanneaux( callback )
+  // {
+  //   // console.log('-> syncAllPanneaux')
+  //   const my      = this
+  //       , proj    = my.projet
+  //
+  //   let pan_id  = null
+  //
+  //   // - index du panneau à synchroniser -
+  //
+  //   my.i_panneau_sync || ( my.i_panneau_sync = 0 )
+  //
+  //   pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
+  //   if ( pan_id == my.panneau_id ) {
+  //     pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++] }
+  //
+  //   if ( pan_id )
+  //   {
+  //     /*  Il reste des panneaux à traiter  */
+  //
+  //     // Note : les données seront effectivement chargées seulement
+  //     //        si elles ne l'ont pas encore été.
+  //
+  //     proj.panneau(pan_id).loadData( my.syncInPanneau.bind(my, pan_id, callback) )
+  //
+  //   }
+  //   else
+  //   {
+  //     //
+  //     // On achève la synchronisation
+  //     //
+  //     // En enfin, on procède à l'association de tous les paragraphes
+  //     // créés
+  //     // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
+  //     // console.log("Fin de la synchronisation de tous les panneaux synchronisables.")
+  //     proj.busy = false
+  //     delete this.i_panneau_sync
+  //
+  //     if ( 'function' === typeof callback ) { callback.call() }
+  //   }
+  // }
 
-    let pan_id  = null
-
-    // - index du panneau à synchroniser -
-
-    my.i_panneau_sync || ( my.i_panneau_sync = 0 )
-
-    pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++]
-    if ( pan_id == my.panneau_id ) {
-      pan_id = Projet.PANNEAUX_SYNC[my.i_panneau_sync++] }
-
-    if ( pan_id )
-    {
-      /*  Il reste des panneaux à traiter  */
-
-      // Note : les données seront effectivement chargées seulement
-      //        si elles ne l'ont pas encore été.
-
-      proj.panneau(pan_id).loadData( my.syncInPanneau.bind(my, pan_id, callback) )
-
-    }
-    else
-    {
-      //
-      // On achève la synchronisation
-      //
-      // En enfin, on procède à l'association de tous les paragraphes
-      // créés
-      // puts(`Paragraphes à associer : ${this.parags2sync_list.map(p=>{return p.id})}`)
-      // console.log("Fin de la synchronisation de tous les panneaux synchronisables.")
-      proj.relatives.associateWithNoReferent(this.parags2sync_list)
-      proj.busy = false
-      delete this.i_panneau_sync
-
-      if ( 'function' === typeof callback ) { callback.call() }
-    }
-  }
   /**
   * Méthode qui synchronise le paragraphe courant dans le panneau pan_id
   *
@@ -907,8 +980,9 @@ class Parag
   *
   * Note
   **/
-  syncInPanneau ( pan_id, callback )
+  PRsyncInPanneau ( pan_id )
   {
+    // console.log("-> PRsyncInPanneau(%s)", pan_id)
     const my = this
     // console.log("[Parag#syncInPanneau] Début de synchronisation du parag#%d dans le panneau '%s'", this.id, pan_id)
     let newParagSync
@@ -971,36 +1045,24 @@ class Parag
     my.parags2sync_list.push(newParagSync)
     // console.log("[syncInPanneau] Liste des parags à synchroniser", my.parags2sync_list.map(p=>{return p.id}))
 
-    /*  On peut passer au panneau suivant, ou finir */
-
-    this.syncAllPanneaux( callback )
+    return Promise.resolve()
   }
 
 
   /**
   * @return {Number|Null} ID du premier parag associé au parag courant dans le
   *                       panneau +pan_id+
-  *
   * @param {String} pan_id  L'ID du panneau
   *
   **/
-  firstRelativeInPanneau ( pan_id )
-  {
-    return this.relativeParagInPanneau(pan_id, true)
-  }
+  firstRelativeInPanneau ( pan_id ) { return this.relInPan(pan_id,true) }
 
   /**
   * @return {Number|Null} ID du dernier parag associé au parag courant dans le
   *                       panneau +pan_id+
-  *
   * @param {String} pan_id  L'ID du panneau
   **/
-  lastRelativeInPanneau ( pan_id )
-  {
-    return this.relativeParagInPanneau(pan_id, false)
-  }
-
-
+  lastRelativeInPanneau ( pan_id ) { return this.relInPan(pan_id, false) }
 
   /**
   * Méthode appelée quand on blur le champ contents pour actualiser
@@ -1008,22 +1070,22 @@ class Parag
   *
   * À la création du paragraphe, c'est cette méthode qui crée
   * les paragraphes synchronisés si le paragraphe a réellement
-  * été créé (this.sync_after_save à true).
+  * été créé (this.sync_after_save est alors à true).
   **/
-  onChangeContents ( callback )
+  onChangeContents ()
   {
     const my = this
     // console.log('-> onChangeContents')
     my.contents = my.newContents
-    // pour forcer l'actualisation du contenu mis en forme
-    delete my._contents_formated
+
+    /*- Marquer le parag (+ panneau + projet) modifié -*/
+    
     my.modified = true
-    if ( my.sync_after_save )
-    {
-      my.sync( callback )
-      delete my.sync_after_save
-    }
-    my.panneau.modified = true
+
+    /*- Synchronisation automatique -*/
+
+    my.sync_after_save && my.PRsync.bind(my).call()
+
   }
 
   /** ---------------------------------------------------------------------
@@ -1439,7 +1501,7 @@ class Parag
   * @return {Number}  L'ID du paragraphe avant lequel insérer le nouveau
   *                   paragraphe ou NULL s'il doit être inséré à la fin.
   **/
-  relativeParagInPanneau ( pan_id, firstOne )
+  relInPan ( pan_id, firstOne )
   {
     const my = this
 

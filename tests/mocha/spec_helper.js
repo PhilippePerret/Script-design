@@ -11,6 +11,21 @@
   Noter qu'il est inutile d'appeller resetTests() au début du fichier puisque
   c'est fait automatiquement au chargement de cette librairie.
 
+  MÉTHODES UTILES
+  ---------------
+
+    resetTests([{options}])
+
+        Ré-initialiser les tests.
+        Options peuvent contenir par exemple {nombre_parags: x} où "x" est le
+        nombre de parags à initialiser. Noter que tous les autres seront
+        détruits en profondeur.
+
+
+    unloadParag( < ID parag > )
+
+        Pour "décharger" un parag.
+
 */
 global.path               = require('path')
 global.PROJET_JS_FOLDER   = path.resolve('./__windows__/projet/js')
@@ -42,6 +57,39 @@ global.PANNEAU_ID  = 'synopsis' // panneau par défaut dans projet
 global.PROJET_ID   = 'exemple'  // projet identifiant
 global.USER_DATA_PATH = path.join(require('os').homedir(),'Library','Application\ Support','Script-design-TEST')
 // console.log('USER_DATA_PATH',USER_DATA_PATH)
+
+
+/** ---------------------------------------------------------------------
+  *
+  *   MÉTHODES UTILES
+  *
+*** --------------------------------------------------------------------- */
+
+/**
+* Méthode pour "décharger" un parag existant. Par exemple pour tester
+* son chargement.
+**/
+global.unloadParag = function( pid )
+{
+  Parags.get(pid).reset()
+  const pan = Parags.get(pid).panneau
+
+  if ( undefined !== global[`parag${pid}`] ){
+    delete global[`parag${pid}`]
+    expect(eval(`'undefined' == typeof(parag${pid})`)).to.be.true
+  }
+  delete Parags._items[pid]
+  expect(Parags.get(pid)).to.be.undefined
+  // Dans son panneau
+  if ( pan )
+  {
+    pan.parags._dict.delete(pid)
+    let off = pan.parags._ids.indexOf(pid)
+    pan.parags._ids.splice(off, 1)
+    pan.parags._items.splice(off, 1)
+    expect(pan.parags._dict[pid]).to.be.undefined
+  }
+}
 
 /** ---------------------------------------------------------------------
   *

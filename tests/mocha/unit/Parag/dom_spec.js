@@ -1,6 +1,6 @@
 require('../../spec_helper.js')
 
-describe('Parag', function () {
+describe.only('Parag', function () {
   describe('#build', function () {
     it('répond', function(){
       resetTest({nombre_parags:2})

@@ -28,13 +28,15 @@ describe('Création d’un nouveau Parag', function () {
         projet.option('autosync', 0)
         expect(()=>{parag1.id == 1}).to.throw()
       })
-      it("crée un nouveau parag", function(done){
+      it("crée un nouveau parag", function(){
 
         // - l'identifiant du nouveau paragraphe devra être #12 -
         Parag._lastID = 11
         let newP_id   = 12
 
         projet.current_panneau = panneauScenier
+
+        // ========> TEST <=========
         let newP = panneauScenier.parags.createNewParag()
         expect(newP).to.be.instanceOf(Parag)
         expect(newP.id).to.equal(newP_id)
@@ -46,8 +48,8 @@ describe('Création d’un nouveau Parag', function () {
         // Mais à ce moment-là, le paragraphe n'est pas encore enregistré
         expect(fs.existsSync(projet.parags_file_path), 'le fichier PARAGS.txt ne devrait pas exister').to.be.false
 
-        projet.saveParags( () => {
-
+        return projet.saveAll()
+        .then( () => {
           expect(fs.existsSync(projet.parags_file_path), 'le fichier PARAGS.txt devrait exister').to.be.true
 
           // On s'assure que
@@ -64,10 +66,6 @@ describe('Création d’un nouveau Parag', function () {
           expect(codePinfile[0]).to.equal('n')
           expect(codePinfile.substr(1, Parag.DATA['id'].length).trim()).to.equal('12')
 
-          // - on finit -
-
-          done()
-
         })
       })
     })// sans auto-synchronisation
@@ -75,17 +73,54 @@ describe('Création d’un nouveau Parag', function () {
 
     describe('avec l’auto-synchronisation', function () {
 
-      it("crée le nouveau parag", function(done){
+      before(function (done) {
         resetTest({nombre_parags : 0})
         expect(()=>{return parag0}).to.throw()
-        this.skip()
+        projet.option('autosync', 1)
+
+        Parag._lastID   = 25
+
+        // ======== PRÉ-VÉRIFICATION =========
+
+        expect(panneauManuscrit.parags.count).to.equal(0)
+        expect(panneauNotes.parags.count).to.equal(0)
+        expect(panneauScenier.parags.count).to.equal(0)
+        expect(panneauSynopsis.parags.count).to.equal(0)
+
+        // ========> TEST <=======
+
+        let newP = panneauManuscrit.parags.createNewParag()
+
+        newP.sync_after_save = true
+        // Maintenant, ce n'est plus dans la méthode createNewParag qu'on
+        // met sync_after_save à true (c'est dans createAndEdit — cf. la
+        // raison).
+        newP.newContents = "Un premier contenu pour voir."
+        newP.onChangeContents()
+        // La synchronisation n'est demandée qu'au changement
+        // de contenu. Mais il faut le définir avec newContents
+
+        // setTimeout( () => {
+        //   done()
+        // }, 1000)
         done()
+      });
+      it("crée le nouveau parag", function(){
+
+      // ======== VÉRIFICATION =========
+        expect(panneauManuscrit.parags.count, "le panneau Manuscrit devrait avoir maintenant avoir 1 parag").to.equal(1)
+        let parag = panneauManuscrit.parags._items[0]
+        expect(parag, "Le parag devrait être une instance Parag").to.be.instanceOf(Parag)
+        expect(parag.id, `Le parag devrait avoir un ID de 26 (il vaut ${parag.id})`).to.equal(26)
+
       })
 
-      it("crée les parags synchronisés", function(done){
+      it("crée les parags synchronisés", function(){
 
-        this.skip()
-        done()
+        expect(panneauNotes.parags.count).to.equal(1)
+        expect(panneauScenier.parags.count).to.equal(1)
+        expect(panneauSynopsis.parags.count).to.equal(1)
+
       })
 
     }) // avec l'autosynchronisation
