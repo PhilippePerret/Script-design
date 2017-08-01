@@ -464,12 +464,14 @@ class Projet
           prop      = o.id // par exemple 'authors' ou 'title'
         , newValue  = o.innerHTML.trim()
         , owner     = this
+        , ownerStr  = 'Projet'
 
     if (o.getAttribute('owner'))
     {
       // <= Le champ à un propriétaire propre, qui n'est pas le projet
       // => Il faut utiliser ses méthodes pour actualiser la donnée
-      owner = eval(o.getAttribute('owner'))
+      ownerStr  = o.getAttribute('owner')
+      owner     = eval(ownerStr)
 
     }
     else
@@ -489,7 +491,13 @@ class Projet
     // On enregistre la donnée et on l'actualise dans l'affichage
     // pour le Projet comme pour tout autre propriétaire défini dans l'attribut
     // `owner` du champ.
-    owner[`redefine_${prop}`](newValue)
+    let methode = `redefine_${prop}`
+    if ( 'function' === typeof owner[methode] ) {
+      owner[methode](newValue)
+    } else {
+      throw new Error(`Il faut implémenter la méthode ${ownerStr}#${methode} pour pouvoir éditer la propriété de l'objet.`)
+    }
+
 
   }
 

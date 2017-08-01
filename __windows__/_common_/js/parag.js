@@ -255,14 +255,18 @@ class Parag
     *   MÉTHODES D'ÉDITION DES DONNÉES
     *
   *** --------------------------------------------------------------------- */
-  redefine_duration (newDuration)
+  redefine_parag_duration (newDuration)
   {
-    console.log("Je dois mettre la durée de parag#%d à '%s'", this.id, newDuration)
+    alert("Je dois mettre la durée de parag#%d à '%s'", this.id, newDuration)
+  }
 
+  redefine_parag_position (newPositionHorloge)
+  {
+    alert("Redéfinition de la position à implémenter")
   }
   redefine_parag_type( newType)
   {
-
+    alert("Redéfinition du type du parag à implémenter")
   }
 
 
@@ -1634,6 +1638,7 @@ class Parag
     const my = this
     my.mainDiv.querySelector('div.p-verso').appendChild(Parag.paragVersoForm)
     Parag.paragVersoForm.style.display = 'block'
+    Parag.paragVersoForm.querySelector('span#parag_id').innerHTML = String(my.id)
     my.recto.className = 'p-recto hidden'
     my.verso.className = 'p-verso'
     my._isRecto = false

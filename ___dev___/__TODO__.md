@@ -1,15 +1,12 @@
+* Mettre en forme le verso du parag
 
-* select ne fonctionne pas sur un champ (utiliser la même chose pour que pour les paragraphes, en fonction des options)
-* Indiquer l'id du parag en début de verso
-  => Il suffit de régler le span#parag_id du formulaire
 * Implémenter le même traitement mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
   Essayer ça avec les types, dont on doit proposer une liste
 
 * Documenter l'utilisation des touches '->' ou 'l' pour basculer du recto au  verso
   * Dans les développements futurs, on pourra imaginer de passer en revue plusieurs tableaux comme ça.
 
-* Poursuivre la vérification de tous les tests
-  J'en suis au dossier Parag
+* Reprendre tous les tests des méthodes en Mocha.
 
 * Soit le parag 19
   Il est demandé sa synchronisation
