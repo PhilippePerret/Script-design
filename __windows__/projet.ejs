@@ -21,6 +21,7 @@
         ********************** LES PANNEAUX ***********************
     -->
 
+
     <!-- PANNEAU DATA GÉNÉRALES -->
     <section id="panneau-data" class="panneau actif">
       <div id="panneau-data-title" class="panneau-title"><!-- no titre --></div>
@@ -70,6 +71,11 @@
       <div id="panneau-manuscrit-title" class="panneau-title">Manuscrit</div>
       <div id="panneau-manuscrit-contents" class="panneau-contents"></div>
       <div class="clear"></div>
+
+      <!-- LE VERSO DES PARAGS EST GLISSÉ ICI -->
+
+      <% include projet/html/verso_parag_form %>
+
     </section>
 
     <tabulator id="boutons-panneaux" tabindex="1">

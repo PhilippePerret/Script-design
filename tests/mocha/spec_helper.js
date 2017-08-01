@@ -136,7 +136,22 @@ PanProjet.resetContainers = function()
 Object.defineProperties(PanProjet.prototype, {
   'section': {
     get: function(){
-      this._section || (this._section = DOM.create('div', {id: `panneau-${this.id}`, class:'panneau'}))
+      if ( ! this._section )
+      {
+
+        this._section = DOM.create('div', {id: `panneau-${this.id}`, class:'panneau'})
+
+        /*- Ajout du verso du parag ici, si pas encore fait -*/
+
+        if ( ! PanProjet.formVersoParagAlreadyAdded )
+        {
+          html = fs.readFileSync('./__windows__/projet/html/verso_parag_form.ejs', 'utf8')
+          this._section.innerHTML = html
+          PanProjet.formVersoParagAlreadyAdded = true
+        }
+
+
+      }
       return this._section
     }
   },
@@ -149,6 +164,7 @@ Object.defineProperties(PanProjet.prototype, {
           this._container = DOM.create('div', {id:`panneau-contents-${this.id}`, 'index': (++container_index)})
           // l'attribut 'index' ci-dessus a été ajouté pour vérifier qu'on avait bien le même
           // container.
+
           PanProjet.keepContainer(this.id, this._container)
         }
       }
@@ -171,6 +187,7 @@ Object.defineProperties(PanData.prototype, {
         if ( ! this._container )
         {
           this._container = DOM.create('div', {id:`panneau-contents-data`, 'index': (++container_index)})
+
           // l'attribut 'index' ci-dessus a été ajouté pour vérifier qu'on avait bien le même
           // container.
           PanProjet.keepContainer(this.id, this._container)

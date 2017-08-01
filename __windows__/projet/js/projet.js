@@ -499,6 +499,16 @@ class Projet
     this._ui || ( this._ui = new ProjetUI(this) )
     return this._ui
   }
+
+  /**
+  * Object pour la gestion des brins du projet
+  **/
+  get brins ()
+  {
+    this._brins || ( this._brins = new Brins(this) )
+    return this._brins
+  }
+
   /**
   * @property {PanData} Le panneau 'data', qui s'occupe des données
   * générales du projet.

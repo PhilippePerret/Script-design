@@ -1134,7 +1134,7 @@ class Parag
   get divContents ()
   {
     if (!this._div_contents)
-    {this._div_contents=this.mainDiv.getElementsByClassName('p-contents')[0]}
+    {this._div_contents=this.mainDiv.getElementsByClassName('p-recto')[0]}
     return this._div_contents
   }
 
@@ -1205,12 +1205,14 @@ class Parag
   {
 
     let
-          div_id  = `p-${this.id}`
-        , div     = DOM.create('div', {class:'p', id: div_id, 'data-id':String(this.id)})
-        , divCont = DOM.create('div',{class:'p-contents',id:`${div_id}-contents`,inner:this.contentsFormated})
+          div_id    = `p-${this.id}`
+        , div       = DOM.create('div', {class:'p', id: div_id, 'data-id':String(this.id)})
+        , divCont   = DOM.create('div', {class:'p-recto',id:`${div_id}-recto`,inner:this.contentsFormated})
+        , divVerso  = DOM.create('div', {class:'p-verso hidden', id: `p-${this.id}-verso`})
     // Ajout du contenu textuel
 
     div.appendChild(divCont)
+    div.appendChild(divVerso)
     this.observe_div(div)
     this.observe_contents(divCont)
     return div
@@ -1575,6 +1577,64 @@ class Parag
       })
     }
     return this._relatives
+  }
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES POUR LE VERSO DU DIV (PROPS)
+    *
+  *** --------------------------------------------------------------------- */
+
+  isRecto ()
+  {
+    if ( undefined === this._isRecto ) { this._isRecto = true }
+    return this._isRecto
+  }
+  /**
+   * Méthode qui demande l'affichage du recto du parag
+   *
+   * Elle commence par mettre le formulaire général dans le div.verso du
+   * mainDiv du parag.
+   */
+  showVerso ()
+  {
+    const my = this
+    my.mainDiv.querySelector('div.p-verso').appendChild(Parag.paragVersoForm)
+    my._isRecto = false
+    return true
+  }
+
+  showRecto ()
+  {
+    const my = this
+
+    my._isRecto = true
+  }
+
+  static get paragVersoForm ()
+  {
+    if ( undefined === this._paragVersoForm )
+    {
+      const my = this
+      my._paragVersoForm = undefined
+      // Je le cherche dans une des sections des panneaux
+      // Noter qu'on pourrait le rechercher dans le document, mais que
+
+      my._paragVersoForm = document.querySelector('form#parag_verso_form')
+
+      if ( ! my._paragVersoForm )
+      {
+        Projet.PANNEAU_LIST.forEach( (panid) => {
+          if ( my._paragVersoForm ) { return }
+          else {
+            let container = Projet.current.panneau(panid).section
+            my._paragVersoForm = container.querySelector('form#parag_verso_form')
+          }
+        })
+      }
+    }
+    return this._paragVersoForm
   }
 
 }

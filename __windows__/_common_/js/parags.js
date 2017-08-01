@@ -46,13 +46,14 @@ class Parags
   **/
   reset ()
   {
-    this.selection.reset()
-    this._items = []
+    const my = this
+    my.selection.reset()
+    my._items = []
     // this._dict  = {}
-    this._dict = new Map()
-    this._ids   = []
-    this._count = 0
-    this.panneau.container.innerHTML = ''
+    my._dict = new Map()
+    my._ids   = []
+    my._count = 0
+    my.panneau.container.innerHTML = ''
   }
 
 
