@@ -114,7 +114,7 @@ describe.only('Types de parag', function () {
     *
   *** --------------------------------------------------------------------- */
 
-  describe.only('menus des types', function () {
+  describe('menus des types', function () {
     describe('buildSelects', function () {
       it("répond comme méthode de classe", function(){
         expect(ParagTypes).respondsTo('buildSelects')
@@ -174,4 +174,10 @@ describe.only('Types de parag', function () {
       })
     });
   });
+
+
+  describe('Inscription des menus dans le verson du parag', function () {
+    // Je ne peux pas encore le vérifier en test unitaire.
+  });
+
 });

@@ -1,28 +1,45 @@
 <form id="parag_verso_form" action="" method="POST" style="display:none">
-  <span id="span-id">
-    #<span id="parag_id">XXX</span>
-  </span>
-  <span id="span-duration" class="prop">
-    <label for="parag_duration">Durée</label>
-    <span data-tab="duration" id="parag_duration" class="editable dashed" owner="currentParag">0:00</span>
-  </span>
+  <div id="parag-verso-form-line1" class="line">
+    <span id="span-id">
+      #<span id="parag_id">XXX</span>
+    </span>
 
-  <span id="span-position" class="prop">
-    <label for="parag_position">Position</label>
-    <span data-tab="position" id="parag_position" class="editable dashed" owner="currentParag">0:00:00</span>
-  </span>
+    <!-- Position temporelle -->
 
-  <span id="span-type" class="prop">
-    <label for="parag_type">Type</label>
-    <span data-tab="type" id="parag_type" class="editable dashed" owner="currentParag">0000</span>
-  </span>
+    <span id="span-duration" class="prop">
+      <label for="parag_duration">Durée</label>
+      <span data-tab="duration" id="parag_duration" class="editable dashed" owner="currentParag">0:00</span>
+    </span>
+
+    <span id="span-position" class="prop">
+      <label for="parag_position">Position</label>
+      <span data-tab="position" id="parag_position" class="editable dashed" owner="currentParag">0:00:00</span>
+    </span>
+
+    <!-- BRINS -->
+
+    <span id="span-brins" class="prop">
+      <label for="list-brins">Brins</label>
+      <select data-tab="brins" name="brins" id="list-brins"></select>
+      <span>b : Nouveau brin</span>
+    </span>
+
+  </div>
+
+  <div id="parag-verso-form-line2" class="line">
+
+    <!-- TYPES -->
+    <span id="span-type" class="prop">
+      <label for="parag_type">Types</label>
+      <span id="span-type1"></span>
+      <span id="span-type2"></span>
+      <span id="span-type3"></span>
+      <span id="span-type4"></span>
+    </span>
 
 
-  <!-- BRINS -->
-  <span id="span-brins" class="prop">
-    <label for="list-brins">Brins</label>
-    <select data-tab="brins" name="brins" id="list-brins"></select>
-    <span>b : Nouveau brin</span>
-  </span>
+  </div>
+
+
 
 </form>

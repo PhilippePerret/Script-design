@@ -48,7 +48,7 @@ class Parag
         // Les nouvelles données doivent obligatoirement être ajoutées après et il
         // faut retirer la longueur à 'vide' ci-dessous pour ne pas avoir à tout
         // recalculer
-        , 'vide'        : {length: 48 , type: 's', default: ''}
+        , 'vide'        : {length: 68 , type: 's', default: ''}
       }
     )
     return this.__data
@@ -1687,6 +1687,15 @@ class Parag
       Parag.paragVersoForm.querySelector(`span#parag_${k}`).innerHTML = v
     })
 
+    /*- On met les 4 menus des types -*/
+    let selects = my.types.buildSelects()
+    for( let xtype = 1 ; xtype < 5 ; ++ xtype )
+    {
+      let ospan = Parag.paragVersoForm.querySelector(`span#span-type${xtype}`)
+      ospan.innerHTML = ''
+      ospan.appendChild(selects[-1 + xtype])
+    }
+
     let mesLettres = new Map()
     mesLettres.set('b', my.createNewBrin.bind(my) )
     if (DOM.get('parag_verso_form')) // pas pour les tests
@@ -1734,12 +1743,19 @@ class Parag
     DOM.get('parag_position').innerHTML = this.position.as_horloge()
   }
 
-
-  redefine_parag_type( nv)
+  /**
+  * Quand on choisit une nouvelle valeur dans un des 4 menus de type
+  **/
+  onChangeType( xType, nv )
   {
-    this.type = nv.trim().titleize()
-    this.rebuilt()
-    DOM.get('parag_type').innerHTML = this.type
+    const my = this
+    my.types[`type${xType}`]= parseInt(nv)
+    // modifie aussi la donnée générale et indique que le parag a été
+    // modifié, pour enregistrement.
+
+    // TODO remettre : this.rebuild()
+    // On doit peut-être reconstruire le parag, car les styles influent
+    // fortement sur le style.
   }
 
   showRecto ()

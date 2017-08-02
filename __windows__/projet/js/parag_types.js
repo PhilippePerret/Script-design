@@ -99,7 +99,7 @@ class ParagTypes {
     let selects = []
     for (let i = 1 ; i < 5 ; ++i )
     {
-      let opts = {}
+      let opts = {parag_id: options.parag_id}
       let selected = options[`type${i}_selected`]
       if ( undefined !== selected) { opts.selected = selected }
       selects.push(this.buildSelect(i, opts))
@@ -113,7 +113,8 @@ class ParagTypes {
   static buildSelect( xType, options )
   {
     const dataType = this.DATA[`type${xType}`]
-    let select = DOM.create('select', {id: `parag_type${xType}`, class: `parag_types`})
+    let methodOnChange = `let p = Parags.get(${options.parag_id});p.onChangeType.call(p,${xType},this.value)`
+    let select = DOM.create('select', {id: `parag_type${xType}`, class: `parag_types`, onchange: methodOnChange})
     for (let id in dataType)
     {
       if (!dataType.hasOwnProperty(id)){continue}
@@ -177,7 +178,8 @@ class ParagTypes {
   buildSelects ()
   {
     return ParagTypes.buildSelects({
-        type1_selected: this.type1
+        parag_id: this.parag.id
+      , type1_selected: this.type1
       , type2_selected: this.type2
       , type3_selected: this.type3
       , type4_selected: this.type4
@@ -205,7 +207,7 @@ class ParagTypes {
   redefineDown () {
     const my = this
     for(let i=1;i<5;++i){
-      my[`_type${i}_b32`]= my._data.substr(- 1 + i , 1)
+      my[`_type${i}_b32`]= (my._data||'0000').substr(- 1 + i , 1)
       my[`_type${i}`]= my[`_type${i}_b32`].fromBase32()
     }
     my.parag.type = my._data
