@@ -20,7 +20,7 @@ class ParagTypes {
     if ( undefined === this._DATA )
     {
       this._DATA = {
-        type1:{
+          type1:{
             0  : { hname: "Non défini" }
           , 1  : { hname: "Structure" }
           , 2  : { hname: "Structure : PFA"}
@@ -33,7 +33,7 @@ class ParagTypes {
           , 1  : { hname: "Action" }
           , 2  : { hname: "Description" }
           , 3  : { hname: "Dialogue" }
-          , 4  : { hname: "Action & dialogue" }
+          , 4  : { hname: "Action &amp; dialogue" }
           , 5  : { hname: "Réflexion" }
 
           /*
@@ -86,10 +86,47 @@ class ParagTypes {
         }
         i += 6
       }
-      console.log("Parag.Types.DATA", this._Parag.Types.DATA)
     }// Fin de la définition
     return this._DATA
   }
+
+  /**
+  * Construction des menus select pour choisir les types
+  **/
+  static buildSelects( options )
+  {
+    options || ( options = {} )
+    let selects = []
+    for (let i = 1 ; i < 5 ; ++i )
+    {
+      let opts = {}
+      let selected = options[`type${i}_selected`]
+      if ( undefined !== selected) { opts.selected = selected }
+      selects.push(this.buildSelect(i, opts))
+    }
+    return selects
+  }
+  /**
+  *
+  * @param {Number} xType Nombre de 1 à 4 pour préciser le type
+  **/
+  static buildSelect( xType, options )
+  {
+    const dataType = this.DATA[`type${xType}`]
+    let select = DOM.create('select', {id: `parag_type${xType}`, class: `parag_types`})
+    for (let id in dataType)
+    {
+      if (!dataType.hasOwnProperty(id)){continue}
+      let dataOption = {id: `type-${xType}-${id}`, value: String(id), inner: dataType[id].hname}
+      if ( options && options.selected == id) { dataOption.selected = 'SELECTED' }
+      let option = DOM.create('option', dataOption)
+      // console.log("opion", option.outerHTML)
+      select.appendChild(option)
+    }
+    // console.log("select", select.outerHTML)
+    return select
+  }
+
   /** ---------------------------------------------------------------------
     *
     *   INSTANCE
@@ -136,6 +173,20 @@ class ParagTypes {
   set type3_b32 (v) { this._type3_b32 = v ; this.redefineMiddle(3) }
   set type4_b32 (v) { this._type4_b32 = v ; this.redefineMiddle(4) }
 
+
+  buildSelects ()
+  {
+    return ParagTypes.buildSelects({
+        type1_selected: this.type1
+      , type2_selected: this.type2
+      , type3_selected: this.type3
+      , type4_selected: this.type4
+    })
+  }
+
+  /*  - private -  */
+
+
   /**
   * C'est-à-dire qu'on part de la valeur du typeX pour aller vers la
   * valeur du typeX_b32 puis la valeur de data.
@@ -149,6 +200,7 @@ class ParagTypes {
     my[`_type${x}_b32`] = my[`_type${x}`].toBase32()
     for(x=1; x<5; ++x) { d += my[`_type${x}_b32`] }
     my._data = d
+    my.parag.type = my._data
   }
   redefineDown () {
     const my = this
@@ -156,6 +208,7 @@ class ParagTypes {
       my[`_type${i}_b32`]= my._data.substr(- 1 + i , 1)
       my[`_type${i}`]= my[`_type${i}_b32`].fromBase32()
     }
+    my.parag.type = my._data
   }
   redefineMiddle (x)
   {
@@ -166,6 +219,7 @@ class ParagTypes {
       d += `${my[`_type${x}_b32`]}`
     }
     my._data = d
+    my.parag.type = my._data
   }
 
 }

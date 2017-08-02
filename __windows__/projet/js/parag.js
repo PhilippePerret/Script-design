@@ -231,7 +231,7 @@ class Parag
 
   set duration    (v) { this._duration = v    }
   set position    (v) { this._position = v    }
-  set type        (v) { this._type = v        }
+  set type        (v) { this._type = v ; this.modified = true }
   set brins_ids   (v) { this._brins_ids = v   }
   set updated_at  (v) { this._updated_at = v  }
   set created_at  (v) { this._created_at = v  }

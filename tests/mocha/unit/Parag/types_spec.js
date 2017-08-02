@@ -91,7 +91,87 @@ describe.only('Types de parag', function () {
         parag8.types[ptype] = nombre
         expect(parag8.types.data[Number(n) - 1]).to.equal( nombre.toBase32() )
       })
+      it("actualise la valeur Parag@type enregistrée", function(){
+        expect(parag8.type).to.equal(parag8.types.data)
+      })
+      it("indique que le parag est modifié", function(){
+        parag9.modified = false
+        expect(parag9.modified).to.be.false
+        let nombre = 5 + Number(n)
+        parag9.types[ptype] = nombre
+        expect(parag9.modified).to.be.true
+      })
     });
 
   })
+
+  // ---------------------------------------------------------------------
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *   TEST DES HELPERS D'ÉDITION
+    *
+  *** --------------------------------------------------------------------- */
+
+  describe.only('menus des types', function () {
+    describe('buildSelects', function () {
+      it("répond comme méthode de classe", function(){
+        expect(ParagTypes).respondsTo('buildSelects')
+      })
+      it("répond comme méthode d'instance", function(){
+        expect(parag0.types).respondsTo('buildSelects')
+      })
+    });
+
+    describe('buildSelect', function () {
+
+      // Je ne sais pas pourquoi celui-là foire…
+      // it("répond comme méthode de classe", function(){
+      //   expect(ParagTypes).to.respondsTo('buildSelect')
+      // })
+
+      it("retourne un objet DOM Select", function(){
+        expect(ParagTypes.buildSelect(1)).to.be.instanceOf(HTMLSelectElement)
+      })
+      it("contient tous les types du type voulu et pas les autres", function(){
+        let typeX = 2
+        const select = ParagTypes.buildSelect(typeX)
+        let dataTypex = ParagTypes.DATA[`type${typeX}`]
+        for( let i = 0 ; i < 32 ; ++i )
+        {
+          if (undefined === dataTypex[i] )
+          {
+            // Cette option ne doit pas exister
+            expect(select).not.to.haveTag('option', {value: String(i)})
+          }
+          else
+          {
+            // Cette option doit exister
+            expect(select).to.haveTag('option',
+              {
+                  id    : `type-${typeX}-${i}`
+                , value : String(i)
+                , text  : dataTypex[Number(i)].hname
+              }
+            )
+
+          }
+        }
+      })
+      it("selectionne l'élément s'il est défini pour le parag", function(){
+        parag8.types.data = '1203'
+        let res = parag8.types.buildSelects()
+        expect(res[0]).to.be.instanceOf(HTMLSelectElement)
+        expect(res[0]).to.haveTag('option', {id:'type-1-1', selected:'SELECTED'})
+        expect(res[1]).to.be.instanceOf(HTMLSelectElement)
+        expect(res[1]).to.haveTag('option', {id:'type-2-2', selected:'SELECTED'})
+        expect(res[2]).to.be.instanceOf(HTMLSelectElement)
+        expect(res[2]).to.haveTag('option', {id:'type-3-0', selected:'SELECTED'})
+        expect(res[3]).to.be.instanceOf(HTMLSelectElement)
+        expect(res[3]).to.haveTag('option', {id:'type-4-3', selected:'SELECTED'})
+
+      })
+    });
+  });
 });
