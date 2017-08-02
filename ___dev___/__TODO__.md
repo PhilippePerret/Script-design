@@ -1,6 +1,27 @@
-* Mettre en forme le verso du parag
 
-* Implémenter le même traitement mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
+
+* Créer les types
+  On peut choisir 32 + 32 + 32 + 32 types pour un parag.
+  Il est exprimé en base32 dans la donnée, donc en quatre lettres-chiffres
+
+  type1   Caractéristique générale, pour dire action, ou dialogue, ou mixte, etc.
+  type2   Pour définir
+  type3
+  type4
+
+  type1
+      action
+      dialogue
+      action & dialogue
+      -----------------
+      question
+      note
+      remarque
+      todo
+
+* Implémenter la gestion des brins
+
+* Implémenter le même traitement que editablecontent on blur, mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
   Essayer ça avec les types, dont on doit proposer une liste
 
 * Documenter l'utilisation des touches '->' ou 'l' pour basculer du recto au  verso

@@ -10,7 +10,8 @@ Les `Parag`(s) (pour « Paragraphes ») sont les entités de base de l'applica
 * [`position`](#parag_property_position),
 * [`type`](#parag_property_type),
 * [`brins_ids`](#parag_property_brins_ids),
-
+* [Types du parag](#types_de_parags)
+* [Options du parag](#options_du_parag)
 
 ### {Number} `id` {#parag_property_id}
 
@@ -37,6 +38,8 @@ Position temporelle, en seconde, du parag. Soit elle est fournie explicitement, 
 Type(s) du Parag. C'est un string sur 4 lettres-chiffres qui définissent le type précis du parag. Pour le moment (1 08 2017), ces types ne sont pas définis, sauf pour la valeur par défaut `0000` qui indique qu'aucun type n'est attribué au parag.
 
 Noter que ces types ont une implication sur l'aspect de l'affichage du parag, sauf contre-indication.
+
+Pour tous les types, cf. [Types de parags](#types_de_parags)
 
 ### {String} `brins_ids` {#parag_property_brins_ids}
 
@@ -186,3 +189,69 @@ Ensuite, on associe les parags #1 et #2. Le programme transforme alors la donné
 ### Principe d'unicité du référent {#parag_principe_unicite_referent}
 
 Ce principe veut qu'un groupe de paragraphe donné dans un panprojet possède un et un seul référent. En d'autres termes, deux parags du synopsis ne peuvent avoir ensemble qu'un seul relatif dans le scénier.
+
+## Les 4 Types du parag {#types_de_parags}
+
+Les types de parag s'enregistrent sur 4 lettes/chiffres qui expriment chacun un nombre en base 32. Par exemple :
+
+```js
+
+const type = '4vq9'
+/*
+  =>
+    4   => type1 = 4
+    v   => type2 = 31
+    q   => type3 = 26
+    9   => type4 = 9
+
+*/
+
+```
+
+### type1
+
+Définit le "sujet" visé par le paragraphe, avec comme valeurs possibles :
+
+  0  : Indéfini
+  1  : Structure
+  2  : PFA
+  5  : Personnage
+  6  : Dialogue
+
+### type2 - Type de Contenu
+
+Définit la "type de contenu" du parag :
+
+```
+
+    0  : non défini
+    1  : Dialogue
+    2  : Action
+    3  : Réflexion
+    4  : Dialogue et action
+
+    ------------------------------------------------------------
+    Tous les types suivants sont considérés comme ne faisant pas
+    partie du texte proprement dit.
+
+    10 : Note auteur 1
+    11 : Note auteur 2
+    12 : Note auteur 3
+
+    15 : Question
+    16 : Remarque
+
+    20 : À faire
+
+```
+
+### type3
+
+### type4 — Niveau de développement
+
+Définit le niveau de développement du parag.
+
+
+## Options du parag {#options_du_parag}
+
+1 : imprimable, c'est-à-dire fait partie du texte proprement dit, ça n'est ni une note, ni une question, etc.
