@@ -44,10 +44,11 @@ class Parag
         , 'updated_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD')  }
         , 'position'    : {length: 6  , type: 'n', default: null    }
         , 'type'        : {length: 4  , type: 's', default: '0000'  }
+        , 'brins_ids'   : {length: 16 , type: 's', default: ''      }
         // Les nouvelles données doivent obligatoirement être ajoutées après et il
         // faut retirer la longueur à 'vide' ci-dessous pour ne pas avoir à tout
         // recalculer
-        , 'vide'        : {length: 64 , type: 's', default: ''}
+        , 'vide'        : {length: 48 , type: 's', default: ''}
       }
     )
     return this.__data
@@ -220,17 +221,20 @@ class Parag
     this._panneau_let = v
     this._panneau_id = Projet.PANNEAUX_DATA[v]
   }
+
   get duration    ()  { return this._duration    }
   get position    ()  { return this._position     }
   get type        ()  { return this._type         }
+  get brins_ids   ()  { return this._brins_ids    }
   get updated_at  ()  { return this._updated_at   }
   get created_at  ()  { return this._created_at   }
 
-  set duration    (v)  { this._duration = v   }
-  set position    (v)  { this._position = v   }
-  set type        (v)  { this._type = v       }
-  set updated_at  (v)  { this._updated_at = v }
-  set created_at  (v)  { this._created_at = v }
+  set duration    (v) { this._duration = v    }
+  set position    (v) { this._position = v    }
+  set type        (v) { this._type = v        }
+  set brins_ids   (v) { this._brins_ids = v   }
+  set updated_at  (v) { this._updated_at = v  }
+  set created_at  (v) { this._created_at = v  }
 
 
   /** ---------------------------------------------------------------------

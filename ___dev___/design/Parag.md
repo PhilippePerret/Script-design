@@ -9,6 +9,8 @@ Les `Parag`(s) (pour « Paragraphes ») sont les entités de base de l'applica
 * [`duration`](#parag_property_duration),
 * [`position`](#parag_property_position),
 * [`type`](#parag_property_type),
+* [`brins_ids`](#parag_property_brins_ids),
+
 
 ### {Number} `id` {#parag_property_id}
 
@@ -35,6 +37,25 @@ Position temporelle, en seconde, du parag. Soit elle est fournie explicitement, 
 Type(s) du Parag. C'est un string sur 4 lettres-chiffres qui définissent le type précis du parag. Pour le moment (1 08 2017), ces types ne sont pas définis, sauf pour la valeur par défaut `0000` qui indique qu'aucun type n'est attribué au parag.
 
 Noter que ces types ont une implication sur l'aspect de l'affichage du parag, sauf contre-indication.
+
+### {String} `brins_ids` {#parag_property_brins_ids}
+
+String de 16 caractères pour mémoriser les brins du parag. Chaque double caractère représente une valeur en base 32.
+
+Utiliser les méthodes `Number#toBase32` et `String#fromBase32` pour encoder et décoder les nombres.
+
+Note : cela permet de créer les brins 0 à 1023.
+
+On peut récupérer un brin par :
+
+```js
+
+let instance_brin = Brins.getWithId32( ID32_sur_2_lettres )
+
+```
+
+Pour le moment, un parag ne peut appartenir qu'à 8 brins.
+
 
 ### {String} `contents` {#parag_property_contents}
 

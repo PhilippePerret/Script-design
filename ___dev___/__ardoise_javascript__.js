@@ -3,12 +3,10 @@
 
 let res = "FIN"
 
-let h = [
-  [1,'un'], ['deux', 2]
-]
+let id = 1000
 
-let m = new Map(h)
+hex = id.toBase32()
+res = hex.fromBase32()
 
-res = m.get('deux')
-
+console.log("hex = ", hex)
 console.log(res)
