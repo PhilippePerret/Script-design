@@ -18,6 +18,8 @@ require(path.join(LIB_UTILS_JS,'String.js'))
 
 global.UI             = require(path.join(FOLDER_COMMON_JS,   'ui.js'))
 global.DOM            = require(path.join(LIB_UTILS_JS,       'dom_class.js'))
+global.Events         = require(path.join(LIB_UTILS_JS,       'events.js'))
+global.Keyboard       = Events.Keyboard
 global.Store          = require(path.join(LIB_UTILS_JS,       'store_class.js'))
 global.Projet         = require(path.join(PROJET_JS_FOLDER,   'projet.js'))
 global.ProjetUI       = require(path.join(PROJET_JS_FOLDER,   'projet_ui.js'))

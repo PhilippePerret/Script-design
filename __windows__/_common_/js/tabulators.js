@@ -27,12 +27,40 @@ class Tabulator
   static setup ()
   {
     // console.log('-> Tabulator::setup')
-    this.ready = false // pour les tests
+    this.ready  = false // pour les tests
     this._items = {} // les tabulateurs
     this._list  = [] // Idem mais en array
     this.observe()
-    this.ready = true
+    this.ready  = true
     // console.log('<- Tabulator::setup')
+  }
+
+  /**
+  * Sélectionne l'élément éditable précédent (avec la flèche gauche)
+  **/
+  static selectPreviousEditable ()
+  {
+    const my = this
+    let prevOffset = my.LETTERS.indexOf(my.currentLetter) - 1
+    if ( prevOffset < 0 ) return // rien à faire
+    my.selectOtherEditable(my.LETTERS[prevOffset])
+  }
+  /**
+  * Sélectionne l'élément éditable suivant (avec la flèche droite)
+  **/
+  static selectNextEditable ()
+  {
+    const my = this
+    let nextOffset = my.LETTERS.indexOf(my.currentLetter) + 1
+    if ( nextOffset > my.iMaxLetter ) return // on est au bout
+    my.selectOtherEditable(my.LETTERS[nextOffset])
+  }
+
+  static selectOtherEditable ( letter )
+  {
+    const my = this
+    my.currentLetter = letter
+    my.sectionMap.get(letter).call()
   }
 
   /**
@@ -73,15 +101,28 @@ class Tabulator
 
       let iletter = -1
         , letter = null
+        , tagname
         , data_tab
         , title
 
       obj.querySelectorAll('*[data-tab]').forEach( (o) => {
+
+        // tagname   = o.tagName.toLowerCase()
+        // Le tagname va déterminer comment on va éditer le champ
+        // Pour le cas classique d'un span, div, etc., on ajoute la
+        // propriété 'editable' à true, mais on peut également gérer les
+        // select ou les input type-checkbox
+        // Mais ça n'est pas encore utilisé car c'est la méthode d'activation
+        // propre à l'objet appelant qui doit gérer ça.
+
         data_tab = o.getAttribute('data-tab')
 
         // Si la lettre est déjà utilisée dans params.MapLetters (donc
         // dans sectionMap), on passe à la suivante
         while(!letter || sectionMap.get(letter)){letter = Tabulator.LETTERS[++iletter]}
+
+        my.iMaxLetter = iletter
+        // Pour pouvoir passer à l'élément suivant/précédent
 
         /*- Ajout dans la map de la section -*/
 
@@ -109,13 +150,15 @@ class Tabulator
 
     }
 
+    my.sectionMap = sectionMap
+    // Pour pouvoir passer à l'élément éditable suivant/précédent, on doit
+    // connaitre la map.
+
     /*- Activer cette section en déasactivant le comportement courant -*/
 
     sectionMap.set('windowOnKeyUp', window.onkeyup)
     window.onkeyup = undefined
     window.onkeyup = function(evt){
-
-
       let fonction = sectionMap.get(evt.key) || sectionMap.get(evt.key.toLowerCase())
 
       /*- Si la fonction est définie, il faut voir si elle existe
@@ -123,6 +166,11 @@ class Tabulator
 
       if ( fonction )
       {
+
+        my.currentLetter = evt.key.toLowerCase()
+        // On aura besoin de connaitre la lettre courant pour passer à
+        // l'élément éditable suivant ou précédent avec les flèches
+
         if ( 'function' === typeof(fonction))
         {
           fonction.call()
@@ -132,7 +180,56 @@ class Tabulator
           alert(`La méthode ${fonction} n'est pas définie…`)
         }
       }
-    }
+      else
+      {
+        // Ce n'est pas une fonction définie. Est-ce que ça peut
+        // être une autre touche.
+        // Noter qu'on ne gère pas ici les Tab, Escape et Enter quand on
+        // se trouve dans les champs d'édition puisque c'est une fonction
+        // du gestionnaire d'évènement keyup lorsque l'on passe en édition.
+        const target = evt.target
+        const tagname = target.tagName.toLowerCase()
+        switch(evt.key.toLowerCase())
+        {
+          case 'j':
+          case 'arrowleft'
+            my.selectPreviousEditable()
+            return DOM.stopEvent(evt)
+          case 'l':
+          case 'arrowright':
+            my.selectNextEditable()
+            return DOM.stopEvent(evt)
+          case 'k': // simuler la flèche haut
+            if ( tagname == 'select' )
+            {
+              // Flèche haut sur un menu sélectionné
+              let i   = target.selectedIndex + 1
+              let nb  = target.childNodes.length
+              if ( i >= nb ) { i = 0 }
+              target.childNodes[i].selected = true
+            }
+            else
+            {
+              Keyboard.press('ArrowDown', {target: evt.target})
+            }
+            break
+          case 'i': // simuler la flèche bas
+            if ( tagname == 'select' )
+            {
+              // Flèche haut sur un menu sélectionné
+              let i   = target.selectedIndex - 1
+              let nb  = target.childNodes.length
+              if ( i < 0 ) { i = nb - 1 }
+              target.childNodes[i].selected = true
+            }
+            else
+            {
+              Keyboard.press('ArrowUp', {target: evt.target})
+            }
+            break
+        }
+      }
+    } // fin de la définition du gestionnaire de keyup
 
     UILog(`#${obj.id} est géré par ©Tabulator`)
   }

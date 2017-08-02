@@ -1,4 +1,4 @@
-
+* Bien documenter le fonctionnement du Tabulator pour le setupAsTabulator à propos des flèches qui permettent de 1. se déplacer d'éditable en éditable (renseigner aussi la documentation pour l'auteur) et 2. de passer en revue les valeurs d'un menu-select
 
 * Créer les types
   On peut choisir 32 + 32 + 32 + 32 types pour un parag.

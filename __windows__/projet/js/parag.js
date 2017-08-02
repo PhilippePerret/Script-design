@@ -1682,7 +1682,6 @@ class Parag
         ['id',        String(my.id)]
       , ['duration',  (my.duration||60).as_duree()]
       , ['position',  (my.position ? my.position.as_horloge() : 'auto')]
-      , ['type',      my.type]
     ])).forEach( (v, k) => {
       Parag.paragVersoForm.querySelector(`span#parag_${k}`).innerHTML = v
     })
@@ -1696,6 +1695,8 @@ class Parag
       ospan.appendChild(selects[-1 + xtype])
     }
 
+    /*- Définition pour le Tabulator -*/
+
     let mesLettres = new Map()
     mesLettres.set('b', my.createNewBrin.bind(my) )
     if (DOM.get('parag_verso_form')) // pas pour les tests
@@ -1704,7 +1705,10 @@ class Parag
         Map:{
             'duration'  : my.editProperty.bind(my, 'duration')
           , 'position'  : my.editProperty.bind(my, 'position')
-          , 'type'      : my.editProperty.bind(my, 'type')
+          , 'type1'     : my.editProperty.bind(my, 'type1')
+          , 'type2'     : my.editProperty.bind(my, 'type2')
+          , 'type3'     : my.editProperty.bind(my, 'type3')
+          , 'type4'     : my.editProperty.bind(my, 'type4')
         }
         , MapLetters: mesLettres
       })
@@ -1725,8 +1729,16 @@ class Parag
   }
   editProperty ( property )
   {
-    const my = this
-    my.projet.ui.activateEditableField(DOM.get(`parag_${property}`))
+    const my  = this
+    const obj = DOM.get(`parag_${property}`)
+    switch(obj.tagName.toLowerCase())
+    {
+      case 'select':
+        obj.focus()
+        break
+      default:
+        my.projet.ui.activateEditableField(obj)
+    }
   }
 
   redefine_parag_duration (nv)
@@ -1738,9 +1750,17 @@ class Parag
 
   redefine_parag_position (nv)
   {
-    this.position = nv.as_seconds()
+    if ( nv === 'auto')
+    {
+      this.position = undefined
+      DOM.get('parag_position').innerHTML = 'auto'
+    }
+    else
+    {
+      this.position = nv.as_seconds()
+      DOM.get('parag_position').innerHTML = this.position.as_horloge()
+    }
     this.reset()
-    DOM.get('parag_position').innerHTML = this.position.as_horloge()
   }
 
   /**

@@ -112,9 +112,15 @@ class ParagTypes {
   **/
   static buildSelect( xType, options )
   {
-    const dataType = this.DATA[`type${xType}`]
+    const typeX    = `type${xType}`
+    const dataType = this.DATA[typeX]
     let methodOnChange = `let p = Parags.get(${options.parag_id});p.onChangeType.call(p,${xType},this.value)`
-    let select = DOM.create('select', {id: `parag_type${xType}`, class: `parag_types`, onchange: methodOnChange})
+    let select = DOM.create('select', {
+        id          : `parag_${typeX}`
+      , class       : `parag_types`
+      , onchange    : methodOnChange
+      , 'data-tab'  : typeX // pour Tabulator
+    })
     for (let id in dataType)
     {
       if (!dataType.hasOwnProperty(id)){continue}

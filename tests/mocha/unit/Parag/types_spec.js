@@ -132,11 +132,12 @@ describe.only('Types de parag', function () {
       // })
 
       it("retourne un objet DOM Select", function(){
-        expect(ParagTypes.buildSelect(1)).to.be.instanceOf(HTMLSelectElement)
+        expect(ParagTypes.buildSelect(1, {parag_id:6})).to.be.instanceOf(HTMLSelectElement)
       })
       it("contient tous les types du type voulu et pas les autres", function(){
         let typeX = 2
-        const select = ParagTypes.buildSelect(typeX)
+        const select = ParagTypes.buildSelect(typeX, {parag_id:3})
+        expect(select).to.haveTag('select', {id:'parag_type2', 'data-tab':'type2'})
         let dataTypex = ParagTypes.DATA[`type${typeX}`]
         for( let i = 0 ; i < 32 ; ++i )
         {
