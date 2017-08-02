@@ -1,6 +1,6 @@
 require('../../spec_helper.js')
 
-describe.only('Méthodes pratiques', function () {
+describe('Méthodes pratiques', function () {
   before(function () {
     Projet.current = projet
   });

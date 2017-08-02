@@ -45,7 +45,7 @@ function expectVersoNotVisibleFor (parag) {
   )
 }
 
-describe.only('Verso du parag', function () {
+describe('Verso du parag', function () {
   before(function () {
 
     reinitialisationInitiale()
@@ -69,6 +69,9 @@ describe.only('Verso du parag', function () {
     });
 
     describe('Parag#isRecto', function () {
+      before(function () {
+        panneauNotes.add(parag12)
+      });
       it("répond", function(){
         expect(parag12).to.respondsTo('isRecto')
       })
@@ -241,40 +244,40 @@ describe.only('Verso du parag', function () {
       it("un formulaire général", function(){
         expect(verso).to.haveTag('form', {id: 'parag_verso_form'})
       })
+      it("un champ pour l'id", function(){
+        expect(verso).to.haveTag('span', {id:'parag_id'})
+      })
       it("un champ pour la durée", function(){
         expect(verso).to.haveTag('span', {id:'span-duration'})
         expect(verso.querySelector('span#span-duration')).to.haveTag(
-          'span', {id:'parag-duration', class:'editable', text:'0:00'}
+          'span', {id:'parag_duration', class:'editable dashed', text:'1:00'}
         )
         .and.haveTag(
-          'label', {for:'parag-duration', text:'Durée'}
+          'label', {for:'parag_duration', text:'Durée'}
         )
       })
 
       it("un champ pour la position (soit fixe soit calculée)", function(){
         expect(verso).to.haveTag('span', {id:'span-position'})
         expect(verso.querySelector('span#span-position')).to.haveTag(
-          'span', {id:'parag-position', class:'editable', text: '0:00:00'}
+          'span', {id:'parag_position', class:'editable dashed', text: 'auto'}
         )
         .and.haveTag(
-          'label', {for:'parag-position', text:'Position'}
+          'label', {for:'parag_position', text:'Position'}
         )
       })
 
       it("un menu pour le type du parag", function(){
         expect(verso).to.haveTag('span', {id:'span-type'})
-        expect(verso.querySelector('span#span-type')).to.haveTag(
-          'select', {name:'parag[type]', id:'parag-type'}
+        expect(verso.querySelector('#span-type')).to.haveTag(
+          'span', {id: 'parag_type'}
         )
       })
 
       it("un champ pour les brins", function(){
         expect(verso).to.haveTag('span', {id: 'span-brins'})
         expect(verso.querySelector('span#span-brins')).to.haveTag(
-          'span', {text:'Nouveau brin : b'}
-        )
-        .and.haveTag(
-          'select', {id:'list-brins', name:'brins'}
+          'span', {text:'b : Nouveau brin'}
         )
       })
     });

@@ -5,7 +5,7 @@
 */
 require('../../spec_helper.js')
 
-describe.only('Brins', function () {
+describe('Brins', function () {
   it("existe", function(){
     expect('undefined' === typeof(Brins)).to.be.false
     expect(typeof Brins).to.equal('function')

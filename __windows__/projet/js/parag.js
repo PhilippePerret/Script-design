@@ -1613,6 +1613,16 @@ class Parag
 
   /** ---------------------------------------------------------------------
     *
+    *   GESTION INTÉGRALE DES TYPES DU PARAG
+    *
+  *** --------------------------------------------------------------------- */
+  get types () {
+    this._types || ( this._types = new ParagTypes(this) )
+    return this._types
+  }
+
+  /** ---------------------------------------------------------------------
+    *
     *   MÉTHODES POUR LE VERSO DU DIV (PROPS)
     *
   *** --------------------------------------------------------------------- */
@@ -1679,14 +1689,17 @@ class Parag
 
     let mesLettres = new Map()
     mesLettres.set('b', my.createNewBrin.bind(my) )
-    Tabulator.setupAsTabulator('parag_verso_form', {
-      Map:{
-          'duration'  : my.editProperty.bind(my, 'duration')
-        , 'position'  : my.editProperty.bind(my, 'position')
-        , 'type'      : my.editProperty.bind(my, 'type')
-      }
-      , MapLetters: mesLettres
-    })
+    if (DOM.get('parag_verso_form')) // pas pour les tests
+    {
+      Tabulator.setupAsTabulator('parag_verso_form', {
+        Map:{
+            'duration'  : my.editProperty.bind(my, 'duration')
+          , 'position'  : my.editProperty.bind(my, 'position')
+          , 'type'      : my.editProperty.bind(my, 'type')
+        }
+        , MapLetters: mesLettres
+      })
+    }
     return true
   }
 
@@ -1732,11 +1745,13 @@ class Parag
   showRecto ()
   {
     const my = this
-    if ( true === my_isRecto )
+    if ( true === my._isRecto )
     {
       // <= C'est une vraie remise au verso, après affichage du verso
       // => Il faut sortir le traitement de la gestion par le Tabulator
-      Tabulator.unsetAsTabulator('parag_verso_form')
+      if ( DOM.get('parag_verso_form') /* test unitaire */ ) {
+        Tabulator.unsetAsTabulator('parag_verso_form')
+      }
     }
     my.recto.className = 'p-recto'
     my.verso.className = 'p-verso hidden'
