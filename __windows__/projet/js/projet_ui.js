@@ -68,6 +68,68 @@ class ProjetUI
     return this._indSave
   }
 
+  activateEditableField ( o, options )
+  {
+    const my = this
+    const proj = this.projet
+    options || ( options = {} )
+
+    o.contentEditable = 'true'
+    UI.setSelectionPerOption(o, proj.option('seloneditpar') ? 'all' : false)
+
+    let enableReturn = options.enableReturn || (o.getAttribute('enable-return') == 'true')
+    enableReturn && console.log("Les retours chariots sont autorisés dans ce champ.")
+
+    /*- Valeur initiale (sera remise si Escape) -*/
+
+    const initValue = String(o.innerHTML)
+
+    /*- Désactivation du gestion de clavier actuel, obligatoire
+        par exemple si on utilise Tabulator pour passer en édition */
+
+    my.currentOnKeyUp = window.onkeyup
+    window.onkeyup = undefined
+    my.currentOnKeyDown = window.onkeydown
+    window.onkeydown = function(evt) {
+      switch(evt.key)
+      {
+        case 'Enter':
+          if ( enableReturn ) { break }
+          // Sinon on passe ci-dessous
+        case 'Tab':
+          o.blur.call(o)
+          return DOM.stopEvent(evt)
+        case 'Escape':
+          o.innerHTML = initValue
+          o.blur.call(o)
+          return DOM.stopEvent(evt)
+      }
+    }
+
+    /*- On indique au projet qu'on est en édition -*/
+
+    proj.mode_edition = true
+  }
+  desactivateEditableField ( o, options )
+  {
+    const proj  = this.projet
+    const my    = this
+
+    proj.onChangeData.bind(proj)(o)
+    o.contentEditable = 'false'
+
+    /*- Ré-activation du gestion de clavier actuel, obligatoire
+        par exemple si on utilise Tabulator pour passer en édition */
+    window.onkeyup = my.currentOnKeyUp
+    my.currentOnKeyUp = undefined
+    window.onkeydown = my.currentOnKeyDown
+    my.currentOnKeyDown = undefined
+
+    /*- On indique au projet qu'on n'est plus en édition -*/
+
+    proj.mode_edition = false
+  }
+
 }
 
 

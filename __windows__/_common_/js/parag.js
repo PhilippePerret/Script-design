@@ -37,11 +37,17 @@ class Parag
         // Le type 'e' suit le type 'd', date, mais seulement YYMMJJ
         //
           'id'          : {length: 8  , type: 'n' }
-        , 'panneau_let' : {length: 1  , type: 's', default: 'n'}
-        , 'ucontents'   : {length: 512, type: 's', default: '' }
-        , 'duration'    : {length: 12 , type: 'n', default: 60 }
+        , 'panneau_let' : {length: 1  , type: 's', default: 'n'     }
+        , 'ucontents'   : {length: 512, type: 's', default: ''      }
+        , 'duration'    : {length: 4  , type: 'n', default: 60      }
         , 'created_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD') }
         , 'updated_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD')  }
+        , 'position'    : {length: 6  , type: 'n', default: null    }
+        , 'type'        : {length: 4  , type: 's', default: '0000'  }
+        // Les nouvelles données doivent obligatoirement être ajoutées après et il
+        // faut retirer la longueur à 'vide' ci-dessous pour ne pas avoir à tout
+        // recalculer
+        , 'vide'        : {length: 64 , type: 's', default: ''}
       }
     )
     return this.__data
@@ -215,11 +221,16 @@ class Parag
     this._panneau_id = Projet.PANNEAUX_DATA[v]
   }
   get duration    ()  { return this._duration    }
-  set duration    (v) { this._duration = v ; this.reset()  }
-  get created_at  ()  { return this._created_at   }
-  set created_at  (v) { this._created_at = v ; this.reset() }
+  get position    ()  { return this._position     }
+  get type        ()  { return this._type         }
   get updated_at  ()  { return this._updated_at   }
-  set updated_at  (v) { this._updated_at = v ; this.reset() }
+  get created_at  ()  { return this._created_at   }
+
+  set duration    (v)  { this._duration = v   }
+  set position    (v)  { this._position = v   }
+  set type        (v)  { this._type = v       }
+  set updated_at  (v)  { this._updated_at = v }
+  set created_at  (v)  { this._created_at = v }
 
 
   /** ---------------------------------------------------------------------
@@ -250,24 +261,6 @@ class Parag
   }
 
 
-  /** ---------------------------------------------------------------------
-    *
-    *   MÉTHODES D'ÉDITION DES DONNÉES
-    *
-  *** --------------------------------------------------------------------- */
-  redefine_parag_duration (newDuration)
-  {
-    alert("Je dois mettre la durée de parag#%d à '%s'", this.id, newDuration)
-  }
-
-  redefine_parag_position (newPositionHorloge)
-  {
-    alert("Redéfinition de la position à implémenter")
-  }
-  redefine_parag_type( newType)
-  {
-    alert("Redéfinition du type du parag à implémenter")
-  }
 
 
   /** ---------------------------------------------------------------------
@@ -1228,7 +1221,7 @@ class Parag
     let
           div_id    = `p-${this.id}`
         , div       = DOM.create('div', {class:'p', id: div_id, 'data-id':String(this.id)})
-        , divCont   = DOM.create('div', {class:'p-recto',id:`${div_id}-recto`,inner:this.contentsFormated})
+        , divCont   = DOM.create('div', {class:'p-recto',id:`${div_id}-recto`, 'enable-return': 'true', inner:this.contentsFormated})
         , divVerso  = DOM.create('div', {class:'p-verso hidden', id: `p-${this.id}-verso`})
     // Ajout du contenu textuel
 
@@ -1239,16 +1232,42 @@ class Parag
     return div
   }
 
+  /**
+   * Méthode qui reconstruit le DIV du parag après certaines modifications
+   * (par exemple le type)
+   */
+  rebuild ()
+  {
+    const my  = this
+    my.desobserve_div()
+    my.desobserve_contents()
+    const div = my.build()
+    my.panneau.container.replaceChild(my.build, DOM.get(`p-${this.id}`))
+  }
+
   observe_div (div)
   {
     div || (div = this.mainDiv)
     div.addEventListener('click', this.onClick.bind(this))
   }
+  desobserve_div ( div )
+  {
+    div || (div = this.mainDiv)
+    div.removeEventListener('click', this.onClick.bind(this))
+  }
   observe_contents (divCont)
   {
-    divCont || (divCont = this.divContents)
-    divCont.addEventListener('click', this.doEdit.bind(this))
-    divCont.addEventListener('blur',  this.undoEdit.bind(this))
+    const my = this
+    divCont || (divCont = my.divContents)
+    divCont.addEventListener('click', my.doEdit.bind(my))
+    divCont.addEventListener('blur',  my.undoEdit.bind(my))
+  }
+  desobserve_contents (divCont)
+  {
+    const my = this
+    divCont || (divCont = my.divContents)
+    divCont.removeEventListener('click', this.doEdit.bind(my))
+    divCont.removeEventListener('blur',  this.undoEdit.bind(my))
   }
 
   /**
@@ -1636,18 +1655,85 @@ class Parag
   showVerso ()
   {
     const my = this
+
     my.mainDiv.querySelector('div.p-verso').appendChild(Parag.paragVersoForm)
     Parag.paragVersoForm.style.display = 'block'
-    Parag.paragVersoForm.querySelector('span#parag_id').innerHTML = String(my.id)
     my.recto.className = 'p-recto hidden'
     my.verso.className = 'p-verso'
     my._isRecto = false
+
+    /*- Renseignement du formulaire avec valeurs parag -*/
+
+    ;(new Map([
+        ['id',        String(my.id)]
+      , ['duration',  (my.duration||60).as_duree()]
+      , ['position',  (my.position ? my.position.as_horloge() : 'auto')]
+      , ['type',      my.type]
+    ])).forEach( (v, k) => {
+      Parag.paragVersoForm.querySelector(`span#parag_${k}`).innerHTML = v
+    })
+
+    let mesLettres = new Map()
+    mesLettres.set('b', my.createNewBrin.bind(my) )
+    Tabulator.setupAsTabulator('parag_verso_form', {
+      Map:{
+          'duration'  : my.editProperty.bind(my, 'duration')
+        , 'position'  : my.editProperty.bind(my, 'position')
+        , 'type'      : my.editProperty.bind(my, 'type')
+      }
+      , MapLetters: mesLettres
+    })
     return true
+  }
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES D'ÉDITION DES DONNÉES
+    *
+  *** --------------------------------------------------------------------- */
+
+  createNewBrin ()
+  {
+    alert("La création de brin par ce biais n'est pas encore implémentée.")
+  }
+  editProperty ( property )
+  {
+    const my = this
+    my.projet.ui.activateEditableField(DOM.get(`parag_${property}`))
+  }
+
+  redefine_parag_duration (nv)
+  {
+    this.duration = nv.as_seconds()
+    this.reset()
+    DOM.get('parag_duration').innerHTML = this.duration.as_duree()
+  }
+
+  redefine_parag_position (nv)
+  {
+    this.position = nv.as_seconds()
+    this.reset()
+    DOM.get('parag_position').innerHTML = this.position.as_horloge()
+  }
+
+
+  redefine_parag_type( nv)
+  {
+    this.type = nv.trim().titleize()
+    this.rebuilt()
+    DOM.get('parag_type').innerHTML = this.type
   }
 
   showRecto ()
   {
     const my = this
+    if ( true === my_isRecto )
+    {
+      // <= C'est une vraie remise au verso, après affichage du verso
+      // => Il faut sortir le traitement de la gestion par le Tabulator
+      Tabulator.unsetAsTabulator('parag_verso_form')
+    }
     my.recto.className = 'p-recto'
     my.verso.className = 'p-verso hidden'
     my._isRecto = true

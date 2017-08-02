@@ -3,10 +3,18 @@ global.moment = require('moment')
 moment.locale('fr')
 
 
-global.LIB_UTILS_JS      = path.resolve('./lib/utils')
-global.FOLDER_COMMON_JS  = path.resolve('./__windows__/_common_/js')
+/* - Paths principales - */
 
-global.C              = require(path.resolve('./lib/constants.js'))
+global.LIB_UTILS_JS     = path.resolve('./lib/utils')
+global.FOLDER_COMMON_JS = path.resolve('./__windows__/_common_/js')
+global.C                = require(path.resolve('./lib/constants.js'))
+
+/* - Extensions - */
+
+require(path.join(LIB_UTILS_JS,'Number.js'))
+require(path.join(LIB_UTILS_JS,'String.js'))
+
+/* - Objets de l'application - */
 
 global.UI             = require(path.join(FOLDER_COMMON_JS,   'ui.js'))
 global.DOM            = require(path.join(LIB_UTILS_JS,       'dom_class.js'))

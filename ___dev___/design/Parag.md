@@ -5,8 +5,10 @@ Les `Parag`(s) (pour « Paragraphes ») sont les entités de base de l'applica
 ## Propriétés des `parags` {#parag_properties}
 
 * [`id`](#parag_property_id),
-* [`contents`](#parag_property_contents),
-* [`classes`](#parag_property_classes)
+* [`ucontents`](#parag_property_ucontents),
+* [`duration`](#parag_property_duration),
+* [`position`](#parag_property_position),
+* [`type`](#parag_property_type),
 
 ### {Number} `id` {#parag_property_id}
 
@@ -14,19 +16,29 @@ Identifiant unique du paragraphe. Il est unique mais pas universel dans le sens 
 
 Mais est-ce vraiment une bonne chose, dans le sens où un unique Parag peut donner lieux à plusieurs parags dans un autre document : un parag du synopsis va donner lieu à 5 parags du scénier et 20 parags dans le manuscrit. Pourtant, ils doivent être associés.
 
-### {Number} `relative_id` {#parag_property_relatives}
+### {String} `ucontents` {#parag_property_ucontents}
 
-Nombre qui conserve l'identifiant unique de la donnée des relatifs au Parag, c'est-à-dire ses correspondants dans les autres panneaux (synopsis, manuscrit, notes, etc.). Cf. [les relatives](#parag_relatives)
+Contenu textuel du parag. Il est en Unicode dans le fichier pour pouvoir être entièrement en ASCII. Il est décodé à la volée pour définir la propriété [`contents`](#parag_property_contents).
+
+
+### {Number} `duration` {#parag_property_duration}
+
+Durée en secondes du parag.
+
+### {Number} `position` {#parag_property_position}
+
+Position temporelle, en seconde, du parag. Soit elle est fournie explicitement, soit elle est calculée en fonction des durées des parags qui le précèdent.
+
+
+### {String} `type` {#parag_property_type}
+
+Type(s) du Parag. C'est un string sur 4 lettres-chiffres qui définissent le type précis du parag. Pour le moment (1 08 2017), ces types ne sont pas définis, sauf pour la valeur par défaut `0000` qui indique qu'aucun type n'est attribué au parag.
+
+Noter que ces types ont une implication sur l'aspect de l'affichage du parag, sauf contre-indication.
 
 ### {String} `contents` {#parag_property_contents}
 
-Propriété la plus importante du parag, c'est le texte qui est affiché.
-
-### {Array of Strings} `classes` {#parag_property_classes}
-
-Ce sont les classes du parag, qui lui donneront un style et le feront appartenir à des rubriques particulière.
-
-C'est un `Array` de `String`. Par exemple : `['action','bernard']`.
+Propriété la plus importante du parag, c'est le texte qui est affiché (mais pas le texte enregistré — cf. [`ucontents`](#parag_property_ucontents) pour ça).
 
 ### {DateString} `created_at`, `updated_at` {#parag_property_created_updated_at}
 

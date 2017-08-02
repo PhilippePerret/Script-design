@@ -36,6 +36,132 @@ class Tabulator
   }
 
   /**
+  * Méthode appelée pour gérer l'objet DOM quelconque +DOMObj+ comme un
+  * tabulateur normal avec les données +data+.
+  *
+  * Cf. "Élément se comportant comme un tabulator" dans le manuel
+  *
+  * @param {HTMLElement|String} DOMObj Soit l'élément HTML soit son ID
+  * @param {Object} params  Les paramètres caractérisant le comportement des
+  *                         éléments.
+  *                         Définit :
+  *                           Map         [Obligatoire]
+  *                           mapLetters  [Optionnel, pour définir d'autres
+  *                                       lettres]
+  *
+  * TODO Plus tard, il faudrait que Tabulator puisse prendre en compte les
+  * champs possédant la classe "editable" pour les gérer automatiquement, sans
+  * avoir à définir de méthode dans params.Map.
+  **/
+  static setupAsTabulator ( DOMObj, params )
+  {
+    const my  = this
+    const obj = DOM.get(DOMObj)
+
+    /*- La liste de toutes les sections Tabulator préparées -*/
+
+    if ( ! Tabulator.Sections ) { Tabulator.Sections = new Map() }
+
+    let sectionMap = params.MapLetters || ( new Map() )
+
+    /*- Prépare l'élément s'il ne l'est pas -*/
+
+    if ( false == DOM.hasClass(obj, 'tabulatorized' ) )
+    {
+      // <= L'élément n'est pas encore préparé pour Tabulator
+      // => Il faut observer tous ses champs portant une data-tab
+
+      let iletter = -1
+        , letter = null
+        , data_tab
+        , title
+
+      obj.querySelectorAll('*[data-tab]').forEach( (o) => {
+        data_tab = o.getAttribute('data-tab')
+
+        // Si la lettre est déjà utilisée dans params.MapLetters (donc
+        // dans sectionMap), on passe à la suivante
+        while(!letter || sectionMap.get(letter)){letter = Tabulator.LETTERS[++iletter]}
+
+        /*- Ajout dans la map de la section -*/
+
+        sectionMap.set( letter, params.Map[data_tab] )
+
+        /*- Ajout du title pour aide -*/
+
+        title = o.getAttribute('title') || ''
+        title += ` Taper ${letter}/${letter.toUpperCase()} pour activer`
+        o.setAttribute('title', title.trim())
+
+      })
+
+      // console.log("sectionMap:", sectionMap)
+
+      // Pour utilisation ultérieure
+      Tabulator.Sections.set( obj.id, sectionMap )
+
+      // Marquer qu'il est préparé
+      DOM.addClass(obj, 'tabulatorized')
+
+    } else {
+
+      sectionMap = Tabulator.Sections.get(obj.id)
+
+    }
+
+    /*- Activer cette section en déasactivant le comportement courant -*/
+
+    sectionMap.set('windowOnKeyUp', window.onkeyup)
+    window.onkeyup = undefined
+    window.onkeyup = function(evt){
+
+
+      let fonction = sectionMap.get(evt.key) || sectionMap.get(evt.key.toLowerCase())
+
+      /*- Si la fonction est définie, il faut voir si elle existe
+          et l'appeler le cas échéant -*/
+
+      if ( fonction )
+      {
+        if ( 'function' === typeof(fonction))
+        {
+          fonction.call()
+        }
+        else
+        {
+          alert(`La méthode ${fonction} n'est pas définie…`)
+        }
+      }
+    }
+
+    UILog(`#${obj.id} est géré par ©Tabulator`)
+  }
+
+  /**
+  * Méthode fonctionnant avec la précédente pour sortir l'élément
+  * de la gestion par Tabulator.
+  * Elle consiste principalement à remettre le gestionnaire de keyUp
+  * précédent.
+  **/
+  static unsetAsTabulator( DOMObj )
+  {
+    const my          = this
+        , obj         = DOM.get(DOMObj)
+        , sectionMap  = Tabulator.Sections.get(obj.id)
+
+    if ( sectionMap )
+    {
+      window.onkeyup = sectionMap.get('windowOnKeyUp')
+      sectionMap.delete('windowOnKeyUp')
+    }
+    else
+    {
+      throw new Error(`L'élément ${obj.id} doit être tabulatorisé avant d'être dissocié.`)
+    }
+    UILog(`#${obj.id} n'est plus géré par ©Tabulator`)
+  }
+
+  /**
   * Place des listener sur tous les boutons en fonction de leur ordre
   **/
   static get LETTERS () {
@@ -277,6 +403,7 @@ class Tabulator
         my.hasBeforeEach && my.Map.beforeEach.call()
 
         // === Exécution de la méthode de data ou de lettre ===
+
         // console.log(`Bouton ${bouton.key} traité`)
         method = my.Map[bouton.data]
         if ( 'function' == typeof method ) { method.call() }

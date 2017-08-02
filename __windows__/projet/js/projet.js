@@ -319,23 +319,17 @@ class Projet
   **/
   observeEditableFields ()
   {
+    const my = this
     let
         editables = document.getElementsByClassName('editable')
       , len       = editables.length
       , i         = 0
-      , my        = this
     for(;i<len;++i){
       editables[i].addEventListener('click', (evt) => {
-        let o = evt.target
-        o.contentEditable = 'true'
-        UI.setSelectionPerOption(o, my.option('seloneditpar') ? 'all' : false)
-        this.mode_edition = true
+        my.ui.activateEditableField(evt.target)
       })
       editables[i].addEventListener('blur', (evt) => {
-        let o = evt.target
-        my.onChangeData.bind(my)(o)
-        o.contentEditable = 'false'
-        this.mode_edition = false
+        my.ui.desactivateEditableField(evt.target)
       })
     }
   }

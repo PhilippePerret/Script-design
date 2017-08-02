@@ -2,28 +2,27 @@
   <span id="span-id">
     #<span id="parag_id">XXX</span>
   </span>
-  <span id="span-duration">
+  <span id="span-duration" class="prop">
     <label for="parag-duration">Durée</label>
-    <span id="parag_duration" class="editable" owner="currentParag">0:00</span>
+    <span data-tab="duration" id="parag_duration" class="editable dashed" owner="currentParag">0:00</span>
   </span>
 
-  <span id="span-position">
+  <span id="span-position" class="prop">
     <label for="parag-position">Position</label>
-    <span id="parag_position" class="editable" owner="currentParag">0:00:00</span>
+    <span data-tab="position" id="parag_position" class="editable dashed" owner="currentParag">0:00:00</span>
   </span>
 
-  <span id="span-type">
+  <span id="span-type" class="prop">
     <label for="parag_type">Type</label>
-    <span class="editable" id="parag_type" owner="currentParag">Action</span>
+    <span data-tab="type" id="parag_type" class="editable dashed" owner="currentParag">0000</span>
   </span>
 
 
   <!-- BRINS -->
-  <span id="span-brins">
-    <select name="brins" id="list-brins">
-
-    </select>
-    <span>Nouveau brin : b</span>
+  <span id="span-brins" class="prop">
+    <label for="list-brins">Brins</label>
+    <select data-tab="brins" name="brins" id="list-brins"></select>
+    <span>b : Nouveau brin</span>
   </span>
 
 </form>

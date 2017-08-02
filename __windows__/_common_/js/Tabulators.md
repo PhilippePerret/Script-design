@@ -290,3 +290,73 @@ Tabulator.Map = {
 ```
 
 Maintenant, quelles que soient les associations de `keys` pour activer les menus/boutons, ce sont les bonnes opérations qui seront invoquées. That's it! :-)
+
+
+## Élément se comportant comme un tabulator {#element_react_as_tabulator}
+
+On peut appliquer le comportement d'un `Tabulator` à tout élément du DOM.
+
+Il doit simplement contenir des éléments focusable qui définissent l'attribut `data-tab`. Par exemple :
+
+```html
+
+<div id="ma-section-tabulatorisable">
+  <span class="editable" data-tab="ma-prop">Une valeur éditable</span>
+  <span class="editable" data-tab="autre-prop">Autre valeur éditable</span>
+  ...
+</div>
+
+```
+
+Dans l'exemple ci-dessus, ce sont les span définissant `data-tab` qui réagiront au tabulator.
+
+On utilisera par exemple à l'affichage de cet élément :
+
+```js
+
+Tabulator.setupAsTabulator('ma-section-tabulatorisable', {
+  Map: {
+      'ma-prop': methodePourEditerMaProp
+    , 'autre-prop': methodePourEditerAutreProp
+    , ...
+  }
+  [, mapLetters: ...]
+})
+
+```
+
+> Noter que dans cette utilisation, on ne peut pas encore choisir plusieurs commandes en même temps.
+
+> Noter que lors du premier traitemnt, une classe `tabulatorized` est ajouté à l'élément principal pour indiquer qu'il a déjà été préparé pour Tabulator.
+
+### Définir d'autres lettres {#define_autres_lettres}
+
+On peut également définir d'autres lettres que celles prévues pour les éléments possédant un attribut `data-tab`. Il ne s'agit pas de définir d'autres lettres pour ces éléments, mais d'assigner d'autres commandes quelconques à certaines lettres sans qu'il y ait d'élément `data-tab` associés.
+
+Cela se fait grâce à la propriété `mapLetters` transmise à la méthode `setupAsTabulator`, **qui doit obligatoirement être une `Map`**. Par exemple :
+
+```js
+
+  let mapLetters = new Map()
+  mesLettres.set('n', this.creerNouvelObjet.bind(this))
+  mesLettres.set('Escape', this.changerComportementDefault.bind(this))
+
+  Tabulator.setupAsTabulator('monObjet', {
+    Map: {
+      // définition des data-tab
+    },
+    mapLetters: mesLettres
+  })
+
+```
+
+> Note : si une lettre "conventionnelle" est déjà utilisée par `mapLetters`, elle n'est pas utilisé comme lettre pour les éléments à data-tab.
+
+### Sortir de la gestion par Tabulator {#sortir_gestion_tabulator}
+Pour sortir de ce traitement, on utilise la méthode inverse en envoyant le même élément :
+
+```js
+
+Tabulator.unsetAsTabulator('ma-section-tabulatorisable')
+
+```

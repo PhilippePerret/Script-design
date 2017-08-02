@@ -1,4 +1,4 @@
-# Les champs éditables
+# Les champs éditables {#editable_fields}
 
 Ce sont des champs (`div` ou `span` principalement) dont la classe CSS contient `editable` et qui sont en conséquence rendus éditable lorsque l'on clique ou que l'on focusse dedans.
 
@@ -31,9 +31,18 @@ class Projet {
 
 ```
 
-Note : c'est la méthode d'instance `onChangeData` de `Projet` qui traite cette sortie du champ.
+Note : c'est la méthode d'instance `onChangeData` de `Projet` qui traite cette sortie du champ, en duo avec les méthodes `ProjetUI.activateEditableField` et `ProjetUI.desactivateEditableField`.
 
-## Utilisation avec un autre objet
+
+## Autoriser les retours chariot {#autoriser_retours_chariot}
+
+Par défaut, les retours-chariot permettent de sortir du champ, donc d'entrer la nouvelle valeur. Deux moyens permettent d'autoriser les retours-chariot :
+
+* l'attribut `enable-return="true"` dans le champ concerné (meilleure méthode),
+* l'envoi de l'option `options.enableReturn` à la méthode `ProjetUI.activateEditableField`, mais dans ce cas, tous les champs pourront utiliser les retours-chariot.
+
+
+## Utilisation avec un autre objet {#use_other_object}
 
 Si ce n'est pas le projet qui doit être modifié mais un autre objet, alors il suffit de le définir dans la propriété `owner` du champ.
 
@@ -56,7 +65,7 @@ Dans ce cas, c'est la méthode `Parag#redefine_type` qui sera utilisée.
 > Note : `currentParag` est une méthode pratique (handy-méthod) qui permet d'obtenir le `parag` courant s'il est défini.
 
 
-## Utilisation d'un autre `id` pour le champ
+## Utilisation d'un autre `id` pour le champ {#use_other_id_field}
 
 Bien entendu, on utilise le nom de la propriété pour renseigner l'`id` du champ, mais il est tout à fait possible d'utiliser une autre valeur puisqu'en définitive cet `id` permet simplement de définir la *méthode* de traitement, pas directement la *propriété*.
 
@@ -88,3 +97,35 @@ class Personne {
 ```
 
 L'important est de ne pas utiliser de caractères interdits pour définir l'`id`, il doit pouvoir servir à construire le nom d'une méthode javascript.
+
+
+## Mettre en exergue les champs éditables {#mettre_exergue_editable}
+
+On peut mettre en exergue les champs éditables en ajoutant la classe `dashed` :
+
+```html
+
+<span class="editable dashed">Valeur à éditer, en exergue</span>
+
+```
+
+## Faire fonctionner une section de texte éditable avec le Tabulator {#editable_fields_and_tabulator}
+
+Cela permettra de faire fonctionner l'édition comme pour les menus : chaque chaque éditable sera lié à une touche de Q à M puis de A à P (20 touches) pour être mis en édition.
+
+Cette fonctionnalité désactive le comportement normal des tabulators, jusqu'à la fin de l'édition, qu'on doit peut-être pouvoir quitter avec une touche.
+
+Implémentation :
+
+À l'activation de la section (par exemple lorsque l'on demande son affichage), il faut envoyer à Tabulator la commande qui va définir la section à surveiller et comment la surveiller :
+
+```js
+
+Tabulator.setupAsTabulator(
+  '<ID ou DOM Element>',
+  {params}
+)
+
+```
+
+Cf. le document Tabulator.md pour le détail.
