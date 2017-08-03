@@ -152,7 +152,7 @@ class ParagTypes {
 
   get data () {
     if ( undefined === this._data ) {
-      this.data = '0000'
+      this.data = this.parag.type
     }
     return this._data
   }

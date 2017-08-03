@@ -325,7 +325,7 @@ class Parag
     if ( v == '-1' || v == 'auto' ){ this._position = -1 }
     else { this._position = v }
   }
-  set type        (v) { this._type = v ; this.modified = true }
+  set type        (v) { this._type = v        }
   set brins_ids   (v) { this._brins_ids = v   }
   set updated_at  (v) { this._updated_at = v  }
   set created_at  (v) { this._created_at = v  }
@@ -616,6 +616,7 @@ class Parag
         case 'b':
           val = val == '1' ? true : false
       }
+      // console.log("Prop '_%s' mise à %s", prop, val)
       this[`_${prop}`] = val
 
       // console.log(`Propriété '${prop}' mise à `, this[prop])
@@ -1861,15 +1862,16 @@ class Parag
   redefine_parag_duration (nv)
   {
     this.duration = nv.as_seconds()
-    this.reset()
     DOM.get('parag_duration').innerHTML = this.duration.as_duree()
+    this.reset()
+    this.modified = true
   }
 
   redefine_parag_position (nv)
   {
-    if ( nv === 'auto')
+    if ( nv === 'auto' || nv === '-1')
     {
-      this.position = undefined
+      this.position = -1
       DOM.get('parag_position').innerHTML = 'auto'
     }
     else
@@ -1878,6 +1880,7 @@ class Parag
       DOM.get('parag_position').innerHTML = this.position.as_horloge()
     }
     this.reset()
+    this.modified = true
   }
 
   /**
@@ -1887,10 +1890,10 @@ class Parag
   {
     const my = this
 
-    console.log("Parag#->onChangeType xType:%d nv:%s", xType, nv)
     my.types[`type${xType}`]= parseInt(nv)
-    // modifie aussi la donnée générale et indique que le parag a été
-    // modifié, pour enregistrement.
+    // modifie aussi la donnée générale
+
+    my.modified = true
 
     // TODO remettre : this.rebuild()
     // On doit peut-être reconstruire le parag, car les styles influent

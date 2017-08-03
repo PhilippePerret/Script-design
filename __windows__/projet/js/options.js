@@ -84,7 +84,7 @@ class ProjetOptions
         spanb.innerHTML = statestr
         bouton.setAttribute('value', String(newval))
         this._data[optionProp] = newval
-        UILog(`Option '${statestr}' activée`)
+        UILog(`${statestr} activé(e)`)
         // Les options qui doivent entrainer un changement immédiat
         switch ( optionProp )
         {
