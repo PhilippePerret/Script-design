@@ -1,3 +1,12 @@
+
+class DataValidityError extends Error {
+  constructor(message) {
+    super ( message )
+    this.name = this.constructor.name
+    Error.captureStackTrace(this, this.constructor)
+  }
+}
+
 /** ---------------------------------------------------------------------
   *   Parag (classe)
   *   --------------
@@ -143,18 +152,29 @@ class Parag
     const my        = this
     const openFlag  = fs.existsSync(my.parags_file_path) ? 'r+' : 'w'
 
-    return new Promise( (ok, ko) => {
-      fs.open(my.parags_file_path, openFlag, (err, fd) => {
-        if ( err ) throw err
-        fs.write(fd, my.data_infile, my.startPos, 'utf8', (err, sizew, writen) => {
-          if (err) { ko(err) }
-          else {
-            my.modified = false
-            ok()
-          }
-        })
+    if ( my.dataAreValid() )
+    {
+      return new Promise( (ok, ko) => {
+          fs.open(my.parags_file_path, openFlag, (err, fd) => {
+            if ( err ) throw err
+            fs.write(fd, my.data_infile, my.startPos, 'utf8', (err, sizew, writen) => {
+              if (err) { ko(err) }
+              else {
+                my.modified = false
+                ok()
+              }
+            })
+          })
       })
-    })
+    }
+    else
+    {
+      // <= Les données sont invalides
+      // => On n'enregistre pas la donnée et on ajoute un message
+      //    d'erreur au rapport
+      my.projet.savingReporter.push({type:'error', message: `Le parag #${my.id} n'a pas pu être enregistré : ${my.savingError}`})
+      return Promise.resolve()
+    }
 
   }
 
@@ -182,6 +202,77 @@ class Parag
   set modified (v){
     this._modified = v
     this._modified && this.panneau && ( this.panneau.modified = true )
+  }
+
+
+
+  /**
+  * Test la validité des données avant l'enregistrement et
+  * produit l'erreur savingError ({String} contenant le message d'erreur) en
+  * cas d'erreur
+  **/
+  dataAreValid ()
+  {
+    // DataValidityError
+    const my    = this
+    const dData = Parag.DATA
+
+    try
+    {
+      if ( 'number' != typeof my.id ){
+        throw new DataValidityError('L’ID devrait être un nombre.')
+      }
+      if ( String(my.id).length > dData.id.length ) {
+        throw new DataValidityError(`L’ID ${my.id} est trop grand.`)
+      }
+
+      /*- Le texte unicode ne doit pas être plus long que prévu -*/
+
+      if ( my.ucontents.length > dData['ucontents'].length )
+      {
+        throw new DataValidityError("Le texte est trop long.")
+      }
+
+      if ( 'string' != typeof(my.panneau_let)){
+        throw new DataValidityError('La lettre du panneau devrait être un string')
+      }
+      if ( my.panneau_let.length != 1 ){
+        throw new DataValidityError('La lettre du panneau devrait ne faire qu’une seule lettre')
+      }
+
+      if ( 'number' != typeof my.duration ) {
+        throw new DataValidityError(`La durée devrait être un nombre. Or, ${my.duration} est un ${typeof my.duration}`)
+      }
+      if ( String(my.duration).length > dData.duration.length ) {
+        throw new DataValidityError(`La durée ${my.duration} est trop longue (${dData.duration.length} caractères max attendus)`)
+      }
+
+      if ( String(my.position).length > dData.position.length ) {
+        throw new DataValidityError(`La position ${my.position} est trop longue (max chiffres : ${dData.position.length})`)
+      }
+
+      if ( my.type.length != 4 ) {
+        throw new DataValidityError(`Le type ${my.type} devrait faire exactement 4 caractères`)
+      }
+
+      if ( my.brins_ids.length > dData.brins_ids.length ) {
+        throw new DataValidityError(`La donnée brins (brins_ids) est trop longue. Elle ne devrait pas excéder ${dData.brins_ids.length} caractères`)
+      }
+
+      /*- Tout est OK -*/
+
+      return true
+
+    }
+    catch(err)
+    {
+      if ( 'DataValidityError' == err.name ) {
+        my.savingError = `${err.message}.`
+        return false
+      } else {
+        throw err
+      }
+    }
   }
   /** ---------------------------------------------------------------------
   *
@@ -222,15 +313,18 @@ class Parag
     this._panneau_id = Projet.PANNEAUX_DATA[v]
   }
 
-  get duration    ()  { return this._duration    }
-  get position    ()  { return this._position     }
-  get type        ()  { return this._type         }
-  get brins_ids   ()  { return this._brins_ids    }
+  get duration    ()  { return this._duration   || 60 }
+  get position    ()  { return this._position   || -1 }
+  get type        ()  { return this._type       || '0000' }
+  get brins_ids   ()  { return this._brins_ids  || ''    }
   get updated_at  ()  { return this._updated_at   }
   get created_at  ()  { return this._created_at   }
 
   set duration    (v) { this._duration = v    }
-  set position    (v) { this._position = v    }
+  set position    (v) {
+    if ( v == '-1' || v == 'auto' ){ this._position = -1 }
+    else { this._position = v }
+  }
   set type        (v) { this._type = v ; this.modified = true }
   set brins_ids   (v) { this._brins_ids = v   }
   set updated_at  (v) { this._updated_at = v  }
@@ -346,6 +440,7 @@ class Parag
   reset ()
   {
     const my = this
+    delete my._ucontents
     delete my._contents_formated
     delete my._contents_simple
     delete my._duration_formated
@@ -1694,7 +1789,7 @@ class Parag
     ;(new Map([
         ['id',        my.id]
       , ['duration',  (my.duration||60).as_duree()]
-      , ['position',  (my.position ? my.position.as_horloge() : 'auto')]
+      , ['position',  (my.position < 0 ? 'auto' : my.position.as_horloge())]
       , ['type1',     my.types.type1]
       , ['type2',     my.types.type2]
       , ['type3',     my.types.type3]
