@@ -117,12 +117,30 @@ class ProjetUI
     my.currentOnKeyDown = window.onkeydown
     window.onkeydown = undefined
 
+    window.onkeydown = function(evt)
+    {
+      switch(evt.key)
+      {
+        case 'Enter':
+          if (enableReturn) { return true }
+          else {
+            // console.log("case:Enter du onkeydown de ProjetUI")
+            evt.stopPropagation()
+            evt.preventDefault()
+            return false
+          }
+      }
+    }
+
     window.onkeyup = function(evt) {
       switch(evt.key)
       {
         case 'Enter':
           if ( enableReturn ) { return true }
-          // Sinon on passe ci-dessous
+          // Sinon, on laisse passer un peu de temps histoire de stopper
+          // l'évènement puis on blure du champ.
+          setTimeout(o.blur.bind(o), 100)
+          return DOM.stopEvent(evt)
         case 'Tab':
           o.blur.call(o)
           return DOM.stopEvent(evt)
