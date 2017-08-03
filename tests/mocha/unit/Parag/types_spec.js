@@ -3,7 +3,7 @@
   Test des types
 
 */
-describe.only('Types de parag', function () {
+describe('Types de parag', function () {
   describe('@types', function () {
     it("existe", function(){
       expect(parag0.types).not.to.be.undefined
@@ -94,12 +94,12 @@ describe.only('Types de parag', function () {
       it("actualise la valeur Parag@type enregistrée", function(){
         expect(parag8.type).to.equal(parag8.types.data)
       })
-      it("indique que le parag est modifié", function(){
+      it("N'indique PAS que le parag est modifié", function(){
         parag9.modified = false
         expect(parag9.modified).to.be.false
         let nombre = 5 + Number(n)
         parag9.types[ptype] = nombre
-        expect(parag9.modified).to.be.true
+        expect(parag9.modified).to.be.false
       })
     });
 
@@ -107,7 +107,33 @@ describe.only('Types de parag', function () {
 
   // ---------------------------------------------------------------------
 
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES DE REDDÉFINITION DES TYPES
+    *
+  *** --------------------------------------------------------------------- */
 
+  describe('Parag#onChangeType', function () {
+    it("répond", function(){
+      expect(parag0).to.respondsTo('onChangeType')
+    })
+    it("modifie la valeur de parag.types.type<x>", function(){
+      parag4.types.type2 = 20
+      parag4.onChangeType(2, 10)
+      expect(parag4.types.type2).to.equal(10)
+    })
+    it("modifie la valeur du type 4 lettres du parag", function(){
+      parag2.type = "0000"
+      parag2.types.data // force sa valeur
+      parag2.onChangeType(1, 5)
+      expect(parag2.type).to.equal('5000')
+    })
+    it("indique que le parag est modifié", function(){
+      parag1.modified = false
+      parag1.onChangeType(1, 20)
+      expect(parag1.modified).to.be.true
+    })
+  });
   /** ---------------------------------------------------------------------
     *
     *   TEST DES HELPERS D'ÉDITION
