@@ -5,8 +5,9 @@
 */
 require('../../spec_helper.js')
 
-
-global.brin1 = new Brin({id: 1, projet: projet})
+let brin  = new Brin({id:0, projet: projet, titre: "Brin sans nom"})
+let brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1"})
+let brin2 = new Brin({id: 2, projet: projet, titre: "Brin #2"})
 
 describe.only('Brin', function () {
   it("est une classe", function(){
@@ -138,6 +139,202 @@ describe.only('Brin', function () {
       expect(brin1.modified).to.be.false
       brin1.description = "Une nouvelle description."
       expect(brin1.modified).to.be.true
+    })
+  });
+
+  describe('@parag_ids', function () {
+    it("existe", function(){
+      expect(brin1.parag_ids).not.to.be.undefined
+    })
+    it("est de classe Array", function(){
+      expect(brin1.parag_ids).to.be.instanceOf(Array)
+    })
+  });
+
+  describe('@parent_id', function () {
+    before(function () {
+      brin1.data.parent_id = 2
+    });
+    after(function () {
+      brin1.data.parent_id = undefined
+    });
+    it("existe", function(){
+      expect(brin1.parent_id).not.to.be.undefined
+    })
+    it("retourne l'ID du brin parent s'il est défini", function(){
+      expect(brin1.parent_id).to.equal(2)
+    })
+    it("retourne undefined s'il n'y a pas de brin parent", function(){
+      brin = new Brin({id: 14})
+      expect(brin.parent_id).to.be.undefined
+    })
+  });
+
+  describe('#parent= ', function () {
+    it("permet de définir le parent si l'argument est un brin", function(){
+      brin1.parent = undefined
+      expect(brin1.parent_id).to.be.undefined
+      brin1.parent = brin2
+      expect(brin1.parent_id).to.equal(2)
+    })
+    it("permet de définir le parent si l'argument est un ID", function(){
+      brin1.parent = undefined
+      expect(brin1.parent_id).to.be.undefined
+      brin1.parent = 2
+      expect(brin1.parent_id).to.equal(2)
+      expect(brin1.parent).to.be.instanceOf(Brin)
+    })
+    it("permet de retirer le parent si l'argument est null ou undefined", function(){
+      brin1.parent = brin2
+      expect(brin1.parent_id).to.equal(2)
+      brin1.parent = null
+      expect(brin1.parent_id).to.be.undefined
+      brin1.parent = brin2
+      expect(brin1.parent_id).to.equal(2)
+      brin1.parent = undefined
+      expect(brin1.parent_id).to.be.undefined
+    })
+    it("définit le brin comme modifié", function(){
+      brin1.modified = false
+      expect(brin1.modified).to.be.false
+      brin1.parent = brin2
+      expect(brin1.parent_id).to.equal(2)
+      expect(brin1.modified).to.be.true
+
+      brin1.modified = false
+      expect(brin1.modified).to.be.false
+      brin1.parent = null
+      expect(brin1.parent_id).to.be.undefined
+      expect(brin1.modified).to.be.true
+
+    })
+  });
+
+  describe('@parent', function () {
+    before(function () {
+      brin2 = new Brin({id:2, titre:"Brin 2"})
+      brin1.data.parent_id = 2
+    });
+    after(function () {
+      brin1.data.parent_id = undefined
+    });
+    it("existe", function(){
+      expect(brin1.parent).not.to.be.undefined
+    })
+    it("retourne undefined si le brin n'a pas de parent", function(){
+      brin = new Brin({id: 12})
+      expect(brin.parent).to.be.undefined
+    })
+    it("retourne l'instance du parent si le brin a un parent", function(){
+      let p = brin1.parent
+      expect(p).to.not.be.undefined
+      expect(p).to.be.instanceOf(Brin)
+      expect(p.id).to.equal(2)
+    })
+  });
+
+  describe('@type', function () {
+    it("existe", function(){
+      expect(brin.type).not.to.be.undefined
+    })
+    it("retourne le type_id s'il est défini", function(){
+      brin.data.type = 12
+      expect(brin.type).to.equal(12)
+    })
+    it("retourne 0 s'il n'est pas défini", function(){
+      brin.data.type = undefined
+      expect(brin.type).to.equal(0)
+    })
+  });
+
+  describe('@type=', function () {
+    it("permet de définir le type", function(){
+      brin.data.type = undefined
+      brin.type = 4
+      expect(brin.data.type).to.equal(4)
+    })
+    it("marque le brin modifié", function(){
+      brin.modified = false
+      brin.type = 2
+      expect(brin.modified).to.be.true
+    })
+  });
+
+  /** ---------------------------------------------------------------------
+    *
+    *   PROPRIÉTÉS DE DOM
+    *
+  *** --------------------------------------------------------------------- */
+  describe('div', function () {
+    it("existe", function(){
+      expect(brin.div).not.to.be.undefined
+    })
+    it("retourne un HTMLElement", function(){
+      expect(brin.div).to.be.instanceOf(HTMLDivElement)
+    })
+    it("contient tous les éléments", function(){
+      brin.data.id = 0
+      brin._div = undefined
+      expect(brin.div).to.haveTag('div', {class:'titre', id:'brin-0-titre'})
+      expect(brin.div).to.haveTag('div', {class:'children', id:'brin-0-children'})
+    })
+  });
+
+  describe('divChildren', function () {
+    it("existe", function(){
+      expect(brin.divChildren).not.to.be.undefined
+    })
+    it("retourne un HTMLElement", function(){
+      expect(brin.divChildren).to.be.instanceOf(HTMLDivElement)
+    })
+  });
+  /** ---------------------------------------------------------------------
+    *
+    *     TEST DES MÉTHODES D'HELPER
+    *
+  *** --------------------------------------------------------------------- */
+
+  describe('Méthode d’helper', function () {
+
+    describe('build', function () {
+      it("répond", function(){
+        expect(brin).to.respondsTo('build')
+      })
+      it("définit _div", function(){
+        brin._div = undefined
+        brin.build()
+        expect(brin._div).not.to.be.undefined
+      })
+    });
+  });
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *     MÉTHODES D'INSTANCE
+    *
+  *** --------------------------------------------------------------------- */
+
+  describe('Brin#addParag', function () {
+    it("répond", function(){
+      expect(brin1).to.respondsTo('addParag')
+    })
+    it("produit une erreur sans argument", function(){
+      expect(()=>{brin1.addParag()}).to.throw("Il faut fournir le parag (ou son ID) à ajouter au brin.")
+    })
+    it("produit une erreur sir l'argument n'est pas un parag ou un nombre", function(){
+      let arr = [null, undefined, ['une','liste'], {un:'object'}, true]
+      arr.forEach( (bad) => {
+        expect(()=>{brin1.addParag(bad)}).to.throw("Il faut fournir le parag (ou son ID) à ajouter au brin.")
+      })
+    })
+    it("ajoute le parag au brin si un parag est fourni", function(){
+      expect(()=>{brin1.addParag(parag4)}).not.to.throw()
+      expect(brin1.parag_ids.indexOf(4)).to.be.at.least(0)
+    })
+    it("ajoute le parag au brin si un ID valide est fourni", function(){
+      expect(()=>{brin1.addParag(12)}).not.to.throw()
+      expect(brin1.parag_ids.indexOf(12)).to.be.at.least(0)
     })
   });
 });

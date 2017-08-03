@@ -203,7 +203,7 @@ class Projet
   {
     const my = this
     my.current_panneau.PRactivate()
-    my.observeEditableFields()
+    my.ui.observeEditablesIn(document)
     my.options.load(my.prepareSuivantOptions.bind(my))
   }
 
@@ -312,27 +312,6 @@ class Projet
   //
   //  FIN MÉTHODES PANNEAUX
   // ---------------------------------------------------------------------
-
-
-  /**
-  * Place les observers pour les contenus éditables
-  **/
-  observeEditableFields ()
-  {
-    const my = this
-    let
-        editables = document.getElementsByClassName('editable')
-      , len       = editables.length
-      , i         = 0
-    for(;i<len;++i){
-      editables[i].addEventListener('click', (evt) => {
-        my.ui.activateEditableField(evt.target)
-      })
-      editables[i].addEventListener('blur', (evt) => {
-        my.ui.desactivateEditableField(evt.target)
-      })
-    }
-  }
 
   /**
   * Méthode qui prépare l'interface et le programme en fonction des options

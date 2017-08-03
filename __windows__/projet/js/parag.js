@@ -1843,7 +1843,7 @@ class Parag
 
   createNewBrin ()
   {
-    alert("La création de brin par ce biais n'est pas encore implémentée.")
+    this.projet.brins.showForm()
   }
   editProperty ( property )
   {

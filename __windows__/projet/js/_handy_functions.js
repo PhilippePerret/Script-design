@@ -15,9 +15,15 @@
 *** --------------------------------------------------------------------- */
 Object.defineProperties(global,{
   /**
+  * @return {Projet} Le projet courant
+  **/
+  'currentProjet':{
+    get:function(){return Projet.current}
+  }
+  /**
   * @return {PanProjet|PanData} Le panneau courant
   **/
-  'currentPanneau':{
+  , 'currentPanneau':{
     get:function(){return projet().current_panneau}
   }
 

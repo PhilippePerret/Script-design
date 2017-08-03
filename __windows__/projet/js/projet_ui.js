@@ -52,6 +52,32 @@ class ProjetUI
     this.projet = projet
   }
 
+  /**
+  * Place les observateurs sur les éléments éditables de +o+
+  *
+  * Rappel : les éditables se reconnaissent à leur class="editable"
+  *
+  * @param {HTMLElement|String|Selector} o Désignation de l'élément contenant
+  *                                         les éditables.
+  **/
+  observeEditablesIn ( o )
+  {
+    const my = this
+    o = DOM.get(o)
+    let
+        editables = o.getElementsByClassName('editable')
+      , len       = editables.length
+      , i         = 0
+    for(;i<len;++i){
+      editables[i].addEventListener('click', (evt) => {
+        my.activateEditableField(evt.target)
+      })
+      editables[i].addEventListener('blur', (evt) => {
+        my.desactivateEditableField(evt.target)
+      })
+    }
+
+  }
 
   /**
    * Trois méthodes pour indiquer l'état de sauvegarde du projet dans

@@ -1,4 +1,5 @@
-* Avant d'enregistrer la donnée parag, une vérification
+
+* Faut-il utiliser seulement la méthode Brin.addParag (aussi pour ajouter le brin au parag lui-même) ou faut-il plutôt utiliser `Parag.addBrin` ?
 
 * Implémenter le même traitement que editablecontent on blur, mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
   Essayer ça avec les types, dont on doit proposer une liste
