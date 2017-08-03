@@ -84,7 +84,7 @@ class Brins {
     my.prepareData()
       .then( my.store.save.bind(my.store) )
       .then( () => {
-        UILog("Brins du projet sauvés")
+        UILog("Brins du projet enregistrés.")
       })
       .catch( err => { throw err })
   }
@@ -157,7 +157,6 @@ class Brins {
   * on modifie les valeurs.
   **/
   redefine_brin_titre (nv) {
-    console.log("titre = '%s'", nv)
     this.updateFormValue('titre', nv)
   }
   redefine_brin_description (nv) { this.updateFormValue('description', nv)}

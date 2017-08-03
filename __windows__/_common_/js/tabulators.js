@@ -151,7 +151,7 @@ class Tabulator
         // l'élément éditable suivant ou précédent avec les flèches
 
         if ( 'function' === typeof(fonction))
-        {          
+        {
           fonction.call()
         }
         else
@@ -564,7 +564,7 @@ class Tabulator
         }
         break
       case 'Enter':
-
+        // console.log("-> Le case:Enter du tabulator")
         this.onEnter(evt)
         return DOM.stopEvent(evt)
 

@@ -48,6 +48,7 @@ define(
         case 'n': // Formulaire de nouveau projet activé
           return Projets.activeSectionForm()
         case 'Enter': // Bouton par défaut, en fonction de la section activée
+          console.log("case case:Enter du onkeyup de KBShortcuts (kb_shortcuts.js)")
           return this.onEnter()
       }
       return 'poursuivre' // pour dire de poursuivre le test keyUp

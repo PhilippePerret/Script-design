@@ -1,4 +1,7 @@
-* Cancel pour renoncer à l'édition/brin du brin
+
+* Tester les méthodes non testées de Brins et Brin
+* Charger les brins au chargement du projet (en asynchrone)
+* Poursuivre l'implémentation
 
 * Faut-il utiliser seulement la méthode Brin.addParag (aussi pour ajouter le brin au parag lui-même) ou faut-il plutôt utiliser `Parag.addBrin` ?
 
