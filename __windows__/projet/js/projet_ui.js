@@ -41,7 +41,6 @@ class ProjetUI
     this._span_message || ( this._span_message = document.getElementById('footer-log'))
     return this._span_message
   }
-
   /** ---------------------------------------------------------------------
     *
     *   INSTANCE
@@ -116,11 +115,13 @@ class ProjetUI
     my.currentOnKeyUp = window.onkeyup
     window.onkeyup = undefined
     my.currentOnKeyDown = window.onkeydown
-    window.onkeydown = function(evt) {
+    window.onkeydown = undefined
+
+    window.onkeyup = function(evt) {
       switch(evt.key)
       {
         case 'Enter':
-          if ( enableReturn ) { break }
+          if ( enableReturn ) { return true }
           // Sinon on passe ci-dessous
         case 'Tab':
           o.blur.call(o)

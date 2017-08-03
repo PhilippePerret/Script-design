@@ -1565,13 +1565,7 @@ class Parag
   **/
   defineNewContents ()
   {
-    let c = this.divContents.innerHTML
-    c = c.replace(/<\/div>/g,'').trim()
-    c = c.replace(/<div>/g, "\n").trim()
-    c = c.replace(/\r/g, "\n")
-    c = c.replace(/\n\n+/g, "\n") // pas de double-retours
-    c = c.replace(/\n/g,'<br>') // on garde des BR pour simplifier
-    this.newContents = c
+    this.newContents = UI.epureEditedValue(this.divContents.innerHTML)
   }
 
 

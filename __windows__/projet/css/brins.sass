@@ -1,3 +1,15 @@
+section
+  &#form_brins, &#panneau_brins
+    > div.titre
+      margin-bottom   : 2em
+      color           : white
+      font-size       : 1.3em
+    > div.explication
+      margin-top    : 5em
+      font-size     : 0.85em
+      font-style    : italic
+      color         : #777
+
 section#form_brins
   font-size   : 1em
   position    : fixed
@@ -9,6 +21,7 @@ section#form_brins
   background-color  : yellowgreen
   div.row
     clear : both
+    margin-left   : 2em
     > label
       float       : left
       width       : 130px
@@ -16,14 +29,17 @@ section#form_brins
       display     : block
       margin-left : 150px
 
+// Le panneau des brins
 section#panneau_brins
-  position    : fixed
-  left        : 10em
-  top         : 5em
-  z-index     : 10
-  padding     : 1em
-  height      : 500px
-  overflow    : scroll
-  width       : 700px
+  position          : fixed
+  left              : 10em
+  top               : 5em
+  z-index           : 10
+  padding           : 1em
+  height            : 500px
+  overflow          : scroll
+  width             : 700px
+  background-color  : steelblue
+
   div.brin
     font-size : 0.9em

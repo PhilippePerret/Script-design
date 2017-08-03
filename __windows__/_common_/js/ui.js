@@ -8,6 +8,28 @@ class UI
 {
 
   /**
+  * En utilisant le content editable, les valeurs récupérées contiennent
+  * des <div> et autres <br>.
+  * Cette méthode permet de les épurer en ne conservant que les <br> qui
+  * sont volontairement laissés dans les textes pour accélérer l'affichage.
+  *
+  * @return {String} La valeur +c+ tirée d'un champ éditable expurgée
+  *                  de ses balises HTML intempestives.
+  **/
+  static epureEditedValue ( c )
+  {
+    c = c.replace(/<\/div>/g,'').trim()
+    c = c.replace(/<div>/g, "\n").trim()
+    c = c.replace(/\r/g, "\n")
+    c = c.replace(/\n\n+/g, "\n") // pas de double-retours
+    c = c.replace(/<\/?br>/g,"\n")  // pour pouvoir trimer les <br> de fin
+    c = c.trim()
+    c = c.replace(/\n/g,'<br>') // on garde des BR pour simplifier
+    return c
+  }
+
+
+  /**
   * Soit place le curseur en fin de champ soit sélectionne tout le champ
   * +field+ en fonction de la valeur +opt+
   *
@@ -24,15 +46,22 @@ class UI
     o.focus()
     if ( startNode )
     {
-      let range = document.createRange()
-      // Ci dessous, si on met '0', on sélectionne tout.
-      // À mettre dans les options : soit on se place à la fin soit on
-      // sélectionne tout
-      range.setStart(startNode, (opt == 'all' ? 0 : contentsLength) )
-      range.setEnd(endNode, contentsLength)
-      let sel = window.getSelection()
-      sel.removeAllRanges()
-      sel.addRange(range)
+      try
+      {
+        let range = document.createRange()
+        // Ci dessous, si on met '0', on sélectionne tout.
+        // À mettre dans les options : soit on se place à la fin soit on
+        // sélectionne tout
+        range.setStart(startNode, (opt == 'all' ? 0 : contentsLength) )
+        range.setEnd(endNode, contentsLength)
+        let sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+      }
+      catch(err)
+      {
+        console.log(err)
+      }
     }
 
   }

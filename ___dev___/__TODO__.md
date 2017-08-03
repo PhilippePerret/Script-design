@@ -1,3 +1,4 @@
+* Cancel pour renoncer à l'édition/brin du brin
 
 * Faut-il utiliser seulement la méthode Brin.addParag (aussi pour ajouter le brin au parag lui-même) ou faut-il plutôt utiliser `Parag.addBrin` ?
 

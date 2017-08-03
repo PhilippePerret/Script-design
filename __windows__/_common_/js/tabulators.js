@@ -151,7 +151,7 @@ class Tabulator
         // l'élément éditable suivant ou précédent avec les flèches
 
         if ( 'function' === typeof(fonction))
-        {
+        {          
           fonction.call()
         }
         else
@@ -572,6 +572,7 @@ class Tabulator
         this.hasBeenRan = false
         this.tabulator.blur()
         return DOM.stopEvent(evt)
+
       default:
 
         // console.log(evt)

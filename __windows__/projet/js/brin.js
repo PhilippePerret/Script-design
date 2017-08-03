@@ -9,17 +9,27 @@ class Brin
   static get MAX_TITRE_LENGTH       () { return 99 }
   static get MAX_DESCRIPTION_LENGTH () { return 256 }
 
+  static get PROPERTIES () {
+    this._properties || (
+      this._properties = new Map([
+          ['titre',       {}]
+        , ['description', {}]
+        , ['parent_id',   {}]
+        , ['type',        {}]
+      ])
+    )
+    return this._properties
+  }
+
   static newID ()
   {
-    const curProjet = projet()
-
-    this._lastID || ( this._lastID = curProjet.last_brin_id || -1 )
+    this._lastID || ( this._lastID = currentProjet.last_brin_id || -1 )
     ++this._lastID
     if ( this._lastID > 1023 ) {
       throw new Error("Désolé, mais on ne peut pas créer plus de 1024 brins.")
     }
-    curProjet.data.last_brin_id = this._lastID
-    curProjet.data.save()
+    currentProjet.data.last_brin_id = this._lastID
+    currentProjet.data.save()
     return this._lastID
   }
 

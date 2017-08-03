@@ -91,19 +91,22 @@ class PanData
   get created_at    () { return this.data.created_at    }
   get updated_at    () { return this.data.updated_at    }
   get last_parag_id () {
-    if (undefined === this.data.last_parag_id) {
-      this.last_parag_id = -1
-    }
+    if (undefined === this.data.last_parag_id) { this.last_parag_id = -1 }
     return this.data.last_parag_id
+  }
+  get last_brin_id  () {
+    if ( undefined === this.data.last_brin_id ) { this.last_brin_id = -1 }
+    return this.data.last_brin_id
   }
 
   set data          (v){ this._data = v }
-  set title         (v){ this.data.title = v        ; this.setModified()  }
-  set summary       (v){ this.data.summary = v      ; this.setModified()  }
-  set authors       (v){ this.data.authors = v      ; this.setModified()  }
-  set created_at    (v){ this.data.created_at = v   ; this.setModified()  }
+  set title         (v){ this.data.title = v        ; this.setModified()    }
+  set summary       (v){ this.data.summary = v      ; this.setModified()    }
+  set authors       (v){ this.data.authors = v      ; this.setModified()    }
+  set created_at    (v){ this.data.created_at = v   ; this.setModified()    }
   set updated_at    (v){ this.data.updated_at = v /* surtout pas de setModified !*/}
-  set last_parag_id (v){this.data.last_parag_id = v ; this.setModified()  }
+  set last_parag_id (v){ this.data.last_parag_id = v ; this.setModified()   }
+  set last_brin_id  (v){ this.data.last_brin_id = v  ; this.setModified()   }
 
   setModified ()
   {
@@ -385,7 +388,8 @@ class PanData
     this.data = {
         title         : 'Projet indéfini'
       , summary       : 'Résumé non défini du projet'
-      , last_parag_id : 0
+      , last_parag_id : -1
+      , last_brin_id  : -1
       , created_at    : moment().format()
       , updated_at    : moment().format()
     }
