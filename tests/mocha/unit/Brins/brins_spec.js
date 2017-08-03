@@ -22,4 +22,25 @@ describe('Brins', function () {
       expect(projet.brins).to.respondsTo('add')
     })
   });
+
+
+  describe('<#projet>.brins.add', function () {
+    it("répond", function(){
+      expect(projet.brins).to.respondsTo('add')
+    })
+  })
+
+
+  describe('<#projet>.brins.remove', function () {
+    it("répond", function(){
+      expect(projet.brins).to.respondsTo('remove')
+    })
+    it("produit une erreur si aucun ID n'est fourni", function(){
+      expect(()=>{projet.brins.remove()}).to.throw("Il faut fournir l'ID du brin à détruire.")
+    })
+    it("détruit le brin spécifié", function(){
+      this.skip("En attente d'implémentation")
+    })
+  });
+
 });
