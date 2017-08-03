@@ -374,6 +374,13 @@ class Projet
     const my = this
     my.saving = true
     my.saved  = false
+
+    my.savingReporter = []
+    // Permet d'enregistrer des messages de processus et notamment les
+    // messages d'erreur. Les éléments sont des {Object}s qui contiennent au
+    // minimum {type: 'error|notice', message: 'le message string'}
+    // Ce reporter est inscrit à la fin de l'opération dans une fenêtre
+
     /*- Sauvegarde de tous les panneaux modifiés -*/
     return my.saveAllPanneaux()
       /*- Sauvegarde de tous les parags -*/
@@ -382,11 +389,24 @@ class Projet
       .then( () => {
         my.saving = false
         my.saved  = true
+        if ( my.savingReporter.length ) { my.afficheSavingReporter() }
+        return Promise.resolve()
       })
       .catch( (err) => { throw err } )
 
   }
 
+  /**
+  * Affiche le reporter de sauvegarde
+  *
+  * Pour le moment, je mets juste une alerte disant de regarder en console.
+  **/
+  afficheSavingReporter ()
+  {
+    console.log("RAPPORT D'ERREUR AU COURS DE LA SAUVEGARDE")
+    console.log(this.savingReporter)
+    alert("Des erreurs sont survenues pendant la sauvegarde, merci de consulter la console (CMD + i)")
+  }
 
   /**
   * Sauvegarde de tous les panneaux modifiés (et seulement les panneaux

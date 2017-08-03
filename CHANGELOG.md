@@ -1,8 +1,12 @@
+# 0.1.15
+
+  * Mise en place de la vérification de la validité des données avant l'enregistrement des `Parags`.
+
 # 0.1.14
 
   * Nouvelles propriétés `position`, `brins` et `type` pour le parag.
   * Mis en place de la gestion d'éléments DOM quelconque par `Tabulator` (appliqué au verso du parag).
-  
+
 # 0.1.13
 
   * Implémentation du verso du paragraphe, avec des informations utiles et éditables.
