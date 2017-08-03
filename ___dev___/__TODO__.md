@@ -1,19 +1,18 @@
 
+* Ranger un peu les classes `Brins` et `Brin`
 * Tester les méthodes non testées de Brins et Brin
 * Charger les brins au chargement du projet (en asynchrone)
-* Poursuivre l'implémentation
-
-* Faut-il utiliser seulement la méthode Brin.addParag (aussi pour ajouter le brin au parag lui-même) ou faut-il plutôt utiliser `Parag.addBrin` ?
+* Poursuivre l'implémentation des méthodes pour les brins
+  * Pouvoir choisir des brins pour le parag
+  * Pouvoir redéfinir les brins du parag
+  * Faut-il utiliser seulement la méthode Brin.addParag (aussi pour ajouter le brin au parag lui-même) ou faut-il plutôt utiliser `Parag.addBrin` ?
 
 * Implémenter le même traitement que editablecontent on blur, mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
   Essayer ça avec les types, dont on doit proposer une liste
 
-* Documenter l'utilisation des touches '->' ou 'l' pour basculer du recto au  verso
-  * Dans les développements futurs, on pourra imaginer de passer en revue plusieurs tableaux comme ça.
 
-* Reprendre tous les tests des méthodes en Mocha.
-
-* Soit le parag 19
+* RÉFLÉCHIR ENCORE AU PROBLÈME SUIVANT :
+  Soit le parag 19
   Il est demandé sa synchronisation
   On crée le #20 dans le panneau Notes
   On crée le #21 dans le panneau Manuscrit

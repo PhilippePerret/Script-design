@@ -1,3 +1,7 @@
+# 0.1.16
+
+  * Gestion presque complète des Brins (création et enregistrement)
+
 # 0.1.15
 
   * Mise en place de la vérification de la validité des données avant l'enregistrement des `Parags`.
