@@ -1,25 +1,4 @@
-* Bien documenter le fonctionnement du Tabulator pour le setupAsTabulator à propos des flèches qui permettent de 1. se déplacer d'éditable en éditable (renseigner aussi la documentation pour l'auteur) et 2. de passer en revue les valeurs d'un menu-select
-
-* Créer les types
-  On peut choisir 32 + 32 + 32 + 32 types pour un parag.
-  Il est exprimé en base32 dans la donnée, donc en quatre lettres-chiffres
-
-  type1   Caractéristique générale, pour dire action, ou dialogue, ou mixte, etc.
-  type2   Pour définir
-  type3
-  type4
-
-  type1
-      action
-      dialogue
-      action & dialogue
-      -----------------
-      question
-      note
-      remarque
-      todo
-
-* Implémenter la gestion des brins
+* Avant d'enregistrer la donnée parag, une vérification
 
 * Implémenter le même traitement que editablecontent on blur, mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
   Essayer ça avec les types, dont on doit proposer une liste

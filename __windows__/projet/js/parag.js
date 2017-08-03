@@ -1676,29 +1676,51 @@ class Parag
     my.verso.className = 'p-verso'
     my._isRecto = false
 
+    /*- On met les 4 menus des types -*/
+
+    if ( ! Parag.paragVersoForm.querySelector('#parag_type1') )
+    {
+      let selects = my.types.buildSelects()
+      for( let xtype = 1 ; xtype < 5 ; ++ xtype )
+      {
+        let ospan = Parag.paragVersoForm.querySelector(`span#span-type${xtype}`)
+        ospan.innerHTML = ''
+        ospan.appendChild(selects[-1 + xtype])
+      }
+    }
+
     /*- Renseignement du formulaire avec valeurs parag -*/
 
     ;(new Map([
-        ['id',        String(my.id)]
+        ['id',        my.id]
       , ['duration',  (my.duration||60).as_duree()]
       , ['position',  (my.position ? my.position.as_horloge() : 'auto')]
+      , ['type1',     my.types.type1]
+      , ['type2',     my.types.type2]
+      , ['type3',     my.types.type3]
+      , ['type4',     my.types.type4]
     ])).forEach( (v, k) => {
-      Parag.paragVersoForm.querySelector(`span#parag_${k}`).innerHTML = v
+      let o = Parag.paragVersoForm.querySelector(`#parag_${k}`)
+      v = String(v) // attention quand on utilisera des checkbox
+      switch(o.tagName.toLowerCase())
+      {
+        case 'select':
+          o.value = v
+          break
+        default:
+          o.innerHTML = v
+      }
     })
 
-    /*- On met les 4 menus des types -*/
-    let selects = my.types.buildSelects()
-    for( let xtype = 1 ; xtype < 5 ; ++ xtype )
-    {
-      let ospan = Parag.paragVersoForm.querySelector(`span#span-type${xtype}`)
-      ospan.innerHTML = ''
-      ospan.appendChild(selects[-1 + xtype])
-    }
 
     /*- Définition pour le Tabulator -*/
 
-    let mesLettres = new Map()
-    mesLettres.set('b', my.createNewBrin.bind(my) )
+
+    let mesLettres = new Map([
+        ['b',           my.createNewBrin.bind(my)]
+      , ['ArrowLeft',   my.showRecto.bind(my)]
+    ])
+
     if (DOM.get('parag_verso_form')) // pas pour les tests
     {
       Tabulator.setupAsTabulator('parag_verso_form', {
@@ -1769,6 +1791,8 @@ class Parag
   onChangeType( xType, nv )
   {
     const my = this
+
+    console.log("Parag#->onChangeType xType:%d nv:%s", xType, nv)
     my.types[`type${xType}`]= parseInt(nv)
     // modifie aussi la donnée générale et indique que le parag a été
     // modifié, pour enregistrement.
@@ -1781,11 +1805,11 @@ class Parag
   showRecto ()
   {
     const my = this
-    if ( true === my._isRecto )
+    if ( false === my._isRecto )
     {
       // <= C'est une vraie remise au verso, après affichage du verso
       // => Il faut sortir le traitement de la gestion par le Tabulator
-      if ( DOM.get('parag_verso_form') /* test unitaire */ ) {
+      if ( DOM.get('parag_verso_form') /* inconnu en test unitaire */ ) {
         Tabulator.unsetAsTabulator('parag_verso_form')
       }
     }

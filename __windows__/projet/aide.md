@@ -30,7 +30,16 @@
 | Déplacer paragraphe vers haut | CMD + Fl.haut | (sélectionné) |
 |                               | CMD + i       | (sélectionné) |
 | --- | --- | --- |
-
+| Afficher le verso du parag    | Tab ou ->     | (courant) |
+| Passer d'un champ à un autre  | ->/<- ou l/j  | verso |
+| (verso) Changer la durée      | q / horloge   | verso |
+| (verso) Changer la position   | s / horloge   | verso |
+|                               | ou "auto"     |       |
+| (verso) Choisir type1         | d - Fl / j/l  | verso |
+| (verso) Choisir type2         | f - Fl / j/l  | verso |
+| (verso) Choisir type3         | g - Fl / j/l  | verso |
+| (verso) Choisir type4         | h - Fl / j/l  | verso |
+| --- | --- | --- |
 
 ### Introduction {#projet_introduction}
 
@@ -65,6 +74,8 @@ On crée un nouveau paragraphe en tapant `n` dans le panneau où on veut l'ajout
 
 Pour sortir du champ d'édition, il suffit de jouer la `tabulation`. On peut aussi cliquer en dehors du champ.
 
+Noter que le retour chariot ne permet pas de le faire puisqu'on peut mettre des retours chariots dans les parags (qui sont en fait de faux paragraphes, d'où le nom raccourci de « parag »).
+
 #### Déplacer un paragraphe {#projet_deplacer_paragraphe}
 
 On déplace un paragraphe avec la combinaison de touches `CMD` (`Meta`) + flèche haut ou flèche bas.
@@ -82,6 +93,14 @@ Voir cette explication pour [sortir de l'édition](#projet_sortir_edition_paragr
 On utilise les flèches haut et bas pour sélectionner les paragraphes.
 
 Avec la touche `MAJ` pressée, on se déplace de 5 parags en 5 parags.
+
+#### Autres propriétés des parags {#properties_verso_parag}
+
+On peut retourner le parag pour régler ses autres propriétés telles que sa durée, sa position temporelle dans le projet, ses types 1 à 4 (qui vont déterminer son aspect) ou encore ses brins.
+
+On affiche le verso en sélectionnant le paragraphe (flèche haut/bas ou touches "i", "k") puis en cliquant la tabulation ou la flèche droite ou la touche "l".
+
+> Note : on revient au paragraphe avec la touche `Erase arrière` (`backspace`) ou la flèche gauche ou la touche 'j'
 
 #### Découper selon les retours-chariot {#projet_cut_selon_retour_chariot}
 

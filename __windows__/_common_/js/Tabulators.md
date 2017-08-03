@@ -3,6 +3,8 @@
 [map]: #tabulator_map
 [`Map`]: #tabulator_map
 
+> Note : voir aussi le fichier `Tabulators_implem.md` pour des détails sur l'implémentation qui aide à l'utilisation.
+
 ## Introduction {#introduction}
 
 Les `tabulators` sont un système de gestion de l'interface inédit qui fonctionne à l'image d'un menu : quand on focus sur le tabulator, il s'ouvre (ou pas) pour montrer ses outils. Chaque outil, ou menu, est associé à une lettre, dans l'ordre de la rangée intermédiaire du clavier (q, s, f, g, h, j, etc.) puis dans l'ordre de la rangée supérieure (a, z, e, r, etc.).
@@ -29,6 +31,13 @@ La troisième originalité consiste dans le fait que la touche entrée, pour cho
 * Faire un générateur de Tabulator où il suffira de donner les données pour qu'il construise le code HTML du tabulator.
 
 ## Implémentation {#tabulator_implementation}
+
+Il existe deux moyens très distinct d'implémenter des tabulators dans la page (voir les avantages et écueils de chaque moyen dans le fichier `Tabulators_implem.md`).
+
+* [Par balise `tabulator` et `button`](#implem_by_balise_tabulator),
+* [Par définition des attributs `data-tab` et envoi d'une section à la méthode `setupAsTabulator`](#implem_by_setupastabulator).
+
+### Implémentation par balise `tabulator` {#implem_by_balise_tabulator}
 
 * **Créer le code HTML des tabulators**. On commence pour créer le code dans la page, à l'aide de balises `tabulator` et de `button`(s) :
 
@@ -292,35 +301,42 @@ Tabulator.Map = {
 Maintenant, quelles que soient les associations de `keys` pour activer les menus/boutons, ce sont les bonnes opérations qui seront invoquées. That's it! :-)
 
 
-## Élément se comportant comme un tabulator {#element_react_as_tabulator}
+## Élément quelconque se comportant comme un tabulator {#implem_by_setupastabulator}
 
-On peut appliquer le comportement d'un `Tabulator` à tout élément du DOM.
+On peut appliquer le comportement d'un `Tabulator` à tout élément du DOM qui contient des éléments éditable (span, div, select, checkbox) qui définissent l'attribut `data-tab`.
 
 Il doit simplement contenir des éléments focusable qui définissent l'attribut `data-tab`. Par exemple :
 
 ```html
 
 <div id="ma-section-tabulatorisable">
+  <span>Un texte non éditable</span>
   <span class="editable" data-tab="ma-prop">Une valeur éditable</span>
   <span class="editable" data-tab="autre-prop">Autre valeur éditable</span>
+  <select data-tab="lemneu">...</select>
   ...
 </div>
 
 ```
 
-Dans l'exemple ci-dessus, ce sont les span définissant `data-tab` qui réagiront au tabulator.
+Dans l'exemple ci-dessus, ce sont les spans et le select définissant `data-tab` qui réagiront au tabulator.
 
 On utilisera par exemple à l'affichage de cet élément :
 
 ```js
 
-Tabulator.setupAsTabulator('ma-section-tabulatorisable', {
+Tabulator.setupAsTabulator(
+
+  'ma-section-tabulatorisable', {
+
   Map: {
       'ma-prop': methodePourEditerMaProp
     , 'autre-prop': methodePourEditerAutreProp
     , ...
   }
+
   [, mapLetters: ...]
+
 })
 
 ```

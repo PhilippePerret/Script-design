@@ -19,6 +19,14 @@ class Tabulator
     *
   *** --------------------------------------------------------------------- */
 
+  /**
+  * Place des listener sur tous les boutons en fonction de leur ordre
+  **/
+  static get LETTERS () {
+    return ['q','s','d','f','g','h','j','k','l','m',
+            'a','z','e','r','t','y','u','i','o','p']
+  }
+
 
   /**
   * Méthode appelée à l'ouverture du pan pour le préparer (quand la page
@@ -33,34 +41,6 @@ class Tabulator
     this.observe()
     this.ready  = true
     // console.log('<- Tabulator::setup')
-  }
-
-  /**
-  * Sélectionne l'élément éditable précédent (avec la flèche gauche)
-  **/
-  static selectPreviousEditable ()
-  {
-    const my = this
-    let prevOffset = my.LETTERS.indexOf(my.currentLetter) - 1
-    if ( prevOffset < 0 ) return // rien à faire
-    my.selectOtherEditable(my.LETTERS[prevOffset])
-  }
-  /**
-  * Sélectionne l'élément éditable suivant (avec la flèche droite)
-  **/
-  static selectNextEditable ()
-  {
-    const my = this
-    let nextOffset = my.LETTERS.indexOf(my.currentLetter) + 1
-    if ( nextOffset > my.iMaxLetter ) return // on est au bout
-    my.selectOtherEditable(my.LETTERS[nextOffset])
-  }
-
-  static selectOtherEditable ( letter )
-  {
-    const my = this
-    my.currentLetter = letter
-    my.sectionMap.get(letter).call()
   }
 
   /**
@@ -121,9 +101,6 @@ class Tabulator
         // dans sectionMap), on passe à la suivante
         while(!letter || sectionMap.get(letter)){letter = Tabulator.LETTERS[++iletter]}
 
-        my.iMaxLetter = iletter
-        // Pour pouvoir passer à l'élément suivant/précédent
-
         /*- Ajout dans la map de la section -*/
 
         sectionMap.set( letter, params.Map[data_tab] )
@@ -135,6 +112,8 @@ class Tabulator
         o.setAttribute('title', title.trim())
 
       })
+
+      sectionMap.set( 'iMaxLetter', iletter )
 
       // console.log("sectionMap:", sectionMap)
 
@@ -151,8 +130,8 @@ class Tabulator
     }
 
     my.sectionMap = sectionMap
-    // Pour pouvoir passer à l'élément éditable suivant/précédent, on doit
-    // connaitre la map.
+
+    my.iMaxLetter = sectionMap.get('iMaxLetter')
 
     /*- Activer cette section en déasactivant le comportement courant -*/
 
@@ -192,21 +171,17 @@ class Tabulator
         switch(evt.key.toLowerCase())
         {
           case 'j':
-          case 'arrowleft'
             my.selectPreviousEditable()
             return DOM.stopEvent(evt)
           case 'l':
-          case 'arrowright':
+            // Même si c'est tentant, ne pas utiliser les flèches, les
+            // réserver pour entrer et sortir du champ.
             my.selectNextEditable()
             return DOM.stopEvent(evt)
           case 'k': // simuler la flèche haut
-            if ( tagname == 'select' )
+            if ( tagname == 'select' ) // Flèche haut sur un menu sélectionné
             {
-              // Flèche haut sur un menu sélectionné
-              let i   = target.selectedIndex + 1
-              let nb  = target.childNodes.length
-              if ( i >= nb ) { i = 0 }
-              target.childNodes[i].selected = true
+              my.selectNextOptionOf(target)
             }
             else
             {
@@ -214,13 +189,9 @@ class Tabulator
             }
             break
           case 'i': // simuler la flèche bas
-            if ( tagname == 'select' )
+            if ( tagname == 'select' ) // Flèche haut sur un menu sélectionné
             {
-              // Flèche haut sur un menu sélectionné
-              let i   = target.selectedIndex - 1
-              let nb  = target.childNodes.length
-              if ( i < 0 ) { i = nb - 1 }
-              target.childNodes[i].selected = true
+              my.selectPreviousOptionOf(target)
             }
             else
             {
@@ -234,6 +205,20 @@ class Tabulator
     UILog(`#${obj.id} est géré par ©Tabulator`)
   }
 
+  static selectPreviousOptionOf ( select )
+  {
+    let i   = select.selectedIndex - 1
+      , nb  = select.childNodes.length
+    if ( i < 0 ) { i = nb - 1 }
+    select.childNodes[i].selected = true
+  }
+  static selectNextOptionOf ( select )
+  {
+    let i   = select.selectedIndex + 1
+      , nb  = select.childNodes.length
+    if ( i >= nb ) { i = 0 }
+    select.childNodes[i].selected = true
+  }
   /**
   * Méthode fonctionnant avec la précédente pour sortir l'élément
   * de la gestion par Tabulator.
@@ -249,7 +234,10 @@ class Tabulator
     if ( sectionMap )
     {
       window.onkeyup = sectionMap.get('windowOnKeyUp')
+
       sectionMap.delete('windowOnKeyUp')
+      // Cette propriété doit être redéfinie à chaque utilisation du tabulator
+      // puisqu'on ne peut pas savoir d'où on vient lorsqu'il est activé
     }
     else
     {
@@ -258,13 +246,34 @@ class Tabulator
     UILog(`#${obj.id} n'est plus géré par ©Tabulator`)
   }
 
-  /**
-  * Place des listener sur tous les boutons en fonction de leur ordre
-  **/
-  static get LETTERS () {
-    return ['q','s','d','f','g','h','j','k','l','m',
-            'a','z','e','r','t','y','u','i','o','p']
-  }
+
+    /**
+    * Sélectionne l'élément éditable précédent (avec la flèche gauche)
+    **/
+    static selectPreviousEditable ()
+    {
+      const my = this
+      let prevOffset = my.LETTERS.indexOf(my.currentLetter) - 1
+      if ( prevOffset < 0 ) return // rien à faire
+      my.selectOtherEditable(my.LETTERS[prevOffset])
+    }
+    /**
+    * Sélectionne l'élément éditable suivant (avec la flèche droite)
+    **/
+    static selectNextEditable ()
+    {
+      const my = this
+      let nextOffset = my.LETTERS.indexOf(my.currentLetter) + 1
+      if ( nextOffset > my.iMaxLetter ) return // on est au bout
+      my.selectOtherEditable(my.LETTERS[nextOffset])
+    }
+
+    static selectOtherEditable ( letter )
+    {
+      const my = this
+      my.currentLetter = letter
+      my.sectionMap.get(letter).call()
+    }
 
   /**
   * @return {Tabulator} l'instance du tabulateur d'identifiant +tabulator_id+

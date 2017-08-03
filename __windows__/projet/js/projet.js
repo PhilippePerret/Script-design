@@ -611,7 +611,7 @@ class Projet
   **/
   get folder ()
   {
-    this._folder || ( this._folder = this.store_data.folder )
+    this._folder || ( this._folder = this.data.store.folder )
     return this._folder
   }
 
