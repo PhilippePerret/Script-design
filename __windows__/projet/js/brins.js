@@ -131,10 +131,19 @@ class Brins {
     else { throw new Error(`Le brin #${bid} est inconnu au projet.`)}
   }
 
+  /**
+  * Enregistre tous les brins (si nécessaire (1))
+  *
+  * (1) this.modified doit être à true
+  *
+  * @return {Promise} Pour le chainage principalement, et lorsque la
+  * liste sera longue peut-être.
+  **/
   PRsave ()
   {
     const my = this
 
+    if ( ! my.modified ) { return Promise.resolve() }
     return my.prepareData()
       .then( my.store.save.bind(my.store) )
       .then( () => {

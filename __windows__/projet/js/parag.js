@@ -416,6 +416,7 @@ class Parag
       let startPos = my.id * Parag.dataLengthInFile
       let buffer   = new Buffer(Parag.dataLengthInFile)
       fs.open(my.projet.parags_file_path, 'r', (err, fd) => {
+        if ( err ) { throw err }
         fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
           if ( err ) { throw err }
           ok( buf.toString() )

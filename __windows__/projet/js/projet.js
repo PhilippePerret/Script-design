@@ -374,8 +374,11 @@ class Projet
 
     /*- Sauvegarde de tous les panneaux modifiés -*/
     return my.saveAllPanneaux()
-      /*- Sauvegarde de tous les parags -*/
+      /*- Sauvegarde de tous les brins (si nécessaire) -*/
+      .then( my.brins.PRsave.bind(my.brins) )
+      /*- Sauvegarde de tous les parags (si nécessaire) -*/
       .then( my.saveParags.bind(my) )
+      /*- Sauvegarde des relatives (si nécessaire) */
       .then( my.saveRelatives.bind(my) )
       .then( () => {
         my.saving = false

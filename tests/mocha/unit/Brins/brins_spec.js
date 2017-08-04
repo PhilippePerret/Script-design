@@ -66,14 +66,18 @@ function resetProjetWithBrins ()
     brin.modified = false
     brin1.modified = false
     brin2.modified = false
+    projet.brins.modified = true
 
     return projet.saveAll()
-      .then(projet.brins.PRsave.bind(projet.brins))
       .catch( err => { throw err } )
   })
 }
 
 
+function le_nombre_de_brins_doit_etre (nb)
+{
+  expect(Brins.items.size).to.equal(nb)
+}
 
 
 
@@ -145,34 +149,25 @@ describe('Brins', function () {
       expect(projet.brins).to.respondsTo('PRload')
     })
     it("charge les brins s'ils existent", function(){
-      resetBrins()
-      Brins._items = undefined
-      expect(Brins.items.size).to.equal(0)
 
-      projet.brins.add(brin)
-      projet.brins.add(brin1)
-      projet.brins.add(brin2)
+      resetProjetWithBrins()
 
-
-      return projet.brins.PRsave()
       .then( () => {
-
-        // ====== PRÉPARATION =======
-
-        projet._brins = undefined
+        resetBrins()
         Brins._items = undefined
-        expect(Brins.items.size).to.equal(0)
-
-        // =========> TEST <========
-
-        let res = projet.brins.PRload()
-          .then( () => {
-            expect(Brins.items.size).to.be.at.least(1)
-            expect(Brins.get(1)).to.be.instanceOf(Brin)
-          })
-        expect(Brins.items.size).to.equal(0)
-        return res
+        le_nombre_de_brins_doit_etre( 0 )
+        return Promise.resolve()
       })
+
+      // =========> T E S T <========
+
+      .then( projet.brins.PRload.bind(projet.brins) )
+
+      .then( () => {
+        expect(Brins.items.size).to.be.at.least(1)
+        expect(Brins.get(1)).to.be.instanceOf(Brin)
+      })
+
     })
     it("ne charge rien sans produire d'erreur s'il n'y a pas de fichier brins", function(){
       resetBrins()
@@ -180,17 +175,24 @@ describe('Brins', function () {
       if(fs.existsSync(pth)){fs.unlinkSync(pth)}
       return projet.brins.PRload()
       .then( () => {
-        expect(Brins.items.size).to.equal(0)
+        le_nombre_de_brins_doit_etre(0)
       })
     })
   });
 
-  describe('au chargement…', function () {
+  describe('au chargement complet du projet…', function () {
     it("la liste des brins est établie", function(){
       resetProjetWithBrins()
-      .then(projet.load())
       .then( () => {
-
+        Brins._items = undefined
+        const projet_id = projet.id
+        projet = new Projet(projet)
+        Projet.current = projet
+        return Promise.resolve()
+      })
+      .then(projet.PRload())
+      .then( () => {
+        expect(Brins.items.size).to.be.at.least(1)
       })
     })
   });
@@ -332,6 +334,8 @@ describe('Brins', function () {
         expect(brins).to.respondsTo('showPanneau')
       })
       it("affiche le panneau brins dans le panneau", function(){
+        resetBrins()
+        resetTests()
         expect(panneauNotes.section).not.to.haveTag('section', {id:'panneau_brins'})
         return panneauNotes.PRactivate()
         .then( () => {

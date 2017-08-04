@@ -121,7 +121,8 @@ class ProjetOptions
 
   get data ()
   {
-    this._data || this.load()
+    this._data || this.store.loadSync() // exceptionnellement (tests)
+    this._data || ( this._data = {} )
     return this._data
   }
   /**
