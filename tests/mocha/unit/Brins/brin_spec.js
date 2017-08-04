@@ -44,6 +44,42 @@ describe('Brin', function () {
       expect(typeof Brin.MAX_DESCRIPTION_LENGTH).to.equal('number')
     })
   });
+
+  describe('Brin.TYPES', function () {
+    it("existe et retourne une Map", function(){
+      expect(Brin.TYPES).not.to.be.undefined
+      expect(Brin.TYPES).to.be.instanceOf(Map)
+    })
+  });
+
+  describe('Brin@menu_types', function () {
+    it("existe", function(){
+      expect(Brin.menu_types).not.to.be.undefined
+    })
+    it("est de type HTMLElement", function(){
+      expect(Brin.menu_types).to.be.instanceOf(HTMLElement)
+    })
+    it("contient tous les types définis", function(){
+      expect(Brin.menu_types.querySelectorAll('option').length).to.equal(Brin.TYPES.size)
+      Brin.TYPES.forEach( (dType, typeId) => {
+        expect(Brin.menu_types).to.haveTag('option', {value: String(typeId)})
+      })
+    })
+  });
+  describe('Brin::buildMenuTypes', function () {
+    // Ça, ça génère bizarrement une erreur… Alors que la méthode est
+    // employée avec succès juste en dessous…
+    // it("répond", function(){
+    //   expect(Brin).to.respondsTo('buildMenuTypes')
+    // })
+    it("construit le menu des types", function(){
+      Brin._menu_types = undefined
+      Brin.buildMenuTypes()
+      expect(Brin._menu_types).not.to.be.undefined
+      expect(Brin._menu_types).to.be.instanceOf(HTMLElement)
+    })
+  });
+
   /** ---------------------------------------------------------------------
     *
     *   TESTS INSTANCE

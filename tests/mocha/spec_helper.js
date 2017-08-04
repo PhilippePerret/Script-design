@@ -198,6 +198,104 @@ Object.defineProperties(PanData.prototype, {
   }
 })
 
+/** ---------------------------------------------------------------------
+  *
+  * Méthodes utiles pour les BRINS
+  *
+*** --------------------------------------------------------------------- */
+
+global.resetBrins = function ()
+{
+  Brins._items    = new Map()
+  projet._brins   = undefined
+  global.brins = projet.brins
+
+  brins._panneau  = undefined // forcer la reconstruction
+  brins._form     = undefined
+
+
+  global.brin  = new Brin({id: 0, projet: projet, titre: "Brin sans titre"})
+  global.brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1", type: 20})
+  global.brin2 = new Brin({id: 2, projet: projet, titre: "Brin #2"})
+  global.brin3 = new Brin({id: 3, projet: projet, titre: "Brin #3", type: 20})
+  global.brin4 = new Brin({id: 4, projet: projet, titre: "Brin #4", type: 31})
+  global.brin5 = new Brin({id: 5, projet: projet, titre: "Brin #5", type: 20})
+
+}
+
+global.createProjetNoSave = function ()
+{
+  resetTests({nombre_parags:20})
+  resetBrins()
+
+  // ========= DONNÉES ============
+
+  panneauNotes.add([parag1, parag3, parag5])
+  panneauScenier.add([parag0])
+  panneauSynopsis.add([parag2, parag4])
+  panneauTreatment.add([parag6, parag7, parag8, parag9])
+
+  /*= le brin #0 dans les parags #1 et #0 et #4 =*/
+
+  brin.addParag(parag1)
+  brin.addParag(parag0)
+  brin.addParag(parag4)
+
+  /*= le brin #2 dans les parags #1 et #5 =*/
+
+  brin2.addParag(parag1)
+  brin2.addParag(parag5)
+
+  // Dans le brin #5 on met les 10 premiers parags (0 à 9)
+  for(var i = 0 ; i < 10 ; ++i ){
+    brin5.addParag(Parags.get(Number(i)))
+  }
+
+}
+/**
+* Crée un projet avec des brins, des brins associés à des
+* parag puis initialize tout.
+*
+* @return {Promise}
+* Donc il faut utiliser dans le test :
+*   resetProjetWithBrins()
+*   .then( () => {
+*       // ... le test ici ...
+*   })
+**/
+global.resetProjetWithBrins = function ()
+{
+  return new Promise( (resolve, ko) => {
+
+    createProjetNoSave()
+
+    // ========= FIN DONNÉES ============
+
+    parag0.modified       = true
+    parag1.modified       = true
+    parag4.modified       = true
+    parag5.modified       = true
+    brin.modified         = true
+    brin1.modified        = true
+    brin2.modified        = true
+    brin3.modified        = true
+    panneauNotes.modified     = true
+    panneauScenier.modified   = true
+    panneauSynopsis.modified  = true
+    projet.brins.modified = true
+
+    return projet.saveAll()
+    .then( () => {
+      expect(fs.existsSync(projet.parags_file_path)).to.be.true
+      return Promise.resolve()
+    })
+    // .then(ok)
+    .then( () => {
+      console.log("J'en ai fini de la préparation de resetProjetWithBrins")
+      resolve()
+    })
+  })
+}
 
 // ---------------------------------------------------------------------
 
@@ -288,7 +386,7 @@ resetCurrentProjet = function( params )
   Parag._lastID = -1
 
   /*- Destruction du fichier brins s'il existe -*/
-  
+
   let pth = projet.brins.store.path
   if (fs.existsSync(pth)) {fs.unlinkSync(pth)}
 

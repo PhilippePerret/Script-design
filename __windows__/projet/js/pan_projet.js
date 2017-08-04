@@ -420,7 +420,7 @@ class PanProjet
     return my.store.save()
       .then( my.projet.relatives.save.bind(my.projet.relatives) )
       .then( my.onFinishSave.bind(my) )
-      .catch((err) => { throw err })
+      .catch( err => { throw err })
   }
 
   // Utiliser par Store pour envoyer les données
@@ -444,12 +444,18 @@ class PanProjet
   {
     const my = this
 
-    return new Promise( (ok, ko) => {
-      // console.log('-> Promise de PanProjet#onFinishSave (panneau %s)', my.id)
-      my.setAllParagsUnmodified.bind(my).call()
-      my.projet.checkModifiedState.bind(my.projet).call()
-      ok()
-    })
+    return Promise.resolve()
+
+    // Avant, ici, on faisait ça :
+    // ---------------------------
+    // return new Promise( (ok, ko) => {
+    //   my.setAllParagsUnmodified.call(my)
+    //   my.projet.checkModifiedState.call(my.projet)
+    //   ok()
+    // })
+    // LE GROS SOUCI, c'est que les paragraphes sont enregistrés après.
+    // TODO En revanche, il faut voir les répercussions du fait de ne plus
+    // vérifier l'état 'checkModifiedState'
   }
 
   /**
@@ -524,32 +530,14 @@ class PanProjet
   editCurrent     ()  { return this.parags.editCurrent()        }
 
   /**
-  * Marque tous les paragraphes comme non modifiés.
-  * Cette méthode sert après l'enregistrement du panneau.
-  **/
-  setAllParagsUnmodified () { this.parags.setUnmodified('all') }
-
-
-  /**
   * @return {Store} L'instance store qui va permettre d'enregistrer les
   * données du panneau.
   **/
   get store ()
   {
-    this._store || (this._store = new Store(this.store_path, this))
+    this._store || (this._store = new Store(path.join('projets',this.projet.id,this.name), this))
     return this._store
   }
-
-  /**
-  * @return {String} Le path du fichier JSON contenant les données du panneau
-  * SAUF les paragraphes depuis l'enregistrement en longueurs fixes
-  **/
-  get store_path ()
-  {
-    this._store_path || (this._store_path = path.join('projets',this.projet.id,this.name))
-    return this._store_path
-  }
-
 
 
 }// /fin class PanProjet

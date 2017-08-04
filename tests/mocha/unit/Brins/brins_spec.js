@@ -5,73 +5,7 @@
 */
 require('../../spec_helper.js')
 
-let brins = projet.brins
-let brin, brin1, brin2
 
-
-function resetBrins ()
-{
-  Brins._items    = new Map()
-  brins._panneau  = undefined // forcer la reconstruction
-  brins._form     = undefined
-  projet._brins   = undefined
-
-  brin  = new Brin({id: 0, projet: projet, titre: "Brin sans titre"})
-  brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1"})
-  brin2 = new Brin({id: 2, projet: projet, titre: "Brin #2"})
-}
-
-
-/**
-* Crée un projet avec des brins, des brins associés à des
-* parag puis initialize tout.
-*
-* @return {Promise}
-* Donc il faut utiliser dans le test :
-*   resetProjetWithBrins()
-*   .then( () => {
-*       // ... le test ici ...
-*   })
-**/
-function resetProjetWithBrins ()
-{
-  return new Promise( (ok, ko) => {
-
-    resetTests({nombre_parags:20})
-    resetBrins()
-
-    // ========= DONNÉES ============
-
-    panneauNotes.add([parag1, parag3, parag5])
-    panneauScenier.add([parag0])
-    panneauSynopsis.add([parag2, parag4])
-
-    /*= le brin #0 dans les parags #1 et #0 et #4 =*/
-
-    brin.addParag(parag1)
-    brin.addParag(parag0)
-    brin.addParag(parag4)
-
-    /*= le brin #2 dans les parags #1 et #5 =*/
-
-    brin2.addParag(parag1)
-    brin2.addParag(parag5)
-
-    // ========= FIN DONNÉES ============
-
-    parag0.modified = false
-    parag1.modified = false
-    parag4.modified = false
-    parag5.modified = false
-    brin.modified = false
-    brin1.modified = false
-    brin2.modified = false
-    projet.brins.modified = true
-
-    return projet.saveAll()
-      .catch( err => { throw err } )
-  })
-}
 
 
 function le_nombre_de_brins_doit_etre (nb)
@@ -208,6 +142,9 @@ describe('Brins', function () {
       projet.brins.add(brin1)
       expect(Brins.get(1)).to.be.instanceOf(Brin)
     })
+    it("ajoute le brin au panneau brins (qu'il soit ouvert ou non)", function(){
+      this.skip()
+    })
   })
 
 
@@ -239,37 +176,41 @@ describe('Brins', function () {
       })
       it("retire le brin de tous ses parags", function(){
         resetProjetWithBrins()
-        /*
-          resetProjetWithBrins()
-          ----------------------
-          On vérifie que le parag #1 soit dans le brin #2 (dans les 2 sens)
-          On vérifie que le parag #5 soit dans le brin #2 (dans les 2 sens)
-          On supprime le brin #2
-          => Il ne doit plus être dans parag #1
-          => Il ne doit plus être dans parag #5
-          Mais
-          parag #1 doit encore avec le brin #0
+        .then( () => {
+          /*
+            resetProjetWithBrins()
+            ----------------------
+            On vérifie que le parag #1 soit dans le brin #2 (dans les 2 sens)
+            On vérifie que le parag #5 soit dans le brin #2 (dans les 2 sens)
+            On supprime le brin #2
+            => Il ne doit plus être dans parag #1
+            => Il ne doit plus être dans parag #5
+            Mais
+            parag #1 doit encore avec le brin #0
 
-         */
-        // ======= PRÉ-VÉRIFICATIONS =======
-        expect(parag1.brin_ids).to.include(2)
-        expect(brin2.parag_ids).to.include(1)
-        expect(parag5.brin_ids).to.include(2)
-        expect(brin2.parag_ids).to.include(5)
-        expect(parag1.brin_ids).to.include(0)
-        expect(parag1.modified).to.be.false
-        expect(parag5.modified).to.be.false
+           */
+          // ======= PRÉ-VÉRIFICATIONS =======
+          expect(parag1.brin_ids).to.include(2)
+          expect(brin2.parag_ids).to.include(1)
+          expect(parag5.brin_ids).to.include(2)
+          expect(brin2.parag_ids).to.include(5)
+          expect(parag1.brin_ids).to.include(0)
+          expect(parag1.modified).to.be.false
+          expect(parag5.modified).to.be.false
 
-        // ========> TEST <=========
-        projet.brins.remove(2)
+          // ========> TEST <=========
+          projet.brins.remove(2)
 
-        // ========= CONTROLE ==========
-        expect(parag1.brin_ids).not.to.include(2)
-        expect(parag5.brin_ids).not.to.include(2)
-        expect(parag1.brin_ids).to.include(0)
-        expect(parag1.modified).to.be.true
-        expect(parag5.modified).to.be.true
-
+          // ========= CONTROLE ==========
+          expect(parag1.brin_ids).not.to.include(2)
+          expect(parag5.brin_ids).not.to.include(2)
+          expect(parag1.brin_ids).to.include(0)
+          expect(parag1.modified).to.be.true
+          expect(parag5.modified).to.be.true
+        })
+      })
+      it("supprime le brin du panneau des brins (qu'il soit fermé ou non)", function(){
+        this.skip()
       })
     });
   });

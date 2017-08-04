@@ -1809,6 +1809,7 @@ class Parag
 
     let mesLettres = new Map([
         ['b',           my.createNewBrin.bind(my)]
+      , ['B',           my.chooseBrins.bind(my)]
       , ['ArrowLeft',   my.showRecto.bind(my)]
     ])
 
@@ -1836,10 +1837,27 @@ class Parag
     *
   *** --------------------------------------------------------------------- */
 
+  /**
+  * Appelé par la touche "b" pour créer un nouveau brin
+  **/
   createNewBrin ()
   {
     this.projet.brins.showForm()
   }
+  /**
+  * Appelé par la touche "B" pour choisir les brins du parag
+  **/
+  chooseBrins ()
+  {
+    this.projet.brins.showPanneau()
+    // TODO Dire au panneau comment traiter les choix
+    // TODO Il faut qu'on puisse passer en revue les brins avec
+    // les flèches et les choisir avec '->' ou les enlever avec '<-'
+    // Peut-être fonctionner en deux colonnes pour que ce soit bien
+    // clair ?
+  }
+
+
   editProperty ( property )
   {
     const my  = this

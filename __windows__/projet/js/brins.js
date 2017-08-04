@@ -147,7 +147,9 @@ class Brins {
     return my.prepareData()
       .then( my.store.save.bind(my.store) )
       .then( () => {
+        console.log("= Fichier brins sauvé")
         UILog("Brins du projet enregistrés.")
+        return Promise.resolve()
       })
       .catch( err => { throw err })
   }
@@ -215,6 +217,7 @@ class Brins {
         hdata.items.push(dBrin.data)
       })
       my._data = hdata
+      console.log("= Données brins préparés")
       ok()
     })
   }
@@ -312,14 +315,128 @@ class Brins {
     *
   *** --------------------------------------------------------------------- */
 
-  showPanneau ()
+  showPanneau ( params )
   {
-    currentPanneau.section.appendChild(this.panneau)
-    this.panneau.setAttribute('style', '')
+    const my = this
+
+    params || ( params = {} )
+
+    params.parag && my.preparePanneauFor( params.parag )
+    // Si la méthode showPanneau est appelée par un parag (verso de sa fiche),
+    // on doit le préparer, c'est-à-dire sélectionner tous ses brins.
+
+    currentPanneau.section.appendChild(my.panneau)
+    my.panneau.setAttribute('style', '')
+
+    my.ibrin_selected || ( my.ibrin_selected = 0 )
+    my.panneau.querySelectorAll('ul#brins > li.brin')[my.ibrin_selected].className += ' selected'
+    // La formule ci-dessus fait que lorsqu'on ré-ouvre le panneau, c'est
+    // toujours le même brin qui est sélectionné. Peut-être qu'à l'usage il
+    // faudra toujours remettre my.ibrin_selected à 0 ou TODO mettre une option
+
+    // TODO Il faut toujours désélectionner le sélectionné précédent ?
+
+    my.panneau.opened = true
+    // Tabulator.setupAsTabulator('ul#brins', {
+    //   MapLetters: new Map([
+    //       ['ArrowDown',   my.selectNext.bind(my)]
+    //     , ['ArrowUp',     my.selectPrevious.bind(my)]
+    //     , ['ArrowRight',  my.chooseCurrent.bind(my)]
+    //     , ['ArrowLeft',   my.unchooseCurrent.bind(my)]
+    //     , ['Enter',       my.adopterChoix.bind(my)]
+    //     , ['Escape',      my.renoncerChoix.bind(my)]
+    //     , ['b',           my.createNew.bind(my)]
+    //     , ['@',           my.afficherAide.bind(my)]
+    //   ])
+    // })
   }
+
+  preparePanneauFor ( parag )
+  {
+    const my = this
+    const ids = parag.brin_ids || []
+
+    let o = null
+    Brins.items.forEach( (brin, bid) => {
+      o = my.panneau.querySelector(`li#brin-${bid}`)
+      if ( ! o ) { return /* brin introuvable */}
+      if ( ids.indexOf(bid) < 0 )
+      {
+        o.className = 'brin'
+      }
+      else
+      {
+        o.className = 'brin chosen'
+      }
+    })
+  }
+
+  selectBrinCurrent ()
+  {
+    const my = this
+    my.deselectBrinSelected()
+    const o = my.panneau.querySelectorAll('ul#brins > li.brin')[my.ibrin_selected]
+    o.className += ' selected'
+  }
+  deselectBrinSelected ()
+  {
+    const my = this
+    const o = my.panneau.querySelector('ul#brins > li.selected')
+    if ( ! o ) { return false }
+    let c = o.className
+    c = c.replace(/ selected/,'').trim()
+    o.className = c
+    return true
+  }
+  get nombre_brins_displayed ()
+  {
+    this._nb_displayed || (
+      this._nb_displayed = this.panneau.querySelectorAll('ul#brins > li.brin').length
+    )
+    return this._nb_displayed
+  }
+  /** ---------------------------------------------------------------------
+    *   Toutes les méthodes qui réagissent aux touches clavier
+    *   définies dans le MapLetter ci-dessus
+  *** --------------------------------------------------------------------- */
+  // Sélectionne le brin suivant dans le panneau
+  selectNext (options) {
+    const my = this
+    if ( my.ibrin_selected >= my.nombre_brins_displayed - 1) { return false }
+    ++ my.ibrin_selected
+    my.selectBrinCurrent()
+    return true
+  }
+
+  // Sélectionne le brin précédent dans le panneau
+  selectPrevious (evt) {
+    const my = this
+    if ( my.ibrin_selected == 0 ) { return false }
+    -- my.ibrin_selected
+    my.selectBrinCurrent()
+    return true
+  }
+  // Choisit le brin courant dans le panneau
+  chooseCurrent (evt) {console.log("Choisir le courant (à implémenter)")}
+  // Retire le brin courant de la liste
+  unchooseCurrent (evt) { console.log("Retirer le courant (à implémenter)") }
+  // Touche Enter => Les brins sont attribués au parag
+  adopterChoix ( evt ) { console.log("Adopter la liste courante (à implémenter)") }
+  // Touche Escape => On renonce à choisir les brins
+  renoncerChoix ( evt ) { this.hidePanneau() }
+  // Touche b => Nouveau brin
+  createNew (evt) { console.log("Création d'un nouveau brin (à implémenter)")}
+  // Touche @ => Aide concernant les brins
+  afficherAide (evt) { console.log("Affichage de l'aide sur les brins demandée")}
+
+
   hidePanneau ()
   {
-    this.panneau.setAttribute('style', 'display:none')
+    const my = this
+
+    my.panneau.setAttribute('style', 'display:none')
+    my.panneau.opened = false
+    Tabulator.unsetAsTabulator('ul#brins')
   }
   showForm ()
   {
@@ -395,17 +512,35 @@ class Brins {
   buildPanneau ()
   {
     let h = DOM.create('section', {id:'panneau_brins'})
-    let newo
+    let newo, listing
 
     newo = DOM.create('div', {class:'titre', inner: "Liste des brins"})
     h.appendChild(newo)
 
-    Brins.items.forEach( (brin, bid) => {
-      h.appendChild(brin.build())
+
+    // On classe
+    let bsg = new Map()
+      , lt  = []
+    Brins.items.forEach((v,k) => {
+      if (undefined === bsg.get(v.type))
+        { bsg.set(v.type,[]);lt.push(v.type) }
+      bsg.get(v.type).push(v)
     })
+    lt.sort(function(a,b){ return a - b})
+    let brins_grouped = lt.map(type => { return bsg.get(type) })
+
+    listing = DOM.create('ul', {class:'brins', id: 'brins'})
+    brins_grouped.forEach( grpBrins => {
+      let typeId = grpBrins[0].type
+      let divTitre = DOM.create('div', {class:'titre', inner: Brin.TYPES.get(typeId).hname})
+      listing.appendChild(divTitre)
+      grpBrins.forEach( brin => { listing.appendChild(brin.buildAsLI()) } )
+    })
+    h.appendChild(listing)
 
     // Maintenant qu'on a construit tous les brins, on peut les mettre
-    // dans leur parent
+    // dans leur parent (en supposant bien entendu qu'ils appartiennent
+    // au même groupe/type de brins)
     Brins.items.forEach( (brin, bid) => {
       if ( ! brin.parent_id ) { return }
       brin.parent.divChildren.appendChild(brin.div)
@@ -415,6 +550,7 @@ class Brins {
     h.appendChild(newo)
 
     this._panneau = h
+    this._panneau.opened = false
   }
 
   /**
@@ -460,6 +596,8 @@ class Brins {
 
     this._form = h
     currentProjet.ui.observeEditablesIn(this._form)
+    this._form.opened = false
+
     return this._form
   }
 

@@ -5,10 +5,20 @@ section
       color           : white
       font-size       : 1.3em
     > div.explication
-      margin-top    : 5em
       font-size     : 0.85em
       font-style    : italic
       color         : #777
+
+// Constitution générale du panneau des brins
+section#panneau_brins
+  height      : auto
+  > div.titre
+    ul#brins
+      height      : 500px
+      max-height  : 500px
+      overflow    : scroll
+  > div.explication
+    margin-top    : 5em
 
 section#form_brins
   font-size   : 1em
@@ -19,6 +29,8 @@ section#form_brins
   width       : 600px
   padding     : 2em
   background-color  : yellowgreen
+  > div.explication
+    margin-top    : 5em
   div.row
     clear : both
     margin-left   : 2em
@@ -36,10 +48,33 @@ section#panneau_brins
   top               : 5em
   z-index           : 10
   padding           : 1em
-  height            : 500px
   overflow          : scroll
   width             : 700px
   background-color  : steelblue
 
-  div.brin
-    font-size : 0.9em
+  ul#brins
+    list-style    : none
+
+    // Un titre de type de brin
+    // Rappel : les brins sont affichés en les rassemblant par type
+    div.titre
+      font-size   : 1em
+    li.brin, div.brin
+      font-size     : 0.9em
+      margin-left   : 2em // pour être en décalage par rapport aux titres
+      // Quand le brin est "choisi", c'est-à-dire, par exemple, qu'il
+      // appartient au parag
+      &.chosen
+        background-color  : steelblue
+        color             : white
+      // Quand le brin est sélectionné, c'est-à-dire prêt à être choisi
+      // ou édité
+      &.selected
+        background-color  : #CCF
+        color             : blue
+
+      // L'UL des enfants brins du brin
+      ul.children
+        list-style    : none
+        margin-left   : 4em
+        font-size     : 0.8em

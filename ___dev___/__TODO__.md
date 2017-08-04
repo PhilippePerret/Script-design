@@ -1,12 +1,27 @@
-* Poursuivre les tests des brins
+COMMENT GÉRER LE PANNEAU DES BRINS :
+  En faire un tabulator (setupAsTabulator)
+  en définissant seulement le rôle de :
+    <-        Déselectionner un brin
+    ->        Ajouter un brin (vérifier le nombre max)
+    ^ (up)    Passer au brin précédent
+    v (down)  Passer au brin suivant
+    Enter     Valider les choix et quitter
+    Escape    Renoncer
+    b         Nouveau brin
+    @         Aide, lien direct vers la partie
+
+* La création d'un nouveau brin doit entrainer la reconstruction du panneau des brins (qui peut être affiché quand on crée un nouveau brin)
+
+* Poursuivre l'implémentation des méthodes pour les brins
+  * Documenter la partie sur les brins
+  * Poursuivre les tests des brins en :
+  * Pouvoir choisir des brins pour le parag (peut-être faut-il implémenter ce que je décris plus bas à propos des champs éditables : on peut définir une méthode de traitement de la donnée modifiée, mais ne faut-il pas aussi pouvoir définir une méthode d'édition particulière. Comme ici, par exemple, lorsque l'on veut modifier la donnée `brin_ids`, on doit faire apparaitre le panneau des brins et en choisir.)
+  * Pour le choix des brins, penser qu'il y a un nombre limité de 8 par parag
+  * Pouvoir redéfinir les brins du parag
+  * Tester qu'à l'édition d'un Brin son type soit bien réglé
 
 * Ranger un peu les classes `Brins` et `Brin`
-* Tester les méthodes non testées de Brins et Brin
-* Charger les brins au chargement du projet (en asynchrone)
-* Poursuivre l'implémentation des méthodes pour les brins
-  * Pouvoir choisir des brins pour le parag
-  * Pouvoir redéfinir les brins du parag
-  * Faut-il utiliser seulement la méthode Brin.addParag (aussi pour ajouter le brin au parag lui-même) ou faut-il plutôt utiliser `Parag.addBrin` ?
+
 
 * Implémenter le même traitement que editablecontent on blur, mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
   Essayer ça avec les types, dont on doit proposer une liste

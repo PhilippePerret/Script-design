@@ -381,6 +381,7 @@ class Projet
       /*- Sauvegarde des relatives (si nécessaire) */
       .then( my.saveRelatives.bind(my) )
       .then( () => {
+        console.log("= Fin de l'enregistrement de tous les éléments.")
         my.saving = false
         my.saved  = true
         if ( my.savingReporter.length ) { my.afficheSavingReporter() }
@@ -413,12 +414,13 @@ class Projet
     const my = this
     let panos_modified = []
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
-      ( all || my.panneau(pan_id)._modified ) && panos_modified.push( my.panneau(pan_id) )
+      ;( all || my.panneau(pan_id)._modified ) && panos_modified.push( my.panneau(pan_id) )
       // Attention = si on met une ligne de code avant ce ( all || ... ) il
       // faut impérativement la terminer par un ';' pour que JS ne croie pas
       // qu'il s'agit d'une fonction
     })
-    return Promise.all( panos_modified.map( p => { return p.save.bind(p).call() } ) )
+    return Promise.all( panos_modified.map( pan => { return pan.save.call(pan) } ) )
+
   }
 
   /**
@@ -428,6 +430,7 @@ class Projet
   **/
   saveRelatives ()
   {
+    console.log("* Enregistrement des relatives")
     return this.relatives.save.bind(this.relatives).call()
   }
 
@@ -450,16 +453,19 @@ class Projet
   saveParags ( all )
   {
     const my = this
+    // console.log("* Enregistrement des Parags")
     let modified_parags = []
-    for (let pid in Parags.items )
-    {
-      if ( Parags.items.hasOwnProperty(pid) ) {
-        let parag = Parags.get(pid) ; // ATTENTION ";" obligatoire !
-        ( all || parag.modified ) && ( modified_parags.push( parag ) )
-      }
-    }
+    Parags.items/*{Map}*/.forEach( (parag, pid) => {
+      ;/*(1)*/( all || parag.modified ) && modified_parags.push(parag)
+      // (1) Ce ';' est obligatoire car sinon, le programme comprend
+      // ça : `console.log(...)(all || parag.modified)`
+    })
     my.saved_parags_count = modified_parags.length
-    return Promise.all( modified_parags.map( p => { return p.save() } ))
+    // console.log("= Nombre de parags à sauver : %d", my.saved_parags_count)
+    return Promise.all( modified_parags.map( p => {
+      // console.log("Je sauve le paragraphe #",p.id)
+      return p.save()
+    }))
   }
 
 

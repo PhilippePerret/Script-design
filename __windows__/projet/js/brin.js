@@ -9,6 +9,24 @@ class Brin
   static get MAX_TITRE_LENGTH       () { return 99 }
   static get MAX_DESCRIPTION_LENGTH () { return 256 }
 
+  static get TYPES () {
+    this._types || (
+      this._types = new Map([
+          [0 , {hname: 'Non défini'}]
+        , [10, {hname: 'Personnage'}]
+        , [11, {hname: 'Relation de personnage'}]
+        , [12, {hname: 'Protagoniste'}]
+        , [20, {hname: 'Intrigue'}]
+        , [30, {hname: 'Accessoire'}]
+        , [31, {hname: 'Décor'}]
+        , [60, {hname: 'Thématique'}]
+        , [61, {hname: 'Documentation'}]
+        , [99, {hname: 'Autre'}]
+      ])
+    )
+    return this._types
+  }
+
   static get PROPERTIES () {
     this._properties || (
       this._properties = new Map([
@@ -33,6 +51,23 @@ class Brin
     return this._lastID
   }
 
+
+  static get menu_types ()
+  {
+    this._menu_types || this.buildMenuTypes()
+    return this._menu_types
+  }
+
+  static buildMenuTypes ()
+  {
+    let s = DOM.create('select', {id:'parag_type', 'data-tab':'type'})
+      , o
+    this.TYPES.forEach( (dType, typeId) => {
+      o = DOM.create('option', {value: typeId, inner: dType.hname})
+      s.appendChild(o)
+    })
+    this._menu_types = s
+  }
 
   /** ---------------------------------------------------------------------
     *
@@ -228,7 +263,7 @@ class Brin
   *** --------------------------------------------------------------------- */
 
   /**
-  * Construit le DIV pour l'affichage dans le listing du brin
+  * Construit le DIV pour l'affichage hors du listing du panneau
   *
   * Noter que ce div est éditable, pour pouvoir modifier le titre
   * du brin facilement, sans l'éditer.
@@ -250,6 +285,29 @@ class Brin
     divbrin.appendChild(divchild)
     this._div = divbrin
     return this._div
+  }
+
+  /**
+  * Fabrique l'élément LI du brin, pour affichage dans une liste UL
+  *
+  * @return {HTMLElement} Le LI contenant le titre et l'UL des enfants
+  **/
+  buildAsLI ()
+  {
+    const bid = this.id
+
+    let li_id = `brin-${bid}`
+    let librin = DOM.create('li', {class: 'brin', id: li_id})
+    let divtitre = DOM.create('div',
+        {class:'titre editable', id: `${li_id}-titre`, inner: this.titre
+          , 'data-tag':"brin_titre"
+        })
+    librin.appendChild(divtitre)
+    let liChild = DOM.create('ul', {class: 'children', id: `${li_id}-children`})
+    librin.appendChild(liChild)
+    this._li = librin
+    return this._li
+
   }
 
 }

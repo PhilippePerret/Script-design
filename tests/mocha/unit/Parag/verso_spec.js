@@ -262,18 +262,11 @@ describe('Verso du parag', function () {
         )
       })
 
-      it("un menu pour le type du parag", function(){
-        expect(verso).to.haveTag('span', {id:'span-type'})
-        expect(verso.querySelector('#span-type')).to.haveTag(
-          'span', {id: 'parag_type'}
-        )
-      })
-
       it("un champ pour les brins", function(){
         expect(verso).to.haveTag('span', {id: 'span-brins'})
-        expect(verso.querySelector('span#span-brins')).to.haveTag(
-          'span', {text:'b : Nouveau brin'}
-        )
+        expect(verso.querySelector('span#span-brins'))
+        .to.haveTag('span', {text:'b (nouveau brin)'})
+        .and.haveTag('span', {text: 'B (liste des brins)'})
       })
     });
 
