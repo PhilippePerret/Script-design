@@ -53,7 +53,7 @@ class Parag
         , 'updated_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD')  }
         , 'position'    : {length: 6  , type: 'n', default: null    }
         , 'type'        : {length: 4  , type: 's', default: '0000'  }
-        , 'brins_ids'   : {length: 16 , type: 's', default: ''      }
+        , 'brin_ids'    : {length: 16 , type: 's', default: ''      }
         // Les nouvelles données doivent obligatoirement être ajoutées après et il
         // faut retirer la longueur à 'vide' ci-dessous pour ne pas avoir à tout
         // recalculer
@@ -255,8 +255,8 @@ class Parag
         throw new DataValidityError(`Le type ${my.type} devrait faire exactement 4 caractères`)
       }
 
-      if ( my.brins_ids.length > dData.brins_ids.length ) {
-        throw new DataValidityError(`La donnée brins (brins_ids) est trop longue. Elle ne devrait pas excéder ${dData.brins_ids.length} caractères`)
+      if ( my.brin_ids.length > dData.brin_ids.length ) {
+        throw new DataValidityError(`La donnée brins (brin_ids) est trop longue. Elle ne devrait pas excéder ${dData.brin_ids.length} caractères`)
       }
 
       /*- Tout est OK -*/
@@ -316,7 +316,7 @@ class Parag
   get duration    ()  { return this._duration   || 60 }
   get position    ()  { return this._position   || -1 }
   get type        ()  { return this._type       || '0000' }
-  get brins_ids   ()  { return this._brins_ids  || ''    }
+  get brin_ids    ()  { return this._brin_ids   || ''    }
   get updated_at  ()  { return this._updated_at   }
   get created_at  ()  { return this._created_at   }
 
@@ -326,7 +326,7 @@ class Parag
     else { this._position = v }
   }
   set type        (v) { this._type = v        }
-  set brins_ids   (v) { this._brins_ids = v   }
+  set brin_ids    (v) { this._brin_ids = v    }
   set updated_at  (v) { this._updated_at = v  }
   set created_at  (v) { this._created_at = v  }
 

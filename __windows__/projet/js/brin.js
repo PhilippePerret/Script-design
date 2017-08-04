@@ -41,16 +41,19 @@ class Brin
   *** --------------------------------------------------------------------- */
   constructor (data)
   {
-    this.data = data
-
+    this.projet = data.projet || currentProjet
+    delete data.projet
+    this._data = data
     Brins.items.set(this.id, this)
   }
 
-  get modified () { return this._modified }
+  get modified () { return this._modified || false }
   set modified (v){
     this._modified = v
-    v && ( this.projet.modified = true )
+    v && ( this.projet.brins.modified = true )
   }
+
+  get data () { return this._data }
 
   get id32 ()
   {
@@ -63,16 +66,27 @@ class Brin
 
   get titre       ()  { return this.data.titre        || 'Titre du brin par défaut'   }
   get description ()  { return this.data.description  || 'Description brin par défaut'}
-  get parent_id   ()  { return this.data.parent_id  }
-  get type        ()  { return this.data.type         || 0 }
+  get parent_id   ()  { return this.data.parent_id          }
+  get type        ()  { return this.data.type         || 0  }
+  get parag_ids   ()  { return this.data.parag_ids    || [] }
 
   // ---------------------------------------------------------------------
   // Propriétés volatiles
 
-  get projet () { return projet }
   get parent () {
-    this.parent_id && (this._parent = Brins.get(this.parent_id))
+    if ( undefined === this._parent && this.parent_id )
+    {
+      this._parent = Brins.get(this.parent_id)
+    }
     return this._parent
+  }
+  /**
+  * Tous les parags sous forme d'instance, sauf si elles ne sont pas
+  * chargées.
+  **/
+  get parags () {
+    this._parags || ( this._parags = this.parag_ids.map( pid => { return Parags.get(pid) }))
+    return this._parags
   }
   get div () {
     this._div || this.build()
@@ -87,7 +101,7 @@ class Brin
    * appelées que pour la MODIFICATION des données. Elles entraineronts
    * l'enregistrement du brin.
    */
-  set titre       (v){
+  set titre (v){
     if ( ! v )        { throw "Il faut définir le titre !" }
     v = v.trim()
     if (v.trim == '') { throw "Il faut définir le titre !" }
@@ -126,8 +140,8 @@ class Brin
   * Définit le type du brin
   **/
   set type (v) {
-    this.data.type = v
-    this.modified = true
+    this.data.type  = v
+    this.modified   = true
   }
 
   reset ()
@@ -142,14 +156,40 @@ class Brin
     *
   *** --------------------------------------------------------------------- */
 
+  /**
+  * Ajoute le parag d'ID +pid+ à la liste des parags du brin
+  *
+  * @return {Boolean} True si le parag a été ajouté, false dans le cas
+  *                   contraire (s'il existait déjà)
+  * @param {Number|Parag} pid Soit l'ID du parag soit l'instance Parag.
+  *
+  **/
   addParag( pid )
   {
-    if ( pid
-         && (typeof(pid) == 'number' || pid.constructor.name == 'Parag'))
+    const my = this
+
+    pid && ('Parag' == pid.constructor.name) && ( pid = pid.id )
+    if ( 'number' == typeof pid )
     {
-      typeof(pid) == 'number' || ( pid = pid.id )
-      this._parag_ids || ( this._parag_ids = [] )
-      this._parag_ids.push( pid )
+      const parag = Parags.get(pid)
+      parag._brin_ids || ( parag._brin_ids = [] )
+      if ( parag._brin_ids.indexOf(my.id) > -1 )
+      {
+        // <= Le parag appartient déjà à ce brin
+        // => Ne rien faire
+        return false
+      }
+      // Note : on fait le test sur la liste des brins du parag car elle
+      // est certainement moins longue que la liste des parags du brin.
+
+      my.data.parag_ids || ( my.data.parag_ids = [] )
+      my.data.parag_ids.push( pid )
+      parag._brin_ids.push(my.id)
+
+      parag.modified  = true
+      my.modified     = true
+
+      return true
     }
     else
     {
@@ -157,8 +197,29 @@ class Brin
     }
   }
 
-  get parag_ids () { return this._parag_ids || [] }
+  removeParag (pid)
+  {
+    if ( pid && 'Parag' == pid.constructor.name ) { pid = pid.id }
+    if ( 'number' === typeof pid )
+    {
+      const my    = this
+      const bid   = my.id
+      const parag = Parags.get(pid)
 
+      let decBrin   = parag.brin_ids.indexOf(bid)
+      if ( decBrin < 0 ) { return false } // faux retrait
+      let decParag  = my.parag_ids.indexOf(pid)
+
+      parag._brin_ids.splice(decBrin, 1)
+      my.data.parag_ids.splice(decParag, 1)
+
+      my.modified     = true
+      parag.modified  = true
+
+      return true
+    }
+    else { throw new Error("La méthode Brin#removeParag attend un Parag ou son identifiant.")}
+  }
 
   /** ---------------------------------------------------------------------
     *

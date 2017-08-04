@@ -9,7 +9,7 @@ Les `Parag`(s) (pour « Paragraphes ») sont les entités de base de l'applica
 * [`duration`](#parag_property_duration),
 * [`position`](#parag_property_position),
 * [`type`](#parag_property_type),
-* [`brins_ids`](#parag_property_brins_ids),
+* [`brin_ids`](#parag_property_brin_ids),
 * [Types du parag](#types_de_parags)
 * [Options du parag](#options_du_parag)
 
@@ -41,7 +41,7 @@ Noter que ces types ont une implication sur l'aspect de l'affichage du parag, sa
 
 Pour tous les types, cf. [Types de parags](#types_de_parags)
 
-### {String} `brins_ids` {#parag_property_brins_ids}
+### {String} `brin_ids` {#parag_property_brin_ids}
 
 String de 16 caractères pour mémoriser les brins du parag. Chaque double caractère représente une valeur en base 32.
 

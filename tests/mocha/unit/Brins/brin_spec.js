@@ -5,11 +5,22 @@
 */
 require('../../spec_helper.js')
 
-let brin  = new Brin({id:0, projet: projet, titre: "Brin sans nom"})
-let brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1"})
-let brin2 = new Brin({id: 2, projet: projet, titre: "Brin #2"})
+let brin, brin1, brin2
+let brins = projet.brins
 
-describe.only('Brin', function () {
+function resetBrins ()
+{
+  Brins._items = new Map()
+  brins._panneau = undefined // forcer la reconstruction
+
+  brin  = new Brin({id: 0, projet: projet, titre: "Brin sans titre"})
+  brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1"})
+  brin2 = new Brin({id: 2, projet: projet, titre: "Brin #2"})
+}
+
+resetBrins()
+
+describe('Brin', function () {
   it("est une classe", function(){
     expect(typeof Brin).not.to.be.undefined
     expect(typeof Brin).to.equal('function')
@@ -69,7 +80,7 @@ describe.only('Brin', function () {
     })
   });
 
-  describe('Brin@titre', function () {
+  describe('@titre', function () {
     it("existe", function(){
       expect(brin1.titre).not.to.be.undefined
     })
@@ -109,7 +120,8 @@ describe.only('Brin', function () {
     })
   });
 
-  describe('Brin@description', function () {
+
+  describe('@description', function () {
     it("existe", function(){
       expect(brin1.description).not.to.be.undefined
     })
@@ -142,12 +154,19 @@ describe.only('Brin', function () {
     })
   });
 
+
   describe('@parag_ids', function () {
     it("existe", function(){
       expect(brin1.parag_ids).not.to.be.undefined
     })
     it("est de classe Array", function(){
       expect(brin1.parag_ids).to.be.instanceOf(Array)
+    })
+    it("contient la liste des IDs de parag", function(){
+      resetBrins()
+      expect(brin1.parag_ids).to.be.empty
+      brin1.addParag(0); brin1.addParag(4)
+      expect(brin1.parag_ids).to.deep.equal([0,4])
     })
   });
 
@@ -335,6 +354,154 @@ describe.only('Brin', function () {
     it("ajoute le parag au brin si un ID valide est fourni", function(){
       expect(()=>{brin1.addParag(12)}).not.to.throw()
       expect(brin1.parag_ids.indexOf(12)).to.be.at.least(0)
+    })
+    it("n'ajoute pas le parag au brin s'il le possède déjà", function(){
+      resetBrins()
+      brin1.data.parag_ids = [1,2,3]
+      parag2._brin_ids = [5,3,2, 1] // c'est ça qui empêche l'ajout
+      expect(brin1.data.parag_ids).to.deep.equal([1,2,3])
+      expect(brin1.parag_ids).to.deep.equal([1,2,3])
+      brin1.addParag(2)
+      expect(brin1.data.parag_ids).to.deep.equal([1,2,3])
+      expect(brin1.parag_ids).to.deep.equal([1,2,3])
+    })
+    it("ajoute le brin au parag", function(){
+      resetBrins()
+      parag5._brin_ids      = undefined
+      brin1.data.parag_ids  = undefined
+
+      // ======> TEST <=========
+
+      brin1.addParag(parag5)
+
+      // ======== VÉRIFICATION ==========
+
+      expect(brin1.parag_ids).to.include(5)
+      expect(parag5.brin_ids).to.include(1)
+
+    })
+    it("n'ajoute pas le brin au parag s'il est déjà connu", function(){
+      resetBrins()
+      parag4.brin_ids = [3,2,1]
+      expect(parag4.brin_ids).to.deep.equal([3,2,1])
+      brin1.addParag(parag4)
+      expect(parag4.brin_ids).not.to.deep.equal([3,2,1,1])
+      expect(parag4.brin_ids).to.deep.equal([3,2,1])
+    })
+    it("indique que le brin est modifié", function(){
+      brin._modified = false
+      expect(brin.modified).to.be.false
+      brin.addParag(1)
+      expect(brin.modified).to.be.true
+    })
+    it("indique que les brins sont modifiés", function(){
+      projet.brins._modified = false
+      expect(projet.brins.modified).to.be.false
+      brin.addParag(2)
+      expect(projet.brins.modified).to.be.true
+    })
+    it("indique que le parag est modifié", function(){
+      parag3._modified = false
+      expect(parag3.modified).to.be.false
+      brin1.addParag(3)
+      expect(parag3.modified).to.be.true
+    })
+    it("indique que le projet est modifié", function(){
+      resetBrins()
+      parag0._brin_ids = undefined
+      projet._modified = false
+      expect(projet.modified).to.be.false
+      brin1.addParag(0)
+      expect(projet.modified).to.be.true
+    })
+  });
+
+
+  describe('Brin#removeParag', function () {
+    before(function () {
+      resetTests()
+    });
+    beforeEach(function () {
+      // ======= PRÉPARATION =======
+      resetBrins()
+      parag0._brin_ids = undefined
+      brin1.addParag(parag0)
+      brin1.modified = false
+      parag0.modified = false
+      projet.brins.modified = false
+      projet.modified = false
+      // ======== PRÉ-VÉRIFICATION ===========
+      expect(brin1.parag_ids).to.include(0)
+      expect(parag0.brin_ids).to.include(1)
+    });
+    it("répond", function(){
+      expect(brin).to.respondsTo('removeParag')
+    })
+    it("retire le parag de la liste des parags du brin", function(){
+      // =======> TEST <==========
+      brin1.removeParag(0)
+      // ======== CONTROLE =======
+      expect(brin1.parag_ids).not.to.include(0)
+      expect(parag0.brin_ids).not.to.include(1)
+
+    })
+    it("indique que le brin est modifié", function(){
+      expect(brin1.modified).to.be.false
+      brin1.removeParag(0)
+      expect(brin1.modified).to.be.true
+    })
+    it("indique que les brins sont modifiés", function(){
+      expect(projet.brins.modified).to.be.false
+      brin1.removeParag(0)
+      expect(projet.brins.modified).to.be.true
+    })
+    it("indique que le parag est modifié", function(){
+      expect(parag0.modified).to.be.false
+      brin1.removeParag(0)
+      expect(parag0.modified).to.be.true
+    })
+    it("indique que le projet est modifié", function(){
+      expect(projet.modified).to.be.false
+      brin1.removeParag(0)
+      expect(projet.modified).to.be.true
+    })
+    it("ne retire rien si le parag n'appartient pas au brin et ne marque rien modifié", function(){
+      expect(brin1.parag_ids).to.deep.equal([0])
+      expect(brin1.modified).to.be.false
+      brin1.removeParag(1)
+      expect(brin1.parag_ids).to.deep.equal([0])
+      expect(brin1.modified).to.be.false
+    })
+  });
+
+
+  describe('Brin@modified', function () {
+    it("existe", function(){
+      expect(brin.modified).not.to.be.undefined
+    })
+    it("indique que les brins sont modifiés quand on modifie le brin", function(){
+      projet.brins._modified = false
+      expect(projet.brins.modified).to.be.false
+      brin.modified = true
+      expect(projet.brins.modified).to.be.true
+    })
+    it("indique le projet est modifié quand on modifie le brin (par brins)", function(){
+      projet._modified = false
+      expect(projet.modified).to.be.false
+      brin.modified = true
+      expect(projet.modified).to.be.true
+    })
+    it("n'indique pas que le projet est modifié quand on marque le brin non modifié", function(){
+      projet._modified = true
+      expect(projet.modified).to.be.true
+      brin.modified = false
+      expect(projet.modified).to.be.true
+    })
+    it("n'indique pas que les brins ne sont pas modifiés quand on marque le brin non modifié", function(){
+      projet.brins._modified = true
+      expect(projet.brins.modified).to.be.true
+      brin.modified = false
+      expect(projet.brins.modified).to.be.true
     })
   });
 });

@@ -210,11 +210,6 @@ describe('Verso du parag', function () {
       })
     });
 
-    describe('Projet#brins#new', function () {
-      it("répond", function(){
-        expect(projet.brins).to.respondsTo('new')
-      })
-    });
   });
 
 

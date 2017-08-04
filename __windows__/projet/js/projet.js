@@ -21,7 +21,7 @@ class Projet
   /**
   * Pour faire comme en ruby : Projet.new(<projet id>)
   **/
-  static new (projet_id )
+  static new (projet_id)
   {
     return new Projet(projet_id)
   }
@@ -74,24 +74,19 @@ class Projet
     return this._panneauData
   }
 
-  static UIprepare ()
-  {
-
-  }
-
-  /**
-  *   Chargement du projet data.projet_id
-  *
-  * La méthode regarde aussi s'il y a d'autres choses à faire, comme mettre
-  * en route la boucle de sauvegarde en fonction des options.
-  * TODO Plus tard, on pourra aussi avoir des notes à rappeler à l'ouverture,
-  * par exemple.
-  **/
-  static load (data)
-  {
-    this.current = new Projet(data.projet_id)
-    this.current.prepare()
-  }
+  // /**
+  // *   Chargement du projet data.projet_id
+  // *
+  // * La méthode regarde aussi s'il y a d'autres choses à faire, comme mettre
+  // * en route la boucle de sauvegarde en fonction des options.
+  // * TODO Plus tard, on pourra aussi avoir des notes à rappeler à l'ouverture,
+  // * par exemple.
+  // **/
+  // static load (data)
+  // {
+  //   // this.current = new Projet(data.projet_id)
+  //   // this.current.prepare()
+  // }
 
   /**
   * Méthode appelée par le tabulator des panneaux pour ouvrir un ou plusieurs
@@ -131,6 +126,23 @@ class Projet
   {
     this.id = projet_id
     this.__ID = Projet.newID()
+  }
+
+  /**
+  * Chargement du projet
+  * --------------------
+  * La méthode est appelée au chargement de la fenêtre
+  **/
+  PRload ()
+  {
+    const my = this
+
+    return my.prepare()
+    // .then( my.data.load.bind(my.data) )
+    .then( my.options.PRload.bind(my.options) )
+    .then( my.options.build.bind(my.options)  )
+    .then( my.setupOptions.bind(my) )
+    .catch( err => { throw err } )
   }
 
   /** ---------------------------------------------------------------------
@@ -204,7 +216,7 @@ class Projet
     const my = this
     my.current_panneau.PRactivate()
     my.ui.observeEditablesIn(document)
-    my.options.load(my.prepareSuivantOptions.bind(my))
+    return Promise.resolve()
   }
 
   /** ---------------------------------------------------------------------
@@ -318,15 +330,15 @@ class Projet
   * choisies par l'auteur. Par exemple, c'est cette méthode qui met en route
   * la sauvegarde automatique si nécessaire.
   **/
-  prepareSuivantOptions ()
+  setupOptions ()
   {
-    // console.log('-> Projet#prepareSuivantOptions')
+    // console.log('-> Projet#setupOptions')
     if ( this.option('autosave') )
     {
-      console.log('   * activation de l’autosave')
+      // console.log('   * activation de l’autosave')
       this.options.activateAutosave()
     }
-    // console.log('<- Projet#prepareSuivantOptions')
+    return Promise.resolve()
   }
 
   /**

@@ -47,55 +47,53 @@ requirejs(
 
         // Après avoir envoyé 'projet-window-opened' (cf. ci-dessus),
         // le processus main retourne l'identifiant du projet à voir.
+        // On peut alors initier l'édition du projet
         ipc.on('show-projet-id', (evt, data) => {
 
-          Projet.UIprepare()
-          Projet.load(data)
+          // ---- I N S T A N C I A T I O N   D U   P R O J E T ----
 
-          let curproj = Projet.current
+          const projet = new Projet(data.projet_id)
+          Projet.current = projet
 
-          curproj.options.build()
+          // ---- C H A R G E M E N T   D U   P R O JE T ------
 
-          // --------- T A B U L A T O R S -------------
+          projet.PRload()
 
-          // On prépare les tabulators
-          let currentpan = curproj.current_panneau
-          // DÉFINITION DE LA MAP DES TABULATORS
-          Tabulator.Map = {
-            "boutons-panneaux":{
-                maxSelected: 2
-              , enter_method: Projet.activatePanneauByTabulator.bind(Projet)
+          .then( () => {
+
+            // --------- T A B U L A T O R S -------------
+
+            // On prépare les tabulators
+            let currentpan = projet.current_panneau
+            // DÉFINITION DE LA MAP DES TABULATORS
+            Tabulator.Map = {
+              "boutons-panneaux":{
+                  maxSelected: 2
+                , enter_method: Projet.activatePanneauByTabulator.bind(Projet)
+              }
+              , "operations":{
+                  'synchronize' : currentpan.synchronize.bind(currentpan)
+                , 'export'      : currentpan.export.bind(currentpan)
+                , 'print'       : currentpan.print.bind(currentpan)
+                , 'stats'       : projet.afficherStatistiques.bind(projet)
+                , 'cutreturn'   : currentpan.cutParagByReturn.bind(currentpan)
+                , default       : currentpan.defaultCommandMethod.bind(currentpan)
+              }
+              , 'options-projet':{
+                enter_method: projet.define_options.bind(projet)
+              }
             }
-            , "operations":{
-                'synchronize' : currentpan.synchronize.bind(currentpan)
-              , 'export'      : currentpan.export.bind(currentpan)
-              , 'print'       : currentpan.print.bind(currentpan)
-              , 'stats'       : curproj.afficherStatistiques.bind(curproj)
-              , 'cutreturn'   : currentpan.cutParagByReturn.bind(currentpan)
-              , default       : currentpan.defaultCommandMethod.bind(currentpan)
-            }
-            , 'options-projet':{
-              enter_method: curproj.define_options.bind(curproj)
-            }
-          }
-          // Prépation des tabulateurs
-          Tabulator.setup()
+            // Prépation des tabulateurs
+            Tabulator.setup()
+
+            return Promise.resolve()
+          })
+          .catch( err => { throw err } )
 
         })
 
         log('=== Fenêtre PROJET prête ===')
 
-
-        // ---------- TESTS D'INTÉGRATIONS ----------
-        PTEST_IT = false
-        // PTEST_IT = true
-
-        if ( PTEST_IT )
-        {
-          require(path.join(C.LIB_UTILS_FOLDER,'ptests'))
-          // PTests.run_folder(path.join('integration','Projet'))
-          PTests.run_file(path.join('integration','Projet','affichage_panneaux_spec.js'))
-        }
 
         return true // module principal => rien à retourner
 

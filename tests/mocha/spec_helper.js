@@ -287,6 +287,12 @@ resetCurrentProjet = function( params )
   }
   Parag._lastID = -1
 
+  /*- Destruction du fichier brins s'il existe -*/
+  
+  let pth = projet.brins.store.path
+  if (fs.existsSync(pth)) {fs.unlinkSync(pth)}
+
+
 }
 global.resetAllPanneaux = function( params)
 {
@@ -338,6 +344,13 @@ function resetAllParags (params) {
   let lastid = initXParags( params.nombre_parags )
   return lastid
 }
+
+
+function resetBrins ()
+{
+
+}
+
 /**
 * @param  {Object} params
 *   params.nombre_parags      Nombre de paragraphes à construire

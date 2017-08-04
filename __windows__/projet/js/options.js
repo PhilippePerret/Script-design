@@ -50,7 +50,6 @@ class ProjetOptions
   constructor ( projet )
   {
     this.projet = projet
-    this.load()
   }
 
 
@@ -128,30 +127,23 @@ class ProjetOptions
   /**
   * Sauvegarde des options du projet
   **/
-  save ()
-  {
-    this.store_options.saveSync()
-  }
+  save () { this.store.saveSync() }
 
   /**
   * Chargement des données des options
   *
   * La méthode définit this._data
   *
-  * Si le fichier des options n'existe pas encore, la méthode met {}
-  * à la donnée _data.
+  * @return {Promise}
+  *
   **/
-  load ( callback )
+  PRload ()
   {
-    if ( fs.existsSync(this.store_path) )
-    {
-      this._data = this.store_options.loadSync() || {}
-    }
-    else
-    {
-      this._data = {}
-    }
-    if ('function' == typeof callback){ callback.call() }
+    const my = this
+
+    my._data = {}
+    if ( my.store.exists() ) { return my.store.load() }
+    else { return Promise.resolve() }
   }
 
   /**
@@ -174,14 +166,9 @@ class ProjetOptions
   }
 
 
-  get store_options     () {
-    this._store_options || (this._store_options = new Store(`projets/${this.projet.id}/options`) )
-    return this._store_options
-  }
-
-  get store_path () {
-    this._store_path || ( this._store_path = path.join(Store.user_data_folder,'projets',this.projet.id,'options.json') )
-    return this._store_path
+  get store     () {
+    this._store || (this._store = new Store(`projets/${this.projet.id}/options`) )
+    return this._store
   }
 
   /**
@@ -214,6 +201,12 @@ class ProjetOptions
     *   Méthodes DOM
     *
   *** --------------------------------------------------------------------- */
+
+  /**
+  * Fabrique le menu pour choisir les options
+  *
+  * @return {Promise} (pour chainage seulement)
+  **/
   build ()
   {
     let option, bouton, value, vNumber
@@ -229,6 +222,7 @@ class ProjetOptions
       })
       this.container.appendChild(bouton)
     }
+    return Promise.resolve()
   }
 }
 

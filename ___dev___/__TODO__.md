@@ -1,3 +1,4 @@
+* Poursuivre les tests des brins
 
 * Ranger un peu les classes `Brins` et `Brin`
 * Tester les méthodes non testées de Brins et Brin

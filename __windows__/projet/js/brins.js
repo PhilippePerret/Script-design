@@ -1,3 +1,12 @@
+/**
+ * Les méthodes indispensables
+ *
+ *  Brins.get(<ID brin>)
+ *
+ *    => Instance {Brin} du brin d'ID <ID brin>
+ *
+ *
+ */
 class Brins {
 
   /** ---------------------------------------------------------------------
@@ -12,6 +21,11 @@ class Brins {
   }
 
   /**
+  * Pour pouvoir utiliser :
+  *
+  *   Brins.get(<ID brin>)
+  *
+  *
   * @return {Brin} l'instance Brin d'ID +bid+
   * @param {Number} bid IDentifiant du brin
   **/
@@ -42,14 +56,11 @@ class Brins {
     this.projet = projet
   }
 
-  /**
-  * Nouveau brin demandé pour le projet propriétaire
-  **/
-  new ()
-  {
-
+  get modified () { return this._modified || false }
+  set modified (v){
+    this._modified = v
+    v && (this.projet.modified = true)
   }
-
   /**
   * Méthode appelée par la touche Enter sur le formulaire d'édition
   * du brin pour créer un nouveau brin.
@@ -69,19 +80,62 @@ class Brins {
 
   /**
   * Ajoute un brin au projet (en le sauvant tout de suite)
+  *
+  * @param {Object|Brin} refBrin  Si c'est un brin, c'est un simple ajout
+  *                               à la Map Brins.items.
+  *                               Sinon, c'est une création d'instance.
   **/
-  add ( dataBrin )
+  add ( refBrin, options )
   {
     const my = this
-    dataBrin.id = Brin.newID()
-    new Brin(dataBrin)
-    return my.PRsave()
+
+    options || ( options = {} )
+    if ( 'Brin' === refBrin.constructor.name )
+    {
+      // <= refBrin est déjà un Brin
+      // => On l'ajoute s'implement à Brins.items
+
+      Brins.items.set( refBrin.id, refBrin )
+
+    }
+    else if ( 'object' === typeof(refBrin) && refBrin.titre )
+    {
+      refBrin.id = Brin.newID()
+      new Brin(refBrin)
+    }
+
+    if ( options.save ) { return my.PRsave() }
+  }
+
+  remove( bid )
+  {
+    if ( bid && 'Brin' == bid.constructor.name ){ bid = bid.id }
+    if ( ! bid || 'number' != typeof bid ) {
+      throw new Error("Il faut fournir l'ID du brin ou le brin à détruire.")
+    }
+    let brin = Brins.get(bid)
+    if ( brin )
+    {
+      /*- Suppression du brin dans tous ses parags -*/
+
+      brin.parags.forEach( (p) => {
+        p._brin_ids.splice( p.brin_ids.indexOf(bid), 1)
+        p.modified = true
+      })
+
+      /*- Suppression dans ses Brins -*/
+      Brins.items.delete(bid)
+
+      this.modified = true
+    }
+    else { throw new Error(`Le brin #${bid} est inconnu au projet.`)}
   }
 
   PRsave ()
   {
     const my = this
-    my.prepareData()
+
+    return my.prepareData()
       .then( my.store.save.bind(my.store) )
       .then( () => {
         UILog("Brins du projet enregistrés.")
@@ -89,12 +143,62 @@ class Brins {
       .catch( err => { throw err })
   }
 
+  /**
+  * Méthode asynchrone chargeant les données des brins et les dispatchant
+  **/
+  PRload ()
+  {
+    const my = this
+    return my.PRloadData()
+      .then( my.PRdispatchData.bind(my) )
+      .catch( err => { throw err })
+  }
+  PRloadData ()
+  {
+    const my = this
+
+    if ( my.store.exists() )
+    {
+      return my.store.load() // définit my._data
+    }
+    else
+    {
+      my._data = my.defaultData
+      return Promise.resolve()
+    }
+  }
+  PRdispatchData ()
+  {
+    const my = this
+    let brin
+
+    my.reset()
+    return new Promise( (ok, ko) => {
+      my.data.items.forEach( hbrin => {
+        hbrin.projet = my.projet
+        brin = new Brin( hbrin )
+      })
+      ok()
+    })
+  }
+
+  reset ()
+  {
+    const my = this
+
+    Brins._items  = new Map()
+    my._store     = undefined
+    my._panneau   = undefined
+    my._form      = undefined
+  }
+
   prepareData ()
   {
     const my = this
     return new Promise( (ok, ko) => {
       let hdata = {
-          created_at: my.created_at || moment().format()
+          projet_id : my.projet.id  || currentProjet.id
+        , created_at: my.created_at || moment().format()
         , updated_at: true
         , items     : []
       }
@@ -107,6 +211,17 @@ class Brins {
   }
 
   get data () { return this._data }
+  get defaultData () {
+    this._defaultData || (
+      this._defaultData = {
+          projet_id   : this.projet.id
+        , items       : []
+        , created_at  : moment().format()
+        , updated_at  : moment().format()
+      }
+    )
+    return this._defaultData
+  }
   get store () {
     this._store || ( this._store = new Store(path.join('projets',this.projet.id,'brins'), this))
     return this._store
@@ -244,7 +359,7 @@ class Brins {
   hideForm ()
   {
     this.form.setAttribute('style','display:none')
-    Tabulator.unsetAsTabulator(this.form.id)
+    Tabulator.unsetAsTabulator(this.form)
   }
 
   /**
@@ -261,7 +376,7 @@ class Brins {
   **/
   get form ()
   {
-    this.formBuilt || this.buildForm()
+    this._form || this.buildForm()
     return this._form
   }
 
@@ -336,7 +451,7 @@ class Brins {
 
     this._form = h
     currentProjet.ui.observeEditablesIn(this._form)
-    this.formBuilt = true
+    return this._form
   }
 
 }
