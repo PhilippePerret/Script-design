@@ -145,14 +145,14 @@ class Tabulator
 
       if ( fonction )
       {
-
-        my.currentLetter = evt.key.toLowerCase()
+        my.realLetter     = `${evt.key}`
+        my.currentLetter  = evt.key.toLowerCase()
         // On aura besoin de connaitre la lettre courant pour passer à
         // l'élément éditable suivant ou précédent avec les flèches
 
         if ( 'function' === typeof(fonction))
         {
-          fonction.call()
+          fonction.call(null, evt)
         }
         else
         {

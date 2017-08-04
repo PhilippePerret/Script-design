@@ -1,3 +1,5 @@
+* Poursuivre les tests sur les brins
+
 COMMENT GÉRER LE PANNEAU DES BRINS :
   En faire un tabulator (setupAsTabulator)
   en définissant seulement le rôle de :

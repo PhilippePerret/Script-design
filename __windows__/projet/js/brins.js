@@ -321,42 +321,57 @@ class Brins {
 
     params || ( params = {} )
 
-    params.parag && my.preparePanneauFor( params.parag )
+    if ( params.parag ) {
+      my.oldBrinIds = params.parag.brin_ids.map( bid => { return bid })
+      my.currentParag = params.parag
+
+      // La listes qui vont permettre de gérer provisoirement les
+      // ajouts et les retraits.
+      // C'est cette liste, comparée à la liste initiale, qui va déterminer
+      // les ajouts et les retraits produits.
+      // La méthode `preparePanneauForCurrentParag` va la renseigner avec
+      // les ids courants du parag.
+      my.current_brin_ids = []
+
+      my.preparePanneauForCurrentParag()
+    }
     // Si la méthode showPanneau est appelée par un parag (verso de sa fiche),
     // on doit le préparer, c'est-à-dire sélectionner tous ses brins.
 
     currentPanneau.section.appendChild(my.panneau)
     my.panneau.setAttribute('style', '')
 
-    my.ibrin_selected || ( my.ibrin_selected = 0 )
-    my.panneau.querySelectorAll('ul#brins > li.brin')[my.ibrin_selected].className += ' selected'
+    if ( my.iselected ) { my.selectBrinCurrent() }
+    else { my.iselected = 0 /* pseudo-méthode qui appelle selectBrinCurrent */}
+
     // La formule ci-dessus fait que lorsqu'on ré-ouvre le panneau, c'est
     // toujours le même brin qui est sélectionné. Peut-être qu'à l'usage il
-    // faudra toujours remettre my.ibrin_selected à 0 ou TODO mettre une option
+    // faudra toujours remettre my.iselected à 0 ou TODO mettre une option
 
     // TODO Il faut toujours désélectionner le sélectionné précédent ?
 
     my.panneau.opened = true
-    // Tabulator.setupAsTabulator('ul#brins', {
-    //   MapLetters: new Map([
-    //       ['ArrowDown',   my.selectNext.bind(my)]
-    //     , ['ArrowUp',     my.selectPrevious.bind(my)]
-    //     , ['ArrowRight',  my.chooseCurrent.bind(my)]
-    //     , ['ArrowLeft',   my.unchooseCurrent.bind(my)]
-    //     , ['Enter',       my.adopterChoix.bind(my)]
-    //     , ['Escape',      my.renoncerChoix.bind(my)]
-    //     , ['b',           my.createNew.bind(my)]
-    //     , ['@',           my.afficherAide.bind(my)]
-    //   ])
-    // })
+    Tabulator.setupAsTabulator(my.panneau, {
+      MapLetters: new Map([
+          ['ArrowDown',   my.selectNext.bind(my)]
+        , ['ArrowUp',     my.selectPrevious.bind(my)]
+        , ['ArrowRight',  my.chooseCurrent.bind(my)]
+        , ['ArrowLeft',   my.chooseCurrent.bind(my)]
+        , ['Enter',       my.adopterChoix.bind(my)]
+        , ['Escape',      my.renoncerChoix.bind(my)]
+        , ['b',           my.createNew.bind(my)]
+        , ['@',           my.afficherAide.bind(my)]
+      ])
+    })
   }
 
-  preparePanneauFor ( parag )
+  preparePanneauForCurrentParag ()
   {
-    const my = this
-    const ids = parag.brin_ids || []
+    const my  = this
+    const ids = my.currentParag.brin_ids || []
 
     let o = null
+
     Brins.items.forEach( (brin, bid) => {
       o = my.panneau.querySelector(`li#brin-${bid}`)
       if ( ! o ) { return /* brin introuvable */}
@@ -367,16 +382,38 @@ class Brins {
       else
       {
         o.className = 'brin chosen'
+
+        // On mémorise cet ID de brin qui appartient au parag édité
+        // (if any)
+        my.current_brin_ids && my.current_brin_ids.push(bid)
+
       }
     })
+  }
+
+  get iselected () { return this._iselected }
+  set iselected (v){
+    this._iselected = v
+    this._selected = undefined
+    this.selectBrinCurrent()
+  }
+
+  get selected () {
+    if ( ! this._selected ) {
+      this._selected = this.panneau.querySelectorAll('ul#brins > li.brin')[this.iselected]
+      if ( this._selected ) {
+        this._selected = Brins.get(Number(this._selected.getAttribute('data-id')))
+      }
+    }
+    return this._selected
   }
 
   selectBrinCurrent ()
   {
     const my = this
     my.deselectBrinSelected()
-    const o = my.panneau.querySelectorAll('ul#brins > li.brin')[my.ibrin_selected]
-    o.className += ' selected'
+    const o = my.panneau.querySelectorAll('ul#brins > li.brin')[my.iselected]
+    o && ( o.className += ' selected' )
   }
   deselectBrinSelected ()
   {
@@ -400,30 +437,93 @@ class Brins {
     *   définies dans le MapLetter ci-dessus
   *** --------------------------------------------------------------------- */
   // Sélectionne le brin suivant dans le panneau
-  selectNext (options) {
-    const my = this
-    if ( my.ibrin_selected >= my.nombre_brins_displayed - 1) { return false }
-    ++ my.ibrin_selected
-    my.selectBrinCurrent()
+  selectNext (evt) {
+    const my    = this
+    const ilast = my.nombre_brins_displayed - 1
+    if ( my.iselected >= ilast ) { return false }
+    evt || ( evt = {} ) // pour les tests, au moins
+    const increm = evt.shiftKey ? 10 : 1
+    let newi = my.iselected + increm
+    if ( newi >= ilast ) { newi = ilast }
+    my.iselected = newi // pseudo-méthode
     return true
   }
 
   // Sélectionne le brin précédent dans le panneau
   selectPrevious (evt) {
-    const my = this
-    if ( my.ibrin_selected == 0 ) { return false }
-    -- my.ibrin_selected
-    my.selectBrinCurrent()
+    const my      = this
+    if ( my.iselected == 0 ) { return false }
+    evt || ( evt = {} ) // pour les tests, au moins
+    const increm  = evt.shiftKey ? 10 : 1
+    let newi = my.iselected - increm
+    if ( newi < 0 ) { newi = 0 }
+    my.iselected = newi
     return true
   }
   // Choisit le brin courant dans le panneau
-  chooseCurrent (evt) {console.log("Choisir le courant (à implémenter)")}
-  // Retire le brin courant de la liste
-  unchooseCurrent (evt) { console.log("Retirer le courant (à implémenter)") }
+  // Mais attention : si le parag possède ce brin, il faut lui retirer,
+  // dans le cas contraire il faut liu ajouter.
+  chooseCurrent (evt) {
+    const my = this
+    const para = my.currentParag
+    if ( ! para ) { return }
+    const brin = my.selected
+    const oBrin = my.panneau.querySelector(`ul#brins > li#brin-${brin.id}`)
+    const forAjout = my.current_brin_ids.indexOf(brin.id) < 0
+
+    /*- On procède à la marque de l'ajout ou retrait du parag -*/
+
+    if ( forAjout )
+    {
+      my.current_brin_ids && my.current_brin_ids.push( brin.id )
+      DOM.addClass(oBrin, 'chosen')
+    } else {
+      my.current_brin_ids && my.current_brin_ids.splice(my.current_brin_ids.indexOf(brin.id), 1)
+      DOM.removeClass(oBrin, 'chosen')
+    }
+  }
+
   // Touche Enter => Les brins sont attribués au parag
-  adopterChoix ( evt ) { console.log("Adopter la liste courante (à implémenter)") }
+  adopterChoix ( evt ) {
+
+    if ( ! this.currentParag ) { return }
+
+    const my = this
+
+    let old_ids = (my.currentParag.brin_ids||[]).map(bid => {return bid})
+    let new_ids = my.current_brin_ids
+
+    new_ids = new_ids.filter( bid => {
+      if ( old_ids.indexOf(bid) < 0 )
+      {
+        // <= L'ancienne liste ne connait pas cet ID
+        // => C'est un nouveau brin
+        return true
+      }
+      else
+      {
+        // <= L'ancienne liste connait cet ID
+        // => Il n'y a rien à faire puisqu'il est encore dans la nouvelle.
+        //    Donc on le retire de la liste.
+        old_ids.splice(old_ids.indexOf(bid), 1)
+        return false
+      }
+    })
+
+    // Ici, `new_ids` contient les nouveaux ID de brins et `old_ids` contient
+    // les brins qui n'appartiennent plus au parag
+
+    // Ajout des nouveaux brins
+    new_ids.forEach( bid => { Brins.get(bid).addParag( my.currentParag ) })
+    // Retrait des anciens brins
+    old_ids.forEach( bid => { Brins.get(bid).removeParag(my.currentParag) })
+
+  }
   // Touche Escape => On renonce à choisir les brins
-  renoncerChoix ( evt ) { this.hidePanneau() }
+  renoncerChoix ( evt ) {
+    // On a juste à fermer le tableau sans rien faire
+    this.hidePanneau()
+  }
   // Touche b => Nouveau brin
   createNew (evt) { console.log("Création d'un nouveau brin (à implémenter)")}
   // Touche @ => Aide concernant les brins

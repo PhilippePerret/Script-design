@@ -275,7 +275,7 @@ class Brin
     const bid = this.id
 
     let divb_id = `brin-${bid}`
-    let divbrin = DOM.create('div', {class: 'brin', id: divb_id})
+    let divbrin = DOM.create('div', {class: 'brin', id: divb_id, 'data-id': String(bid)})
     let divtitre = DOM.create('div',
         {class:'titre editable', id: `${divb_id}-titre`, inner: this.titre
           , 'data-tag':"brin_titre"
@@ -297,7 +297,7 @@ class Brin
     const bid = this.id
 
     let li_id = `brin-${bid}`
-    let librin = DOM.create('li', {class: 'brin', id: li_id})
+    let librin = DOM.create('li', {class: 'brin', id: li_id, 'data-id': String(bid)})
     let divtitre = DOM.create('div',
         {class:'titre editable', id: `${li_id}-titre`, inner: this.titre
           , 'data-tag':"brin_titre"

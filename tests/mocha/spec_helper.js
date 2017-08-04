@@ -206,6 +206,7 @@ Object.defineProperties(PanData.prototype, {
 
 global.resetBrins = function ()
 {
+  // console.log("-> resetBrins()")
   Brins._items    = new Map()
   projet._brins   = undefined
   global.brins = projet.brins
@@ -213,8 +214,8 @@ global.resetBrins = function ()
   brins._panneau  = undefined // forcer la reconstruction
   brins._form     = undefined
 
-
   global.brin  = new Brin({id: 0, projet: projet, titre: "Brin sans titre"})
+  console.log("brin.parag_ids = ", brin.parag_ids)
   global.brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1", type: 20})
   global.brin2 = new Brin({id: 2, projet: projet, titre: "Brin #2"})
   global.brin3 = new Brin({id: 3, projet: projet, titre: "Brin #3", type: 20})
@@ -225,32 +226,36 @@ global.resetBrins = function ()
 
 global.createProjetNoSave = function ()
 {
-  resetTests({nombre_parags:20})
-  resetBrins()
+  // console.log("-> createProjetNoSave")
 
-  // ========= DONNÉES ============
+  return new Promise( (ok, ko) => {
+    resetTests({nombre_parags:20})
+    resetBrins()
 
-  panneauNotes.add([parag1, parag3, parag5])
-  panneauScenier.add([parag0])
-  panneauSynopsis.add([parag2, parag4])
-  panneauTreatment.add([parag6, parag7, parag8, parag9])
+    // ========= DONNÉES ============
 
-  /*= le brin #0 dans les parags #1 et #0 et #4 =*/
+    panneauNotes.add([parag1, parag3, parag5])
+    panneauScenier.add([parag0])
+    panneauSynopsis.add([parag2, parag4])
+    panneauTreatment.add([parag6, parag7, parag8, parag9])
 
-  brin.addParag(parag1)
-  brin.addParag(parag0)
-  brin.addParag(parag4)
+    /*= le brin #0 dans les parags #1 et #0 et #4 =*/
 
-  /*= le brin #2 dans les parags #1 et #5 =*/
+    brin.addParag(parag1)
+    brin.addParag(parag0)
+    brin.addParag(parag4)
 
-  brin2.addParag(parag1)
-  brin2.addParag(parag5)
+    /*= le brin #2 dans les parags #1 et #5 =*/
 
-  // Dans le brin #5 on met les 10 premiers parags (0 à 9)
-  for(var i = 0 ; i < 10 ; ++i ){
-    brin5.addParag(Parags.get(Number(i)))
-  }
+    brin2.addParag(parag1)
+    brin2.addParag(parag5)
 
+    // Dans le brin #5 on met les 10 premiers parags (0 à 9)
+    for(var i = 0 ; i < 10 ; ++i ){
+      brin5.addParag(Parags.get(Number(i)))
+    }
+    ok()
+  })
 }
 /**
 * Crée un projet avec des brins, des brins associés à des
@@ -265,10 +270,11 @@ global.createProjetNoSave = function ()
 **/
 global.resetProjetWithBrins = function ()
 {
-  return new Promise( (resolve, ko) => {
 
-    createProjetNoSave()
+  // console.log("-> resetProjetWithBrins")
 
+  return createProjetNoSave()
+  .then( () => {
     // ========= FIN DONNÉES ============
 
     parag0.modified       = true
@@ -284,16 +290,17 @@ global.resetProjetWithBrins = function ()
     panneauSynopsis.modified  = true
     projet.brins.modified = true
 
-    return projet.saveAll()
-    .then( () => {
-      expect(fs.existsSync(projet.parags_file_path)).to.be.true
-      return Promise.resolve()
-    })
-    // .then(ok)
-    .then( () => {
-      console.log("J'en ai fini de la préparation de resetProjetWithBrins")
-      resolve()
-    })
+    return Promise.resolve()
+  })
+  .then( projet.saveAll.bind(projet ))
+  .then( () => {
+    expect(fs.existsSync(projet.parags_file_path)).to.be.true
+    return Promise.resolve()
+  })
+  // .then(ok)
+  .then( () => {
+    console.log("= Fin de la préparation de resetProjetWithBrins")
+    return Promise.resolve()
   })
 }
 
@@ -441,12 +448,6 @@ function resetAllParags (params) {
   // On crée autant de paragraphes que voulu (20 par défaut)
   let lastid = initXParags( params.nombre_parags )
   return lastid
-}
-
-
-function resetBrins ()
-{
-
 }
 
 /**
