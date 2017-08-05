@@ -182,24 +182,6 @@ class Projet
     if (v) { this.ui.setProjetSaving() }
   }
 
-  /**
-  * Méthode appelée après chaque sauvegarde de panneau (ou autre) qui
-  * vérifie l'état de sauvegarde du projet en général.
-  * C'est également la méthode qui est appelée par la boucle de sauvegarde
-  * automatique.
-  * Noter que cette méthode ne fait rien d'autre, en soi, que vérifier l'état
-  * général et de régler l'indicateur de sauvegarde dans l'interface.
-  **/
-  checkModifiedState ()
-  {
-    let my  = this
-      , mod = false // Sera mis à true si on trouve quelque chose modifié
-    Projet.PANNEAU_LIST.forEach( (pan_id) => {
-      my.panneau(pan_id).modified && ( mod = true )
-    })
-    my.modified = mod // changera l'indicateur de sauvegarde
-  }
-
   /* --- publiques --- */
 
   afficherStatistiques ()
@@ -347,7 +329,6 @@ class Projet
    */
   doAutosave () {
     if ( this.mode_edition || this.busy ) { return false }
-    this.checkModifiedState()
     this.modified && this.saveAll()
     return true
   }
@@ -383,8 +364,9 @@ class Projet
       .then( my.saveRelatives.bind(my) )
       .then( () => {
         console.log("= Fin de l'enregistrement de tous les éléments.")
-        my.saving = false
-        my.saved  = true
+        my.saving   = false
+        my.saved    = true
+        my.modified = false
         if ( my.savingReporter.length ) { my.afficheSavingReporter() }
         return Promise.resolve()
       })

@@ -373,9 +373,7 @@ class PanData
   save ( callback )
   {
     const my = this
-    if ( ! my.modified ) { return UILog("Data générales non modifiées…")}
     my.store.saveSync()
-    my.projet.checkModifiedState()
     return Promise.resolve()
   }
 

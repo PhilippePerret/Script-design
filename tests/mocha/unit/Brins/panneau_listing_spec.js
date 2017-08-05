@@ -353,6 +353,7 @@ describe.only('Panneau du listing des brins', function () {
       brins.showPanneau({parag: parag})
       brins.wantsNew()
       expect(currentPanneau.section).to.haveTag('section', {id: 'form_brins'})
+      expect(currentPanneau.section).not.to.haveTag('section', {id: 'form_brins', style:'display:none'})
 
       this.nombre_brins_depart = Brins.items.size
       this.current_brin_ids_init = brins.current_brin_ids.map(n=>{return n})
@@ -361,9 +362,10 @@ describe.only('Panneau du listing des brins', function () {
       // console.log("\nformulaire", cont.outerHTML)
 
       // On met des valeurs dans le formulaire
-      DOM.inner(form.querySelector('span#brin_titre'), "Mon brin de createNew")
-      DOM.inner(form.querySelector('span#brin_description'), "Description du brin depuis createNew")
-      DOM.inner(form.querySelector('span#brin_type'), '20')
+      DOM.inner(form.querySelector('span#brin_titre'),        "Mon brin de createNew")
+      DOM.inner(form.querySelector('span#brin_description'),  "Description du brin depuis createNew")
+      DOM.inner(form.querySelector('span#brin_parent_id'),    "")
+      DOM.inner(form.querySelector('span#brin_type'),         '20')
 
       projet.modified = false
 
@@ -374,7 +376,7 @@ describe.only('Panneau du listing des brins', function () {
       expect(Brins.items.size).to.equal(this.nombre_brins_depart + 1)
     })
     it("ferme le formulaire d'édition du brin", function(){
-      expect(currentPanneau.section).to.not.haveTag('section', {id: 'form_brins'})
+      expect(currentPanneau.section).to.haveTag('section', {id: 'form_brins', style:'display:none'})
     })
     it("crée le nouveau brin avec les données fournies", function(){
       let brin_id = Brin._lastID
@@ -383,21 +385,27 @@ describe.only('Panneau du listing des brins', function () {
       expect(brin.description).to.equal("Description du brin depuis createNew")
       expect(brin.type).to.equal(20)
     })
+    it("Tabulator.sectionMap est de nouveau le panneau des brins", function(){
+      expect(Tabulator.curSectionMap.get('objet_id')).to.equal('panneau_brins')
+    })
     it("Remet le gestionnaire de keyUp du panneau des brins", function(){
-      this.skip()
+      // expect(currentPanneau.section).to.haveTag('section', {id:'panneau_brins'})
+      // expect(currentPanneau.section).not.to.haveTag('section', {id:'panneau_brins', style:'display:none'})
+      // window.onkeyup({key:'Escape'})
+      // expect(currentPanneau.section).to.haveTag('section', {id:'panneau_brins', style:'display:none'})
     })
     it("ajoute le brin au panneau des brins", function(){
       let brin_id = Brin._lastID
-      expect(my.panneau).to.haveTag('li', {id: `brin-${brin_id}`})
+      expect(brins.panneau).to.haveTag('li', {id: `brin-${brin_id}`})
     })
     it("sélectionne le nouveau brin", function(){
       let brin_id = Brin._lastID
-      expect(my.panneau).to.haveTag('li', {id: `brin-${brin_id}`, class: 'selected'})
+      expect(brins.panneau).to.haveTag('li', {id: `brin-${brin_id}`, class: 'selected'})
     })
     it("ajoute le brin au parag courant par défaut", function(){
       // En fait, c'est à la liste current_brin_ids qu'il suffit de l'ajouter
       let brin_id = Brin._lastID
-      expect(my.panneau).to.haveTag('li', {id: `brin-${brin_id}`, class: 'chosen'})
+      expect(brins.panneau).to.haveTag('li', {id: `brin-${brin_id}`, class: 'chosen'})
       expect(brins.current_brin_ids).to.include(brin_id)
     })
     it("marque le projet modifié", function(){

@@ -165,3 +165,30 @@ Les touches les plus importantes sont les flèches haut et bas (ou `k` et `i`) p
 ### Création d'un nouveau brin {#creation_nouveau_brin}
 
 Que l'on se trouve dans la liste des brins ou sur le verso d'un parag, c'est la touche `b` qui permet de créer un nouveau brin. La fenêtre d'édition du brin s'ouvre et il suffit d'entrer les valeurs puis de confirmer par `Entrée`.
+
+### Le formulaire de brin {#formulaire_brin}
+
+Le formulaire de brin permet de créer un nouveau brin ou d'éditer un brin existant.
+
+On peut l'ouvrir soit à partir du [verso du parag], soit à partir du [panneau des brins].
+
+Ce formulaire est un [tabulator] donc il fonctionne avec les touches `q`, `s` etc. (ligne médiane du clavier, de gauche à droite). En l'occurrence :
+
+```
+
+  q       Met en édition le champ Titre
+  s       Met en édition le champ Description
+  d       Met en édition le champ Parent ID
+  f       Met en édition le champ Type de brin
+
+  Tab     Pour valider la modification d'un champ (ou Enter, sauf sur le
+          champ Description, qui accepte les retours chariot).
+
+  Enter   Pour valider le champ si on est en édition.
+          Pour enregistrer le nouveau brin.
+
+  Escape  Pour quitter l'édition sans rien faire.
+
+```
+
+Comme pour toutes les fenêtres, la touche `@` permet d'obtenir de l'aide. En l'occurrence, cette aide vous amène ici.

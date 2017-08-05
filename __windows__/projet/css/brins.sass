@@ -1,5 +1,6 @@
 section
   &#form_brins, &#panneau_brins
+    border-radius   : 0.5em
     > div.titre
       color           : white
       font-size       : 1.3em
@@ -25,8 +26,15 @@ section#panneau_brins
     border        : 1px solid white
     border-radius : 4px
     padding       : 1em
+
+    > div.titre
+      margin-bottom   : 0.75em
+      margin-top      : 1.5em
+      color           : powderblue
+
   > div.explication
-    margin-top    : 5em
+    margin-top    : 0
+    color         : #DDD
 
 section#form_brins
   font-size   : 1em
@@ -83,6 +91,11 @@ section#panneau_brins
       &.selected
         background-color  : #FFF
         color             : steelblue
+        &::before
+          content     : '➤'
+          float       : left
+          margin-left : -46px
+          color       : white
 
       // L'UL des enfants brins du brin
       ul.children

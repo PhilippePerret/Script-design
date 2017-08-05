@@ -42,6 +42,6 @@ Pour fonctionner, la méthode `setupAsTabulator` construit la `sectionMap` de l'
 * `Tabulator.iMaxLetter`. Le nombre maximum de lettre pour l'élément courant.
 * `Tabulator.currentLetter`. La lettre courante, c'est-à-dire la dernière qui vient d'être pressée.
 
-Cette `sectionMap` est enregistré dans l'objet `Tabulator.Sections` qui contient en clé l'`ID` de l'élément transmis et en valeur la Map de section. Cela permet de ne pas avoir à tout recalculer lorsque l'on appelle à nouveau `setupAsTabulator`.
+Cette `sectionMap` est enregistré dans l'objet `Tabulator.SectionMaps` qui contient en clé l'`ID` de l'élément transmis et en valeur la Map de section. Cela permet de ne pas avoir à tout recalculer lorsque l'on appelle à nouveau `setupAsTabulator`.
 
-Lors de la préparation de l'élément, une classe `tabulatorized` lui est ajouté pour signifier que l'élément est déjà préparé et qu'il suffit donc de lire ses données dans `Tabulator.Sections`.
+Lors de la préparation de l'élément, une classe `tabulatorized` lui est ajouté pour signifier que l'élément est déjà préparé et qu'il suffit donc de lire ses données dans `Tabulator.SectionMaps`.

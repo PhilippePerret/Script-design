@@ -221,6 +221,8 @@ global.resetBrins = function ()
   global.brin4 = new Brin({id: 4, projet: projet, titre: "Brin #4", type: 31})
   global.brin5 = new Brin({id: 5, projet: projet, titre: "Brin #5", type: 20})
 
+  Brin._lastID = projet.data.last_brin_id = 5
+
 }
 
 global.createProjetNoSave = function ()

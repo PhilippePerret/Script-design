@@ -59,16 +59,18 @@ class Tabulator
   *
   * TODO Plus tard, il faudrait que Tabulator puisse prendre en compte les
   * champs possédant la classe "editable" pour les gérer automatiquement, sans
-  * avoir à définir de méthode dans params.Map.
+  * avoir à définir de méthode dans params.Map. Parce qu'en l'occurrence, les champs
+  * span/div doit être activés par la méthode d'UI normal, et les autres champs
+  * doivent être focussés (les select et checkbox)
   **/
   static setupAsTabulator ( DOMObj, params )
   {
     const my  = this
     const obj = DOM.get(DOMObj)
 
-    /*- La liste de toutes les sections Tabulator préparées -*/
-
-    if ( ! Tabulator.Sections ) { Tabulator.Sections = new Map() }
+    // N0003
+    // https://github.com/PhilippePerret/Script-design/wiki/NoI#n0003
+    Tabulator.SectionMaps || ( Tabulator.SectionMaps = new Map() )
 
     if ( my.isNotTabulatorized(obj) )
     {
@@ -77,15 +79,27 @@ class Tabulator
       my.tabulatorizeObjet(obj, params)
     }
 
-    let sectionMap  = Tabulator.Sections.get(obj.id)
-    my.sectionMap   = sectionMap
-    my.iMaxLetter   = sectionMap.get('iMaxLetter')
+    /*- On prend la sectionMap demandée -*/
+    let sectionMap  = Tabulator.SectionMaps.get(obj.id)
+
+    if ( my.curSectionMap ) {
+      console.log("[Tabulator] Une section map courante est définie quand on tabulatorise '%s' : '%s'", obj.id, my.curSectionMap.get('objet_id'))
+      sectionMap.set('previous_objet_id', my.curSectionMap.get('objet_id'))
+    }
+
+    my.curSectionMap = sectionMap
+    my.iMaxLetter    = sectionMap.get('iMaxLetter')
 
     /*- Activer cette section en déasactivant le comportement courant -*/
 
-    sectionMap.set('windowOnKeyUp', window.onkeyup)
-    window.onkeyup = undefined
-    window.onkeyup = my.onKeyUp_TabulatorLike.bind(my, sectionMap)
+    sectionMap.set('previousWindowOnKeyUp',   window.onkeyup)
+    sectionMap.set('previousWindowOnKeyDown', window.onkeydown)
+
+    window.onkeyup    = undefined
+    window.onkeydown  = undefined
+
+    window.onkeyup    = my.onKeyUp_TabulatorLike  .bind(my, sectionMap)
+    window.onkeydown  = my.onKeyDown_TabulatorLike.bind(my, sectionMap)
 
     /*- Message de confirmation à l'utilisateur -*/
 
@@ -96,7 +110,7 @@ class Tabulator
   * Retourne true si l'objet DOM désigné par +obj+ est tabulatorized
   *
   **/
-  static isTabulatorized ( obj ) { return DOM.hasClass(obj, 'tabulatorized') }
+  static isTabulatorized    (obj) { return DOM.hasClass(obj, 'tabulatorized') }
   static isNotTabulatorized (obj) { return !this.isTabulatorized(obj) }
   /**
   * Méthode utilisée par `setupAsTabulator` pour préparer l'élément
@@ -138,15 +152,21 @@ class Tabulator
     })
 
     sectionMap.set( 'iMaxLetter', iletter )
+    sectionMap.set('objet_id',    obj.id)
 
 
-    /*  On met la map dans Tabulator.Sections pour pouvoir l'utiliser
+    /*  On met la map dans Tabulator.SectionMaps pour pouvoir l'utiliser
         ici, maintenant et plus tard
     */
-    Tabulator.Sections.set( obj.id, sectionMap )
+    Tabulator.SectionMaps.set( obj.id, sectionMap )
 
     DOM.addClass(obj, 'tabulatorized') // Marquer que l'élément est préparé
 
+  }
+
+  static onKeyDown_TabulatorLike ( sectionMap, evt )
+  {
+    return true
   }
 
   /**
@@ -155,7 +175,7 @@ class Tabulator
   **/
   static onKeyUp_TabulatorLike ( sectionMap, evt )
   {
-    const my          = this
+    const my = this
 
     let fonction = sectionMap.get(evt.key) || sectionMap.get(evt.key.toLowerCase())
 
@@ -249,23 +269,53 @@ class Tabulator
   {
     const my          = this
         , obj         = DOM.get(DOMObj)
-        , sectionMap  = Tabulator.Sections.get(obj.id)
+        , sectionMap  = Tabulator.SectionMaps.get(obj.id)
 
-    if ( sectionMap )
+    let old_objet_id  = sectionMap.get( 'previous_objet_id' )
+
+    if ( old_objet_id )
     {
-      window.onkeyup = sectionMap.get('windowOnKeyUp')
-
-      sectionMap.delete('windowOnKeyUp')
-      // Cette propriété doit être redéfinie à chaque utilisation du tabulator
-      // puisqu'on ne peut pas savoir d'où on vient lorsqu'il est activé
+      // <= Un DOMElement était tabulatorisé avant celui-ci
+      // => On doit le remettre comme section courant activée
+      //    (cf. plus bas)
     }
     else
     {
-      throw new Error(`L'élément ${obj.id} doit être tabulatorisé avant d'être dissocié.`)
+      // <= Il n'y avait pas de DOMElement tabulatorisé avant celui-ci
+      // => On remet les gestionnaires d'évènement enregistrés.
+
+      window.onkeyup    = sectionMap.get('previousWindowOnKeyUp')
+      window.onkeydown  = sectionMap.get('previousWindowOnKeyDown')
+
     }
+
+    // Dans tous les cas, on remet à rien les gestionnaires d'évènements
+    // keyUp/keyDown mémorisés (il y en aura d'autre quand on activera
+    // le DOM Element à nouveau, si c'est le cas)
+    sectionMap.delete('previousWindowOnKeyUp'   )
+    sectionMap.delete('previousWindowOnKeyDown' )
+
+    my.curSectionMap = old_objet_id ? my.activatePreviousSection(old_objet_id) : undefined
+
+
     UILog(`#${obj.id} n'est plus géré par ©Tabulator`)
   }
 
+  /**
+  * Quand on active un DOMElement avec setupAsTabulator, il mémorise l'objet
+  * qui peut être activé. Lorsque que ce DOMElement est désactivé (fermé),
+  * on doit réactiver l'objet activé précédemment. C'est cet objet +objet_id+
+  * dont cette méthode s'occupe.
+  **/
+  static activatePreviousSection (objet_id)
+  {
+    const my = this
+    let sectionMap = my.Sections.get(objet_id)
+    window.onkeyup    = my.onKeyUp_TabulatorLike.bind(my, sectionMap)
+    window.onkeydown  = my.onKeyDown_TabulatorLike.bind(my, sectionMap)
+
+    return sectionMap // Pour la définition
+  }
 
     /**
     * Sélectionne l'élément éditable précédent (avec la flèche gauche)
@@ -292,7 +342,7 @@ class Tabulator
     {
       const my = this
       my.currentLetter = letter
-      my.sectionMap.get(letter).call()
+      my.curSectionMap.get(letter).call()
     }
 
   /**

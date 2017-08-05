@@ -442,20 +442,7 @@ class PanProjet
   **/
   onFinishSave ()
   {
-    const my = this
-
     return Promise.resolve()
-
-    // Avant, ici, on faisait ça :
-    // ---------------------------
-    // return new Promise( (ok, ko) => {
-    //   my.setAllParagsUnmodified.call(my)
-    //   my.projet.checkModifiedState.call(my.projet)
-    //   ok()
-    // })
-    // LE GROS SOUCI, c'est que les paragraphes sont enregistrés après.
-    // TODO En revanche, il faut voir les répercussions du fait de ne plus
-    // vérifier l'état 'checkModifiedState'
   }
 
   /**

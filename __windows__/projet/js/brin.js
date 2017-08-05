@@ -30,8 +30,8 @@ class Brin
   static get PROPERTIES () {
     this._properties || (
       this._properties = new Map([
-          ['titre',       {hname: 'Titre'}]
-        , ['description', {hname: 'Description', enableReturn: true}]
+          ['titre',       {hname: 'Titre',        default: 'Titre du brin'}]
+        , ['description', {hname: 'Description',  default: 'Description du brin', enableReturn: true}]
         , ['parent_id',   {hname: 'Brin parent'}]
         , ['type',        {hname: 'Type brin'}]
       ])
@@ -41,13 +41,20 @@ class Brin
 
   static newID ()
   {
-    this._lastID || ( this._lastID = currentProjet.last_brin_id || -1 )
-    ++this._lastID
+    console.log("projet.data.last_brin_id au départ de newID vaut %d", currentProjet.data.last_brin_id)
+    if ( undefined === this._lastID )
+    {
+      this._lastID = undefined === currentProjet.data.last_brin_id
+                      ? -1
+                      : currentProjet.data.last_brin_id
+    }
+    ++ this._lastID
     if ( this._lastID > 1023 ) {
       throw new Error("Désolé, mais on ne peut pas créer plus de 1024 brins.")
     }
     currentProjet.data.last_brin_id = this._lastID
-    currentProjet.data.save()
+    currentProjet.modified = true
+    console.log("projet.data.last_brin_id a été mis à %d", currentProjet.data.last_brin_id)
     return this._lastID
   }
 
@@ -102,7 +109,12 @@ class Brin
   get titre       ()  { return this.data.titre        || 'Titre du brin par défaut'   }
   get description ()  { return this.data.description  || 'Description brin par défaut'}
   get parent_id   ()  { return this.data.parent_id          }
-  get type        ()  { return this.data.type         || 0  }
+  get type        ()  {
+    if ( undefined === this._type ) {
+      this._type = this.data.type ? Number(this.data.type) : 0
+    }
+    return this._type
+  }
   get parag_ids   ()  { return this.data.parag_ids    || [] }
 
   // ---------------------------------------------------------------------
@@ -175,8 +187,8 @@ class Brin
   * Définit le type du brin
   **/
   set type (v) {
-    this.data.type  = Number(v)
-    this.modified   = true
+    this.data.type = this._type = Number(v)
+    this.modified  = true
   }
 
   reset ()
