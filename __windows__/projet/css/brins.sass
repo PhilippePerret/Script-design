@@ -86,17 +86,30 @@ section#panneau_brins
       &.chosen
         background-color  : #2046C1
         color             : white
-      // Quand le brin est sélectionné, c'est-à-dire prêt à être choisi
-      // ou édité
-      &.selected
-        background-color  : #FFF
-        color             : steelblue
         &::before
-          content     : '➤'
+          content     : '❂'
           float       : left
           margin-left : -46px
           color       : white
-
+      // Quand le brin est sélectionné, c'est-à-dire prêt à être choisi
+      // ou édité
+      &.selected
+        color             : steelblue
+        &::before
+          content     : '⇥'
+          float       : left
+          margin-left : -46px
+          color       : white
+      &.selected:not(.chosen)
+        background-color  : #FFF
+      &.selected.chosen
+        background-color  : #2A45E8
+        color             : wheat
+        &::before
+          content     : '⇤'
+          float       : left
+          margin-left : -46px
+          color       : white
       // L'UL des enfants brins du brin
       ul.children
         list-style    : none

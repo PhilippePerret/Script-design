@@ -72,9 +72,9 @@ class Brins {
     let dataBrin = my.getFormValues()
     my.add( dataBrin )
     my.modified = true
-    // console.log("Création d'un nouveau brin avec les données :", dataBrin)
 
     my.hideForm()
+    my.formParams && my.formParams.callback_oncreate && my.formParams.callback_oncreate.call()
 
   }
 
@@ -145,7 +145,8 @@ class Brins {
         p.modified = true
       })
 
-      /*- Suppression dans ses Brins -*/
+      /*- Suppression dans Brins -*/
+
       Brins.items.delete(bid)
 
       this.modified = true
@@ -169,7 +170,7 @@ class Brins {
     return my.prepareData()
       .then( my.store.save.bind(my.store) )
       .then( () => {
-        console.log("= Fichier brins sauvé")
+        // console.log("= Fichier brins sauvé")
         UILog("Brins du projet enregistrés.")
         return Promise.resolve()
       })
@@ -189,17 +190,13 @@ class Brins {
   PRloadData ()
   {
     const my = this
-    console.log("-> PRloadData")
     if ( my.store.exists() )
     {
-      console.log("PRloadData, le store existe")
       let res = my.store.load() // définit my._data
-      console.log("my.store.load est de class ", res.constructor.name)
       return res
     }
     else
     {
-      console.log("PRloadData, le store `%s` n'existe par.", my.store.path)
       my._data = my.defaultData
       return Promise.resolve()
     }
@@ -209,7 +206,7 @@ class Brins {
     const my = this
     let brin
 
-    my.reset()
+    my.resetAll()
     return new Promise( (ok, ko) => {
       my.data.items.forEach( hbrin => {
         hbrin.projet = my.projet
@@ -219,7 +216,7 @@ class Brins {
     })
   }
 
-  reset ()
+  resetAll ()
   {
     const my = this
 
@@ -227,6 +224,16 @@ class Brins {
     my._store     = undefined
     my._panneau   = undefined
     my._form      = undefined
+    my.reset()
+  }
+
+  reset ()
+  {
+    const my = this
+
+    my._nb_displayed  = undefined
+    my._imax_brin     = undefined
+    my._selected      = undefined
   }
 
   prepareData ()
@@ -243,7 +250,6 @@ class Brins {
         hdata.items.push(dBrin.data)
       })
       my._data = hdata
-      console.log("= Données brins préparés")
       ok()
     })
   }
@@ -326,7 +332,9 @@ class Brins {
   **/
   cancelEdition ()
   {
-    this.hideForm()
+    const my = this
+    my.hideForm()
+    my.formParams && my.formParams.callback_oncancel && my.formParams.callback_oncancel.call()
   }
 
   /** ---------------------------------------------------------------------
@@ -342,7 +350,7 @@ class Brins {
     params || ( params = {} )
 
     if ( params.parag ) {
-      my.oldBrinIds = params.parag.brin_ids.map( bid => { return bid })
+      my.oldBrinIds = (params.parag.brin_ids||[]).map( bid => { return bid })
       my.currentParag = params.parag
 
       // La listes qui vont permettre de gérer provisoirement les
@@ -354,9 +362,10 @@ class Brins {
       my.current_brin_ids = []
 
       my.preparePanneauForCurrentParag()
+      // Si la méthode showPanneau est appelée par un parag (verso de sa fiche),
+      // on doit le préparer, c'est-à-dire sélectionner tous ses brins.
     }
-    // Si la méthode showPanneau est appelée par un parag (verso de sa fiche),
-    // on doit le préparer, c'est-à-dire sélectionner tous ses brins.
+
 
     currentPanneau.section.appendChild(my.panneau)
     my.panneau.setAttribute('style', '')
@@ -401,11 +410,12 @@ class Brins {
       if ( ids.indexOf(bid) < 0 )
       {
         o.className = 'brin'
+        // Au cours d'un affichage précédent, le brin a peut-être été
+        // mise en exergue (chosen)
       }
       else
       {
         o.className = 'brin chosen'
-
         // On mémorise cet ID de brin qui appartient au parag édité
         // (if any)
         my.current_brin_ids && my.current_brin_ids.push(bid)
@@ -436,7 +446,7 @@ class Brins {
     const my = this
     my.deselectBrinSelected()
     const o = my.ULlisting.querySelectorAll('li.brin')[my.iselected]
-    o && ( o.className += ' selected' )
+    o && DOM.addClass(o, 'selected')
   }
   deselectBrinSelected ()
   {
@@ -455,19 +465,23 @@ class Brins {
     )
     return this._nb_displayed
   }
+  get imax_brin ()
+  {
+    this._imax_brin || ( this._imax_brin = this.nombre_brins_displayed - 1)
+    return this._imax_brin
+  }
   /** ---------------------------------------------------------------------
     *   Toutes les méthodes qui réagissent aux touches clavier
     *   définies dans le MapLetter ci-dessus
   *** --------------------------------------------------------------------- */
   // Sélectionne le brin suivant dans le panneau
   selectNext (evt) {
-    const my    = this
-    const ilast = my.nombre_brins_displayed - 1
-    if ( my.iselected >= ilast ) { return false }
+    const my = this
+    if ( my.iselected >= my.imax_brin ) { return false }
     evt || ( evt = {} ) // pour les tests, au moins
     const increm = evt.shiftKey ? 10 : 1
     let newi = my.iselected + increm
-    if ( newi >= ilast ) { newi = ilast }
+    if ( newi > my.imax_brin ) { newi = my.imax_brin }
     my.iselected = newi // pseudo-méthode
     return true
   }
@@ -491,18 +505,22 @@ class Brins {
     const para = my.currentParag
     if ( ! para ) { return }
     const brin = my.selected
+    console.log("-> chooseCurrent (parag #%d / brin #%d)", para.id, brin.id)
     const oBrin = my.ULlisting.querySelector(`li#brin-${brin.id}`)
     const forAjout = my.current_brin_ids.indexOf(brin.id) < 0
 
     /*- On procède à la marque de l'ajout ou retrait du parag -*/
 
+    let mess = `Le brin « ${brin.titre} » a été `
     if ( forAjout )
     {
       my.current_brin_ids && my.current_brin_ids.push( brin.id )
       DOM.addClass(oBrin, 'chosen')
+      UILog(`${mess}ajouté.`)
     } else {
       my.current_brin_ids && my.current_brin_ids.splice(my.current_brin_ids.indexOf(brin.id), 1)
       DOM.removeClass(oBrin, 'chosen')
+      UILog(`${mess}retiré.`)
     }
   }
 
@@ -518,9 +536,10 @@ class Brins {
   // Touche Enter => Les brins sont attribués au parag
   adopterChoix ( evt ) {
 
-    if ( ! this.currentParag ) { return }
-
+    console.log("-> Brins#adopterChoix")
     const my = this
+
+    if ( ! my.currentParag ) { return }
 
     let old_ids = (my.currentParag.brin_ids||[]).map(bid => {return bid})
     let new_ids = my.current_brin_ids
@@ -550,16 +569,24 @@ class Brins {
     // Retrait des anciens brins
     old_ids.forEach( bid => { Brins.get(bid).removeParag(my.currentParag) })
 
+    if ( new_ids.length || old_ids.length ) {
+      UILog('Nouveaux brins assignés au paragraphe.')
+    }
+
+    this.hidePanneau()
+
   }
+
   // Touche Escape => On renonce à choisir les brins
   renoncerChoix ( evt ) {
     // On a juste à fermer le tableau sans rien faire
     this.hidePanneau()
   }
+  
   // Touche b => Nouveau brin demandé
   wantsNew (evt) {
     const my = this
-    my.showForm( null /*brin à éditer*/, {callback: my.onCreateNew.bind(my) })
+    my.showForm( null /*brin à éditer*/, {callback_oncreate: my.onCreateNew.bind(my) })
   }
   /**
   * Méthode appelée quand on revient de la création d'un brin
@@ -580,10 +607,16 @@ class Brins {
       let librin = librins[iselected]
       if ( Number(librin.getAttribute('data-id')) == newBrin.id ) break
     }
+
     my.iselected = iselected
-    my.chooseCurrent()
+    my.reset()
+
+    currentParag && my.chooseCurrent()
+    // Un nouveau brin est toujours sélectionné par défaut pour le parag
+    // courant s'il existe
 
   }
+
   // Touche @ => Aide concernant les brins
   afficherAide (evt) {
     return ipc.send('want-help', { current_window: 'projet', anchor: 'gestion_des_brins' })
@@ -659,8 +692,6 @@ class Brins {
     const my = this
     my.form.setAttribute('style','display:none')
     Tabulator.isTabulatorized(my.form) && Tabulator.unsetAsTabulator(my.form)
-    my.formParams && my.formParams.callback && my.formParams.callback.call()
-
   }
 
   /**

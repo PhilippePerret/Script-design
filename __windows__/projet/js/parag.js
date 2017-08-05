@@ -1845,16 +1845,12 @@ class Parag
     this.projet.brins.showForm()
   }
   /**
-  * Appelé par la touche "B" pour choisir les brins du parag
+  * Appelé par la touche "B" pour choisir les brins du parag quand on
+  * a retourné le parag (VERSO)
   **/
   chooseBrins ()
   {
-    this.projet.brins.showPanneau()
-    // TODO Dire au panneau comment traiter les choix
-    // TODO Il faut qu'on puisse passer en revue les brins avec
-    // les flèches et les choisir avec '->' ou les enlever avec '<-'
-    // Peut-être fonctionner en deux colonnes pour que ce soit bien
-    // clair ?
+    this.projet.brins.showPanneau({parag: this})
   }
 
 

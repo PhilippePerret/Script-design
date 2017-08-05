@@ -191,7 +191,7 @@ class Tabulator
       // https://github.com/PhilippePerret/Script-design/wiki/NoI#n0002
       let modifiers = {altKey:null, metaKey:null, ctrlKey:null, shiftKey:null}
       for(let modifier in modifiers) { modifiers[modifier] = evt[modifier] }
-      if ( my.realLetter >= 'A' && my.realLetter <= 'Z' ){
+      if ( my.realLetter.length == 1 && my.realLetter >= 'A' && my.realLetter <= 'Z' ){
         modifiers.shiftKey = true
       }
 
@@ -310,7 +310,7 @@ class Tabulator
   static activatePreviousSection (objet_id)
   {
     const my = this
-    let sectionMap = my.Sections.get(objet_id)
+    let sectionMap = my.SectionMaps.get(objet_id)
     window.onkeyup    = my.onKeyUp_TabulatorLike.bind(my, sectionMap)
     window.onkeydown  = my.onKeyDown_TabulatorLike.bind(my, sectionMap)
 

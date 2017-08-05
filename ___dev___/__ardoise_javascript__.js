@@ -5,7 +5,10 @@ require('../lib/utils/Number')
 
 let res = []
 
-let lettre = "D"
+let realLetter = "Arrow"
 
+if ( realLetter >= 'A' && realLetter <= 'Z' ){
+      res = "Majuscule"
+    } else { res = "min"}
 
 console.log(res)
