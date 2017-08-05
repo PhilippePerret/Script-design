@@ -70,7 +70,7 @@ class Tabulator
 
     if ( ! Tabulator.Sections ) { Tabulator.Sections = new Map() }
 
-    if ( false == DOM.hasClass(obj, 'tabulatorized' ) )
+    if ( my.isNotTabulatorized(obj) )
     {
       // <= L'élément n'est pas encore préparé pour Tabulator
       // => Il faut observer tous ses champs portant une data-tab
@@ -92,6 +92,12 @@ class Tabulator
     UILog(`#${obj.id} est géré par ©Tabulator`)
   }
 
+  /**
+  * Retourne true si l'objet DOM désigné par +obj+ est tabulatorized
+  *
+  **/
+  static isTabulatorized ( obj ) { return DOM.hasClass(obj, 'tabulatorized') }
+  static isNotTabulatorized (obj) { return !this.isTabulatorized(obj) }
   /**
   * Méthode utilisée par `setupAsTabulator` pour préparer l'élément
   * et composer sa Map d'éléments éditables.

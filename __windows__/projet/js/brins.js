@@ -103,18 +103,30 @@ class Brins {
       refBrin.id = Brin.newID()
       let newB = new Brin(refBrin)
       let container
-      if ( my.panneau.opened ) {
-        if ( newB.parent_id ) {
-          let parent  = my.ULlisting.querySelector(`li#brin-${newB.parent_id}`)
-          container   = parent.querySelector('ul.children')
-        } else {
-          container = my.ULlisting
-        }
-        container.appendChild( newB.buildAsLI() )
-      }
+      if ( my.panneau.opened ) { my.addBrinToPanneau( newB) }
     }
 
     if ( options.save ) { return my.PRsave() }
+  }
+
+  /**
+  * Ajoute le brin +brin+ au panneau (qui doit être ouvert)
+  * C'est la méthode utilisée quand on crée un nouveau brin.
+  *
+  * @param {Brin} brin Le brin à ajouter au panneau
+  **/
+  addBrinToPanneau (brin)
+  {
+    const my = this
+
+    if ( brin.parent_id ) {
+      console.log("brin.parent_id = ", brin.parent_id)
+      let parent  = my.ULlisting.querySelector(`li#brin-${brin.parent_id}`)
+      container   = parent.querySelector('ul.children')
+    } else {
+      container = my.ULlisting
+    }
+    container.appendChild( brin.buildAsLI() )
   }
 
   remove( bid )
@@ -177,13 +189,17 @@ class Brins {
   PRloadData ()
   {
     const my = this
-
+    console.log("-> PRloadData")
     if ( my.store.exists() )
     {
-      return my.store.load() // définit my._data
+      console.log("PRloadData, le store existe")
+      let res = my.store.load() // définit my._data
+      console.log("my.store.load est de class ", res.constructor.name)
+      return res
     }
     else
     {
+      console.log("PRloadData, le store `%s` n'existe par.", my.store.path)
       my._data = my.defaultData
       return Promise.resolve()
     }
@@ -366,7 +382,10 @@ class Brins {
           ['ArrowDown',   my.selectNext.bind(my)]
         , ['ArrowUp',     my.selectPrevious.bind(my)]
         , ['ArrowRight',  my.chooseCurrent.bind(my)]
+        , ['l',           my.chooseCurrent.bind(my)]
         , ['ArrowLeft',   my.chooseCurrent.bind(my)]
+        , ['j',           my.chooseCurrent.bind(my)]
+        , ['e',           my.editCurrent.bind(my)]
         , ['Enter',       my.adopterChoix.bind(my)]
         , ['Escape',      my.renoncerChoix.bind(my)]
         , ['b',           my.wantsNew.bind(my)]
@@ -493,6 +512,15 @@ class Brins {
     }
   }
 
+  /**
+  * Méthode appelée par le raccourci 'e' qui met en édition le parag
+  * courant, donc sélectionné.
+  **/
+  editCurrent ()
+  {
+    // Cas : il n'y a pas de sélectionné
+  }
+
   // Touche Enter => Les brins sont attribués au parag
   adopterChoix ( evt ) {
 
@@ -612,12 +640,17 @@ class Brins {
     const obj = DOM.get(`brin_${property}`)
     my.projet.ui.activateEditableField(obj)
   }
+
+
+  /**
+  * Ferme le formulaire de création du brin.
+  **/
   hideForm ()
   {
     const my = this
     my.form.setAttribute('style','display:none')
-    Tabulator.unsetAsTabulator(my.form)
-    my.formParams.callback && my.formParams.callback.call()
+    Tabulator.isTabulatorized(my.form) && Tabulator.unsetAsTabulator(my.form)
+    my.formParams && my.formParams.callback && my.formParams.callback.call()
 
   }
 
@@ -704,18 +737,11 @@ class Brins {
     newo = DOM.create('div', {class:'titre', inner:'Formulaire de brin'})
     h.appendChild(newo)
 
-    let props = new Map([
-        ['titre',       {inner: 'Titre provisoire'}]
-      , ['description', {inner: 'Description provisoire', enableReturn: true}]
-      , ['parent_id',   {label: 'Brin parent'}]
-      , ['type',        {label: 'Type de brin'}]
-    ])
-
-    props.forEach( (dprop, prop) => {
+    Brin.PROPERTIES.forEach( (dprop, prop) => {
       newo = DOM.create('div', {class:'row'})
       let label = dprop.label || prop.titleize()
       let lab  = DOM.create('label', {for:`brin_${prop}`, inner: label})
-      let inner = dprop.inner || ''
+      let inner = dprop.hname || ''
       let spanData = {
           id              : `brin_${prop}`
         , 'data-tab'      : prop

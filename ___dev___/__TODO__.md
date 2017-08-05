@@ -1,3 +1,5 @@
+* Le raccourci B (majuscule), n'importe où, doit ouvrir le panneau des brins
+
 * Implémenter le repérage des Majuscule en captant le keydown sur ShiftKey
 * Poursuivre les tests sur les brins
 

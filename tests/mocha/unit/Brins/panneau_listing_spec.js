@@ -38,6 +38,9 @@ describe.only('Panneau du listing des brins', function () {
     it("selectPrevious", function(){
       expect(brins).to.respondsTo('selectPrevious')
     })
+    it("editCurrent", function(){
+      expect(brins).to.respondsTo('editCurrent')
+    })
   });
 
   describe('définit les propriétés', function () {
@@ -301,9 +304,7 @@ describe.only('Panneau du listing des brins', function () {
       */
       const parag = parag7
       const brins_initiaux = parag.brin_ids.map(n => {return n})
-      console.log("brins_initiaux : ", brins_initiaux)
       let watcher_brin_ids = parag.brin_ids.map(n => {return n})
-      console.log("watcher_brin_ids: ", watcher_brin_ids)
       brins.showPanneau({parag: parag})
       expect(brins.currentParag.id).to.equal(7)
       const listing = brins.panneau.querySelector('ul#brins')
@@ -313,8 +314,6 @@ describe.only('Panneau du listing des brins', function () {
         let selected = brins.selected
         brins.chooseCurrent()
         watcher_brin_ids.push(selected.id)
-        console.log("\nwatcher_brin_ids: ", watcher_brin_ids)
-        console.log("brins.current_brin_ids:", brins.current_brin_ids)
       })
 
       expect(brins.current_brin_ids).to.deep.equal(watcher_brin_ids)
@@ -334,7 +333,7 @@ describe.only('Panneau du listing des brins', function () {
     })
   });
 
-  describe('#createNew', function () {
+  describe('#wantsNew', function () {
     it("ouvre la fenêtre de création d'un nouveau brin", function(){
       const parag = parag1
       brins.showPanneau({parag: parag})
@@ -342,9 +341,67 @@ describe.only('Panneau du listing des brins', function () {
       expect(currentPanneau.section).not.to.haveTag('section', {id: 'form_brins'})
 
       // ==========> TEST <==========
-      brins.createNew()
+      brins.wantsNew()
 
       expect(currentPanneau.section).to.haveTag('section', {id: 'form_brins'})
+    })
+  });
+
+  describe('#createNew', function () {
+    before(function () {
+      const parag = parag2
+      brins.showPanneau({parag: parag})
+      brins.wantsNew()
+      expect(currentPanneau.section).to.haveTag('section', {id: 'form_brins'})
+
+      this.nombre_brins_depart = Brins.items.size
+      this.current_brin_ids_init = brins.current_brin_ids.map(n=>{return n})
+
+      let form = currentPanneau.section.querySelector('section#form_brins')
+      // console.log("\nformulaire", cont.outerHTML)
+
+      // On met des valeurs dans le formulaire
+      DOM.inner(form.querySelector('span#brin_titre'), "Mon brin de createNew")
+      DOM.inner(form.querySelector('span#brin_description'), "Description du brin depuis createNew")
+      DOM.inner(form.querySelector('span#brin_type'), '20')
+
+      projet.modified = false
+
+      // ===========> TEST <=============
+      brins.createNew()
+    });
+    it("crée un nouveau brin", function(){
+      expect(Brins.items.size).to.equal(this.nombre_brins_depart + 1)
+    })
+    it("ferme le formulaire d'édition du brin", function(){
+      expect(currentPanneau.section).to.not.haveTag('section', {id: 'form_brins'})
+    })
+    it("crée le nouveau brin avec les données fournies", function(){
+      let brin_id = Brin._lastID
+      let brin = Brins.get(brin_id)
+      expect(brin.titre).to.equal("Mon brin de createNew")
+      expect(brin.description).to.equal("Description du brin depuis createNew")
+      expect(brin.type).to.equal(20)
+    })
+    it("Remet le gestionnaire de keyUp du panneau des brins", function(){
+      this.skip()
+    })
+    it("ajoute le brin au panneau des brins", function(){
+      let brin_id = Brin._lastID
+      expect(my.panneau).to.haveTag('li', {id: `brin-${brin_id}`})
+    })
+    it("sélectionne le nouveau brin", function(){
+      let brin_id = Brin._lastID
+      expect(my.panneau).to.haveTag('li', {id: `brin-${brin_id}`, class: 'selected'})
+    })
+    it("ajoute le brin au parag courant par défaut", function(){
+      // En fait, c'est à la liste current_brin_ids qu'il suffit de l'ajouter
+      let brin_id = Brin._lastID
+      expect(my.panneau).to.haveTag('li', {id: `brin-${brin_id}`, class: 'chosen'})
+      expect(brins.current_brin_ids).to.include(brin_id)
+    })
+    it("marque le projet modifié", function(){
+      expect(projet.modified).to.be.true
     })
   });
 

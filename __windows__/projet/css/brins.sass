@@ -68,18 +68,21 @@ section#panneau_brins
     div.titre
       font-size   : 1em
     li.brin, div.brin
-      font-size     : 0.9em
-      margin-left   : 2em // pour être en décalage par rapport aux titres
+      font-size         : 0.9em
+      margin            : 0
+      margin-left       : 2em // pour être en décalage par rapport aux titres
+      background-color  : rgb(85, 165, 241)
+      padding           : 4px 4px 4px 19px
       // Quand le brin est "choisi", c'est-à-dire, par exemple, qu'il
       // appartient au parag
       &.chosen
-        background-color  : steelblue
+        background-color  : #2046C1
         color             : white
       // Quand le brin est sélectionné, c'est-à-dire prêt à être choisi
       // ou édité
       &.selected
-        background-color  : #CCF
-        color             : blue
+        background-color  : #FFF
+        color             : steelblue
 
       // L'UL des enfants brins du brin
       ul.children

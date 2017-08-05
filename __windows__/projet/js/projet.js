@@ -138,11 +138,12 @@ class Projet
     const my = this
 
     return my.prepare()
-    // .then( my.data.load.bind(my.data) )
-    .then( my.options.PRload.bind(my.options) )
-    .then( my.options.build.bind(my.options)  )
-    .then( my.setupOptions.bind(my) )
-    .catch( err => { throw err } )
+      // .then( my.data.load.bind(my.data) )
+      .then( my.brins.PRload.bind(my.brins)     )
+      .then( my.options.PRload.bind(my.options) )
+      .then( my.options.build.bind(my.options)  )
+      .then( my.setupOptions.bind(my)           )
+      .catch( err => { throw err }              )
   }
 
   /** ---------------------------------------------------------------------

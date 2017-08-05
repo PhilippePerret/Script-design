@@ -30,10 +30,10 @@ class Brin
   static get PROPERTIES () {
     this._properties || (
       this._properties = new Map([
-          ['titre',       {}]
-        , ['description', {}]
-        , ['parent_id',   {}]
-        , ['type',        {}]
+          ['titre',       {hname: 'Titre'}]
+        , ['description', {hname: 'Description', enableReturn: true}]
+        , ['parent_id',   {hname: 'Brin parent'}]
+        , ['type',        {hname: 'Type brin'}]
       ])
     )
     return this._properties
@@ -175,7 +175,7 @@ class Brin
   * Définit le type du brin
   **/
   set type (v) {
-    this.data.type  = v
+    this.data.type  = Number(v)
     this.modified   = true
   }
 

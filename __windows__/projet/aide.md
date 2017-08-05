@@ -154,6 +154,7 @@ Les touches les plus importantes sont les flèches haut et bas (ou `k` et `i`) p
 | Choisir ou retirer le brin    | Fl. -> ou l     | |
 |                               | Fl. &lt;- ou j  | |
 | Créer un nouveau brin         | b               | |
+| Éditer le brin sélectionné    | e               | |
 | | | |
 | Confirmer le choix et finir   | Enter           | |
 | Renoncer au changement        | Escape          | |
