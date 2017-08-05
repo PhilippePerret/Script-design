@@ -130,3 +130,37 @@ La notion de `relatives` est une notion très importante dans l'application. C'e
 * choisir les paragraphes en `CMD`+cliquant dessus.
 * presser la touche `Entrée`,
 * confirmer l'association des paragraphes ou la refuser.
+
+
+## Gestion des brins {#gestion_des_brins}
+
+La fênêtre des brins, nommée « Liste des brins », permet de gérer les « brins » de l'histoire tels que définis dans la boite à outils de l'auteur.
+
+Cette fenêtre permet d'afficher la liste des brins courants et d'en créer de nouveaux.
+
+Comme pour les autres fenêtres, tout se gère à l'aide du clavier principalement.
+
+### Raccourcis de la fenêtres des brins {#liste_brins_shortcuts}
+
+Les touches les plus importantes sont les flèches haut et bas (ou `k` et `i`) pour se déplacer, les flèches droite ou gauche (ou `j` ou `l`) pour choisir ou retirer, et la touche `Entrée` pour confirmer les choix.
+
+| Résultat voulu                | Raccourci | Notes |
+| : --------------------------- | :-------- | :---- |
+| Aller au brin suivant         | Fl. bas ou k    | |
+| … de 10 en 10                 | + MAJ           | |
+| Aller au brin précédent       | Fl. haut ou i   | |
+| … de 10 en 10                 | + MAJ           | |
+| | | |
+| Choisir ou retirer le brin    | Fl. -> ou l     | |
+|                               | Fl. &lt;- ou j  | |
+| Créer un nouveau brin         | b               | |
+| | | |
+| Confirmer le choix et finir   | Enter           | |
+| Renoncer au changement        | Escape          | |
+| Obtenir de l'aide             | @               | |
+| ------- |
+
+
+### Création d'un nouveau brin {#creation_nouveau_brin}
+
+Que l'on se trouve dans la liste des brins ou sur le verso d'un parag, c'est la touche `b` qui permet de créer un nouveau brin. La fenêtre d'édition du brin s'ouvre et il suffit d'entrer les valeurs puis de confirmer par `Entrée`.

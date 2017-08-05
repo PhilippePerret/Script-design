@@ -4,7 +4,7 @@ describe.only('Panneau du listing des brins', function () {
   before(function () {
     return resetProjetWithBrins()
   });
-  describe('répond au méthode', function () {
+  describe('répond aux méthodes', function () {
     it("showPanneau", function(){
       expect(brins).to.respondsTo('showPanneau')
     })
@@ -28,6 +28,39 @@ describe.only('Panneau du listing des brins', function () {
     })
     it("createNew", function(){
       expect(brins).to.respondsTo('createNew')
+    })
+    it("selectNext", function(){
+      expect(brins).to.respondsTo('selectNext')
+    })
+    it("selectPrevious", function(){
+      expect(brins).to.respondsTo('selectPrevious')
+    })
+    it("selectPrevious", function(){
+      expect(brins).to.respondsTo('selectPrevious')
+    })
+  });
+
+  describe('définit les propriétés', function () {
+    before(function () {
+      brins.showPanneau({parag:parag0})
+    });
+    it("@selected (Brin)", function(){
+      expect(brins.selected).not.to.be.undefined
+    })
+    it("@iselected (Number)", function(){
+      expect(brins.iselected).not.to.be.undefined
+    })
+    it("@current_brin_ids (Array)", function(){
+      expect(brins.current_brin_ids).not.to.be.undefined
+      expect(brins.current_brin_ids).to.deep.equal(parag0.brin_ids)
+    })
+    it("@currentParag (Parag)", function(){
+      expect(brins.currentParag).not.to.be.undefined
+      expect(brins.currentParag.id).to.equal(0)
+    })
+    it("@panneau (HTMLElement)", function(){
+      expect(brins.panneau).not.to.be.undefined
+      expect(brins.panneau).to.be.instanceOf(HTMLElement)
     })
   });
 
@@ -262,13 +295,67 @@ describe.only('Panneau du listing des brins', function () {
 
   describe('#renoncerChoix', function () {
     it("ferme le panneau sans rien faire", function(){
-      this.skip()
+      /*
+        On affiche le panneau des brins pour le parag3 et on le
+        met dans les brins 0, 2 et 5
+      */
+      const parag = parag7
+      const brins_initiaux = parag.brin_ids.map(n => {return n})
+      console.log("brins_initiaux : ", brins_initiaux)
+      let watcher_brin_ids = parag.brin_ids.map(n => {return n})
+      console.log("watcher_brin_ids: ", watcher_brin_ids)
+      brins.showPanneau({parag: parag})
+      expect(brins.currentParag.id).to.equal(7)
+      const listing = brins.panneau.querySelector('ul#brins')
+      let arr = [0, 2]
+      arr.forEach( isel => {
+        brins.iselected = isel // sélectionne vraiment le brin
+        let selected = brins.selected
+        brins.chooseCurrent()
+        watcher_brin_ids.push(selected.id)
+        console.log("\nwatcher_brin_ids: ", watcher_brin_ids)
+        console.log("brins.current_brin_ids:", brins.current_brin_ids)
+      })
+
+      expect(brins.current_brin_ids).to.deep.equal(watcher_brin_ids)
+
+      // ===========> TEST <==============
+
+      brins.renoncerChoix()
+
+      // ========= VÉRIFICATIONS =============
+
+      expect(brins.current_brin_ids).to.deep.equal(watcher_brin_ids) // la même
+      expect(parag.brin_ids).to.deep.equal(brins_initiaux)
+      arr.forEach( bid => {
+        expect(Brins.get(bid).parag_ids).not.to.include(parag.id)
+      })
+
     })
   });
 
   describe('#createNew', function () {
     it("ouvre la fenêtre de création d'un nouveau brin", function(){
-      this.skip()
+      const parag = parag1
+      brins.showPanneau({parag: parag})
+
+      expect(currentPanneau.section).not.to.haveTag('section', {id: 'form_brins'})
+
+      // ==========> TEST <==========
+      brins.createNew()
+
+      expect(currentPanneau.section).to.haveTag('section', {id: 'form_brins'})
+    })
+  });
+
+
+  describe('#afficherAide', function () {
+    it("ouvre la fenêtre de l'aide pour les brins", function(){
+      // this.skip()
+      // TODO Pour le moment, comme c'est une vraie nouvelle fenêtre, je
+      // ne sais pas comment la tester en tests unitaire.
+      // Ou peut-être faudrait-il la faire apparaitre dans la fenêtre
+      // courante ?
     })
   });
 

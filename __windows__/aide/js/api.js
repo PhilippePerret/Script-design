@@ -13,8 +13,9 @@ define([
 
     /**
     * Alterne entre le manuel et l'aide de la fenêtre courante
+    *
     **/
-    static toggle ()
+    static toggle ( )
     {
       if ( this._isManuel ) { this.aideFenetreCourante() }
       else { this.manuel() }
@@ -67,8 +68,9 @@ define([
     static aideFenetreCourante ()
     { this.afficheAideFor(this._current_window) }
 
-    static afficheAideFor( wind )
+    static afficheAideFor( wind, options )
     {
+      console.log("wind:%s, options:", wind, options)
       if ( wind )
       {
         // Une fenêtre est définie, il faut afficher son aide si elle
@@ -80,6 +82,13 @@ define([
         if ( fs.existsSync(aide_path) )
         {
           DOM.inner( 'aide-content', Kramdown.file(aide_path) )
+          if ( options && options.anchor )
+          {
+            // <= Une ancre est définie
+            // => Il faut l'atteindre dans la page
+            console.log("Une ancre est demandée : ", options.anchor)
+            window.location.href = `#${options.anchor}`
+          }
         }
         else
         {

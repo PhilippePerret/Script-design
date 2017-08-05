@@ -1,7 +1,6 @@
 section
   &#form_brins, &#panneau_brins
     > div.titre
-      margin-bottom   : 2em
       color           : white
       font-size       : 1.3em
     > div.explication
@@ -9,14 +8,23 @@ section
       font-style    : italic
       color         : #777
 
+section#form_brins
+  > div.titre
+    margin-bottom   : 2em
+
 // Constitution générale du panneau des brins
 section#panneau_brins
-  height      : auto
+  height          : auto
+  margin-bottom   : 1em
   > div.titre
-    ul#brins
-      height      : 500px
-      max-height  : 500px
-      overflow    : scroll
+  // Le listing des brins
+  ul#brins
+    height        : 500px
+    max-height    : 500px
+    overflow      : scroll
+    border        : 1px solid white
+    border-radius : 4px
+    padding       : 1em
   > div.explication
     margin-top    : 5em
 

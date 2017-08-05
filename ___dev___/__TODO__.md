@@ -1,16 +1,5 @@
+* Implémenter le repérage des Majuscule en captant le keydown sur ShiftKey
 * Poursuivre les tests sur les brins
-
-COMMENT GÉRER LE PANNEAU DES BRINS :
-  En faire un tabulator (setupAsTabulator)
-  en définissant seulement le rôle de :
-    <-        Déselectionner un brin
-    ->        Ajouter un brin (vérifier le nombre max)
-    ^ (up)    Passer au brin précédent
-    v (down)  Passer au brin suivant
-    Enter     Valider les choix et quitter
-    Escape    Renoncer
-    b         Nouveau brin
-    @         Aide, lien direct vers la partie
 
 * La création d'un nouveau brin doit entrainer la reconstruction du panneau des brins (qui peut être affiché quand on crée un nouveau brin)
 

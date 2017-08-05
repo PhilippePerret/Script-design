@@ -215,7 +215,6 @@ global.resetBrins = function ()
   brins._form     = undefined
 
   global.brin  = new Brin({id: 0, projet: projet, titre: "Brin sans titre"})
-  console.log("brin.parag_ids = ", brin.parag_ids)
   global.brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1", type: 20})
   global.brin2 = new Brin({id: 2, projet: projet, titre: "Brin #2"})
   global.brin3 = new Brin({id: 3, projet: projet, titre: "Brin #3", type: 20})

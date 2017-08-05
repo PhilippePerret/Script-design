@@ -101,7 +101,17 @@ class Brins {
     else if ( 'object' === typeof(refBrin) && refBrin.titre )
     {
       refBrin.id = Brin.newID()
-      new Brin(refBrin)
+      let newB = new Brin(refBrin)
+      let container
+      if ( my.panneau.opened ) {
+        if ( newB.parent_id ) {
+          let parent  = my.ULlisting.querySelector(`li#brin-${newB.parent_id}`)
+          container   = parent.querySelector('ul.children')
+        } else {
+          container = my.ULlisting
+        }
+        container.appendChild( newB.buildAsLI() )
+      }
     }
 
     if ( options.save ) { return my.PRsave() }
@@ -359,7 +369,7 @@ class Brins {
         , ['ArrowLeft',   my.chooseCurrent.bind(my)]
         , ['Enter',       my.adopterChoix.bind(my)]
         , ['Escape',      my.renoncerChoix.bind(my)]
-        , ['b',           my.createNew.bind(my)]
+        , ['b',           my.wantsNew.bind(my)]
         , ['@',           my.afficherAide.bind(my)]
       ])
     })
@@ -373,7 +383,7 @@ class Brins {
     let o = null
 
     Brins.items.forEach( (brin, bid) => {
-      o = my.panneau.querySelector(`li#brin-${bid}`)
+      o = my.ULlisting.querySelector(`li#brin-${bid}`)
       if ( ! o ) { return /* brin introuvable */}
       if ( ids.indexOf(bid) < 0 )
       {
@@ -400,7 +410,7 @@ class Brins {
 
   get selected () {
     if ( ! this._selected ) {
-      this._selected = this.panneau.querySelectorAll('ul#brins > li.brin')[this.iselected]
+      this._selected = this.ULlisting.querySelectorAll('li.brin')[this.iselected]
       if ( this._selected ) {
         this._selected = Brins.get(Number(this._selected.getAttribute('data-id')))
       }
@@ -412,13 +422,13 @@ class Brins {
   {
     const my = this
     my.deselectBrinSelected()
-    const o = my.panneau.querySelectorAll('ul#brins > li.brin')[my.iselected]
+    const o = my.ULlisting.querySelectorAll('li.brin')[my.iselected]
     o && ( o.className += ' selected' )
   }
   deselectBrinSelected ()
   {
     const my = this
-    const o = my.panneau.querySelector('ul#brins > li.selected')
+    const o = my.ULlisting.querySelector('li.selected')
     if ( ! o ) { return false }
     let c = o.className
     c = c.replace(/ selected/,'').trim()
@@ -428,7 +438,7 @@ class Brins {
   get nombre_brins_displayed ()
   {
     this._nb_displayed || (
-      this._nb_displayed = this.panneau.querySelectorAll('ul#brins > li.brin').length
+      this._nb_displayed = this.ULlisting.querySelectorAll('li.brin').length
     )
     return this._nb_displayed
   }
@@ -468,7 +478,7 @@ class Brins {
     const para = my.currentParag
     if ( ! para ) { return }
     const brin = my.selected
-    const oBrin = my.panneau.querySelector(`ul#brins > li#brin-${brin.id}`)
+    const oBrin = my.ULlisting.querySelector(`li#brin-${brin.id}`)
     const forAjout = my.current_brin_ids.indexOf(brin.id) < 0
 
     /*- On procède à la marque de l'ajout ou retrait du parag -*/
@@ -524,10 +534,24 @@ class Brins {
     // On a juste à fermer le tableau sans rien faire
     this.hidePanneau()
   }
-  // Touche b => Nouveau brin
-  createNew (evt) { console.log("Création d'un nouveau brin (à implémenter)")}
+  // Touche b => Nouveau brin demandé
+  wantsNew (evt) {
+    const my = this
+    my.showForm( null /*brin à éditer*/, {callback: my.onCreateNew.bind(my) })
+  }
+  /**
+  * Méthode appelée quand on revient de la création d'un brin
+  * Ici, on le sélectionne et on l'ajoute automatiquement.
+  **/
+  onCreateNew ( options )
+  {
+    console.log("Fin de la création du brin")
+  }
   // Touche @ => Aide concernant les brins
-  afficherAide (evt) { console.log("Affichage de l'aide sur les brins demandée")}
+  afficherAide (evt) {
+    // AideAPI.toggle({anchor: 'gestion_des_brins'})
+    return ipc.send('want-help', { current_window: 'projet', anchor: 'gestion_des_brins' })
+  }
 
 
   hidePanneau ()
@@ -536,21 +560,27 @@ class Brins {
 
     my.panneau.setAttribute('style', 'display:none')
     my.panneau.opened = false
-    Tabulator.unsetAsTabulator('ul#brins')
+    Tabulator.unsetAsTabulator(my.panneau)
   }
-  showForm ()
+
+  /**
+  * Affichage du formulaire pour le brin (nouveau ou édition)
+  *
+  * @param {Brin}   brin Le brin à éditer (ou null pour un nouveau)
+  * @param {Objet}  params Les paramètres transmis
+  *       params.callback   Méthode à appeler après la définition du brin.
+  **/
+  showForm ( brin, params )
   {
     const my = this
     currentPanneau.section.appendChild(my.form)
     my.form.setAttribute('style','')
 
+    /*- On mémorise les paramètres transmis -*/
+    my.formParams = params || {}
+
     /*- Map des autres lettres -*/
 
-    let brin = null // pour le moment (TODO)
-    // TODO (dans Brin#update())
-    // Utiliser la méthode projet.brins.getFormValues() pour obtenir
-    // les nouvelles données éditées dans le formulaire.
-    //
     let mapLetters = new Map([
         ['Enter',   brin ? brin.update.bind(brin) : my.createNew.bind(my)]
       , ['Escape',  my.cancelEdition.bind(my)]
@@ -584,8 +614,11 @@ class Brins {
   }
   hideForm ()
   {
-    this.form.setAttribute('style','display:none')
-    Tabulator.unsetAsTabulator(this.form)
+    const my = this
+    my.form.setAttribute('style','display:none')
+    Tabulator.unsetAsTabulator(my.form)
+    my.formParams.callback && my.formParams.callback.call()
+
   }
 
   /**
@@ -595,6 +628,13 @@ class Brins {
   {
     this._panneau || this.buildPanneau()
     return this._panneau
+  }
+  /**
+  * @property {HTMLElement} Listing des brins
+  **/
+  get ULlisting () {
+    this._ULlisting || ( this._ULlisting = this.panneau.querySelector('ul#brins'))
+    return this._ULlisting
   }
 
   /**
