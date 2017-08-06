@@ -1,7 +1,7 @@
 require('../../spec_helper.js')
 
 
-describe.only('Formulaire de brin', function () {
+describe('Formulaire de brin', function () {
   describe('#showForm', function () {
     // Note : la méthode est déjà bien testée dans panneau_listing_spec.js
 
@@ -67,5 +67,77 @@ describe.only('Formulaire de brin', function () {
       expect(brins.ULlisting).not.to.haveTag('div', {id:'brin-2-titre', text: this.oldTitreBrin})
       expect(brins.ULlisting).to.haveTag('div', {id:'brin-2-titre', text: this.newTitre})
     })
+  });
+
+  describe('actualisation du parent_id du brin', function () {
+    describe('ajout dans un parent quand sans parent', function () {
+      it("modifie le parent_id du brin", function(){
+        this.skip()
+      })
+      it("ajoute le brin dans le UL.children du parent", function(){
+        this.skip()
+      })
+    });
+    describe('ajout dans un parent quand avait u n autre parent', function () {
+      it("modifie le parent_id du brin", function(){
+        this.skip()
+      })
+      it("sort le brin de l'ancien parent", function(){
+        this.skip()
+      })
+      it("ajoute le brin dans le UL.children du nouveau parent", function(){
+        this.skip()
+      })
+    });
+
+    describe('retrait du parent (sans ajout autre part)', function () {
+      it("retire du UL.children de l'ancien parent", function(){
+        this.skip()
+      })
+      it("ajoute à la fin de sa liste de type", function(){
+        this.skip()
+      })
+      it("modifie le parent_id du brin", function(){
+        this.skip()
+      })
+    });
+  });
+
+
+  describe('Modification du type du brin', function () {
+    describe('avec un type déjà affiché (i.e. qui comprend déjà des brins)', function () {
+      before(function () {
+
+      });
+      it("modifie la valeur type du brin", function(){
+        this.skip()
+      })
+      it("retire le brin de son ancien type", function(){
+        this.skip()
+      })
+      it("ajoute le brin dans son nouveau type", function(){
+        this.skip()
+      })
+    });
+    describe('avec un type pas encore affiché (i.e. qui n’a pas de brin)', function () {
+      before(function () {
+
+      });
+      it("modifie la valeur type du brin", function(){
+        this.skip()
+      })
+      it("retire le brin de son ancien type", function(){
+        this.skip()
+      })
+      it("a créé le titre du nouveau titre", function(){
+        this.skip()
+      })
+      it("a créé la liste pour le nouveau titre", function(){
+        this.skip()
+      })
+      it("ajoute le brin dans son nouveau type", function(){
+        this.skip()
+      })
+    });
   });
 });

@@ -1,3 +1,4 @@
+* Définition du type du brin (proposer un menu qui va renseigner la propriété 'type')
 
 * Ajouter "Brin « ... »" aux titres des sous-titres de brin ("Brin « non définis »", "Brin « Personnages »", etc.)
   OU mettre simplement 'Non définis' pour le premier au lieu de "Non défini" qui donne l'impression d'une erreur (ou définir explicitement le titre)

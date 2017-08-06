@@ -15,10 +15,12 @@ function le_nombre_de_brins_doit_etre (nb)
 
 
 
-resetBrins()
 
 
 describe('Brins', function () {
+  before(function () {
+    resetBrins()
+  });
   it("existe", function(){
     expect('undefined' === typeof(Brins)).to.be.false
     expect(typeof Brins).to.equal('function')
@@ -238,34 +240,31 @@ describe('Brins', function () {
         resetBrins()
         expect(Brins.items.size).to.be.at.least(3)
         Brins.items.forEach( (brin, bid) => {
-          expect(brins.panneau).to.haveTag('div', {class:'brin', id:`brin-${bid}`})
+          expect(brins.panneau).to.haveTag('li', {class:'brin', id:`brin-${bid}`})
         })
       })
       it("tous les brins sont bien formatés", function(){
         resetBrins()
         let o = brins.panneau
-        expect(o).to.haveTag('div', {id:'brin-1'})
-        o = o.querySelector('div#brin-1')
+        expect(o).to.haveTag('li', {id:'brin-1'})
+        o = o.querySelector('li#brin-1')
         expect(o).to.haveTag('div', {class:'titre', id:'brin-1-titre'})
-        expect(o).to.haveTag('div', {class:'children', id:'brin-1-children'})
+        expect(o).to.haveTag('ul', {class:'children', id:'brin-1-children'})
       })
       it("rassemble les brins parents et enfants", function(){
         resetBrins()
-        brin.data.id  = 0
-        brin1.data.id = 1
-        brin2.data.id = 2
-        brin.parent = brin1
-        brin2.parent = brin1
+        brin.parent_id  = 1
+        brin2.parent_id = 1
 
         brins._panneau = undefined // forcer sa reconstruction
 
-        expect(brins.panneau).to.haveTag('div',{id:'brin-1'})
-        let o = brins.panneau.querySelector('div#brin-1')
-        expect(o).to.haveTag('div', {class:'children', id:'brin-1-children'})
-        o = o.querySelector('div.children')
+        expect(brins.panneau).to.haveTag('li',{id:'brin-1'})
+        let o = brins.panneau.querySelector('li#brin-1')
+        expect(o).to.haveTag('ul', {class:'children', id:'brin-1-children'})
+        o = o.querySelector('ul.children')
         // Les deux brins enfants sont dans les enfants.
-        expect(o).to.haveTag('div', {id:'brin-0'})
-        expect(o).to.haveTag('div', {id:'brin-2'})
+        expect(o).to.haveTag('li', {id:'brin-0'})
+        expect(o).to.haveTag('li', {id:'brin-2'})
 
       })
     });

@@ -100,18 +100,13 @@ class PanData
   }
 
   set data          (v){ this._data = v }
-  set title         (v){ this.data.title = v        ; this.setModified()    }
-  set summary       (v){ this.data.summary = v      ; this.setModified()    }
-  set authors       (v){ this.data.authors = v      ; this.setModified()    }
-  set created_at    (v){ this.data.created_at = v   ; this.setModified()    }
-  set updated_at    (v){ this.data.updated_at = v /* surtout pas de setModified !*/}
-  set last_parag_id (v){ this.data.last_parag_id = v ; this.setModified()   }
-  set last_brin_id  (v){ this.data.last_brin_id = v  ; this.setModified()   }
-
-  setModified ()
-  {
-    this.modified = true
-  }
+  set title         (v){ this.data.title = v        ; this.modified = true  }
+  set summary       (v){ this.data.summary = v      ; this.modified = true  }
+  set authors       (v){ this.data.authors = v      ; this.modified = true  }
+  set created_at    (v){ this.data.created_at = v   ; this.modified = true  }
+  set updated_at    (v){ this.data.updated_at = v /* surtout pas de modified=true !*/}
+  set last_parag_id (v){ this.data.last_parag_id = v ; this.modified = true }
+  set last_brin_id  (v){ this.data.last_brin_id = v  ; this.modified = true }
 
   /**
   * @return {Objet} Les données absolues du panneau (dans Projet.PANNEAUX_DATA)
@@ -399,18 +394,8 @@ class PanData
   **/
   get store ()
   {
-    this._store || (this._store = new Store(this.store_path, this))
+    this._store || (this._store = new Store(path.join('projets',this.projet.id,this.name), this))
     return this._store
-  }
-
-  /**
-  * @return {String} Le path du fichier JSON contenant les données du panneau
-  * SAUF les paragraphes depuis l'enregistrement en longueurs fixes
-  **/
-  get store_path ()
-  {
-    this._store_path || (this._store_path = path.join('projets',this.projet.id,this.name))
-    return this._store_path
   }
 
 }// /fin class PanProjet

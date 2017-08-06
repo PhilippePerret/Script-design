@@ -320,7 +320,7 @@ describe('Brin', function () {
     *   MÉTHODES DE DATA
     *
   *** --------------------------------------------------------------------- */
-  describe.only('#update', function () {
+  describe('#update', function () {
     before(function () {
       brin.modified = false
       brin.data.parent_id = null

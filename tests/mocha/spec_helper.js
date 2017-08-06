@@ -227,7 +227,8 @@ global.resetBrins = function ()
   global.brin4 = new Brin({id: 4, projet: projet, titre: "Brin #4", type: 31})
   global.brin5 = new Brin({id: 5, projet: projet, titre: "Brin #5", type: 20})
 
-  Brin._lastID = projet.data.last_brin_id = 5
+  projet.panneau('data').setDefaultData()
+  Brin._lastID = projet.panneau('data')._data.last_brin_id = 5
 
 }
 
@@ -237,6 +238,7 @@ global.createProjetNoSave = function ()
 
   return new Promise( (ok, ko) => {
     resetTests({nombre_parags:20})
+
     resetBrins()
 
     // ========= DONNÉES ============
@@ -392,11 +394,7 @@ resetCurrentProjet = function( params )
   params.options || (params.options = {})
   params.options.autosync || (params.options['autosync'] = 0)
   params.options.autosave || (params.options['autosave'] = 0)
-  for(var p in params.options){
-    if (params.options.hasOwnProperty(p)){
-      projet.option(p, params.options[p])
-    }
-  }
+  forEach(params.options, (v, p) => { projet.option(p, v) })
   Parag._lastID = -1
 
   /*- Destruction du fichier brins s'il existe -*/
@@ -430,18 +428,12 @@ global.resetAllPanneaux = function( params)
   })
 
   // On définit les données général du projet, dans le panneau Data
-  let h = {
-      'title'         : "Exemple pour tests"
-    , 'summary'       : "Le résumé du projet donné en exemple."
-    , 'author'        : ["Phil", "Marion", "Ernest"]
-    , 'created_at'    : now
-    , 'updated_at'    : now
-    , 'last_parag_id' : 0
-  }
-  panneauData.data = h
+  panneauData.setDefaultData()
   panneauData.store.saveSync()
+  projet._data = panneauData
 
 }
+
 
 function resetAllParags (params) {
   let pth
@@ -464,6 +456,7 @@ function resetAllParags (params) {
 **/
 global.initTests = function ( params )
 {
+  // console.log("-> initTests")
   params || ( params = {} )
   resetApp( params )
   resetCurrentProjet( params )
