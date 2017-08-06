@@ -67,6 +67,7 @@ class Brins {
   **/
   createNew ()
   {
+    // console.log("-> Brins#createNew")
     const my = this
 
     let dataBrin = my.getFormValues()
@@ -78,6 +79,18 @@ class Brins {
 
   }
 
+  /**
+  * Actualisation du brin édité
+  *
+  * La méthode est appelée par la touche Enter sur le formulaire de brin (qu'il
+  * vienne ou non du panneau de brin)
+  **/
+  updateCurrent ()
+  {
+    const my = this
+    my.currentBrin.update( my.getFormValues() )
+    my.hideForm()
+  }
   /**
   * Ajoute un brin au projet (en le sauvant tout de suite)
   *
@@ -120,7 +133,11 @@ class Brins {
     let container = null
 
     if ( brin.parent_id ) {
-      console.log("brin.parent_id = ", brin.parent_id)
+      if ( brin.parent_id == 'undefined')
+      {
+        try{throw new Error("brin.parent_id est 'undefined' en string")}
+        catch(err){console.log(err)}
+      }
       let parent  = my.ULlisting.querySelector(`li#brin-${brin.parent_id}`)
       container   = parent.querySelector('ul.children')
     } else {
@@ -271,57 +288,6 @@ class Brins {
     return this._store
   }
 
-  /**
-  * @return {Object} contenant les données modifiées du brin (à créer ou édité)
-  *
-  * Soit ces valeurs sont celles dans le formulaire, soit ce sont celles
-  * modifiées (mais bon, on aurait pu prendre toujours celles du formulaire)
-  **/
-  getFormValues ()
-  {
-    const my = this
-    let dataBrin = {}
-    Brin.PROPERTIES.forEach( (dProp, prop) => {
-      dataBrin[prop] = my.getFormValue(prop).trim()
-      if ( dataBrin[prop] == '' ) dataBrin[prop] = null
-    })
-    dataBrin.type && ( dataBrin.type = Number(dataBrin.type) )
-    return dataBrin
-  }
-  /**
-  * Pour mettre les valeurs de +brin+ dans le formulaire avant l'édition
-  **/
-  setFormValues ( brin )
-  {
-    const my = this
-    Brin.PROPERTIES.forEach( (dProp, prop) => {
-      my.setFormValue(prop, brin[prop])
-    })
-  }
-  getFormValue(prop)
-  {
-    return this.form.querySelector(`span#brin_${prop}`).innerHTML
-  }
-  setFormValue(prop, value)
-  {
-    this.form.querySelector(`span#brin_${prop}`).innerHTML = value
-  }
-  /**
-  * Traite la valeur modifiée et la remet dans le champ
-  **/
-  updateFormValue(prop, nv)
-  {
-    this.setFormValue(prop, UI.epureEditedValue(nv))
-  }
-  /**
-  * 4 méthodes appelée par le formulaire d'édition du brin quand
-  * on modifie les valeurs.
-  **/
-  redefine_brin_titre (nv)        { this.updateFormValue('titre', nv)       }
-  redefine_brin_description (nv)  { this.updateFormValue('description', nv) }
-  redefine_brin_parent_id (nv)    { this.updateFormValue('parent_id', nv)   }
-  redefine_brin_type (nv)         { this.updateFormValue('type', nv)        }
-
   helpWanted ()
   {
     return ipc.send('want-help', { current_window: 'projet', anchor: 'formulaire_brin' })
@@ -389,7 +355,7 @@ class Brins {
         , ['ArrowLeft',   my.chooseCurrent.bind(my)]
         , ['j',           my.chooseCurrent.bind(my)]
         , ['e',           my.editCurrent.bind(my)]
-        , ['Enter',       my.adopterChoix.bind(my)]
+        , ['Enter',       my.confirmerChoix.bind(my)]
         , ['Escape',      my.renoncerChoix.bind(my)]
         , ['b',           my.wantsNew.bind(my)]
         , ['@',           my.afficherAide.bind(my)]
@@ -440,6 +406,8 @@ class Brins {
     }
     return this._selected
   }
+  // Alias sémantique (pour correspondre à « currentParag »)
+  get currentBrin () { return this.selected }
 
   selectBrinCurrent ()
   {
@@ -505,7 +473,6 @@ class Brins {
     const para = my.currentParag
     if ( ! para ) { return }
     const brin = my.selected
-    console.log("-> chooseCurrent (parag #%d / brin #%d)", para.id, brin.id)
     const oBrin = my.ULlisting.querySelector(`li#brin-${brin.id}`)
     const forAjout = my.current_brin_ids.indexOf(brin.id) < 0
 
@@ -530,13 +497,13 @@ class Brins {
   **/
   editCurrent ()
   {
-    // Cas : il n'y a pas de sélectionné
+    this.currentBrin && this.showForm(this.currentBrin)
   }
 
   // Touche Enter => Les brins sont attribués au parag
-  adopterChoix ( evt ) {
+  confirmerChoix ( evt ) {
 
-    console.log("-> Brins#adopterChoix")
+    // console.log("-> Brins#confirmerChoix")
     const my = this
 
     if ( ! my.currentParag ) { return }
@@ -582,7 +549,7 @@ class Brins {
     // On a juste à fermer le tableau sans rien faire
     this.hidePanneau()
   }
-  
+
   // Touche b => Nouveau brin demandé
   wantsNew (evt) {
     const my = this
@@ -607,11 +574,8 @@ class Brins {
       let librin = librins[iselected]
       if ( Number(librin.getAttribute('data-id')) == newBrin.id ) break
     }
-
     my.iselected = iselected
-    my.reset()
-
-    currentParag && my.chooseCurrent()
+    my.currentParag && my.chooseCurrent()
     // Un nouveau brin est toujours sélectionné par défaut pour le parag
     // courant s'il existe
 
@@ -622,6 +586,13 @@ class Brins {
     return ipc.send('want-help', { current_window: 'projet', anchor: 'gestion_des_brins' })
   }
 
+  /** ---------------------------------------------------------------------
+    *
+    *
+    *     PANNEAU DES BRINS
+    *
+    *
+  *** --------------------------------------------------------------------- */
 
   hidePanneau ()
   {
@@ -631,69 +602,6 @@ class Brins {
     my.panneau.opened = false
     Tabulator.unsetAsTabulator(my.panneau)
   }
-
-  /**
-  * Affichage du formulaire pour le brin (nouveau ou édition)
-  *
-  * @param {Brin}   brin Le brin à éditer (ou null pour un nouveau)
-  * @param {Objet}  params Les paramètres transmis
-  *       params.callback   Méthode à appeler après la définition du brin.
-  **/
-  showForm ( brin, params )
-  {
-    const my = this
-    currentPanneau.section.appendChild(my.form)
-    my.form.setAttribute('style','')
-
-    /*- On mémorise les paramètres transmis -*/
-    my.formParams = params || {}
-
-    /*- Map des autres lettres -*/
-
-    let mapLetters = new Map([
-        ['Enter',   brin ? brin.update.bind(brin) : my.createNew.bind(my)]
-      , ['Escape',  my.cancelEdition.bind(my)]
-      , ['@',       my.helpWanted.bind(my)]
-      , ['l',       my.showPanneau.bind(my)]
-      , ['j',       ()=>{return false} /* pour le désactiver*/]
-    ])
-
-    /*- Divers préparations et réglage pour l'édition -*/
-
-    let mapTab = {} // pour setupAsTabulator
-    Brin.PROPERTIES.forEach( (dProp, prop) => {
-      mapTab[prop] = my.editProperty.bind(my, prop)
-    })
-    // Si un brin est défini, il faut mettre ses valeurs dans les champs
-    brin && my.setFormValues(brin)
-
-    // On la rend tabularisable
-    Tabulator.setupAsTabulator(my.form, {
-        Map         : mapTab
-      , MapLetters  : mapLetters
-    })
-  }
-  /**
-  * Pour redéfinir les propriétés à l'aide du formulaire d'édition
-  **/
-  editProperty (property)
-  {
-    const my  = this
-    const obj = DOM.get(`brin_${property}`)
-    my.projet.ui.activateEditableField(obj)
-  }
-
-
-  /**
-  * Ferme le formulaire de création du brin.
-  **/
-  hideForm ()
-  {
-    const my = this
-    my.form.setAttribute('style','display:none')
-    Tabulator.isTabulatorized(my.form) && Tabulator.unsetAsTabulator(my.form)
-  }
-
   /**
   * @return {HTMLElement} La section du panneau des brins
   **/
@@ -710,14 +618,6 @@ class Brins {
     return this._ULlisting
   }
 
-  /**
-  * @return {HTMLElement} La section du formulaire d'édition.
-  **/
-  get form ()
-  {
-    this._form || this.buildForm()
-    return this._form
-  }
 
   /**
   * Construction du panneau des brins
@@ -755,7 +655,7 @@ class Brins {
     // dans leur parent (en supposant bien entendu qu'ils appartiennent
     // au même groupe/type de brins)
     Brins.items.forEach( (brin, bid) => {
-      if ( ! brin.parent_id ) { return }
+      if ( ! brin.parent_id ) return ;
       brin.parent.divChildren.appendChild(brin.div)
     })
 
@@ -764,6 +664,140 @@ class Brins {
 
     this._panneau = h
     this._panneau.opened = false
+  }
+
+  /****** =================================================================== */
+  /****** ------------------------------------------------------------------- */
+  /******                                                                     */
+  /******                                                                     */
+  /******   FORMULAIRE DE BRIN (ÉDITION/CRÉATION)
+  /******                                                                     */
+  /******                                                                     */
+  /******-------------------------------------------------------------------- */
+  /******==================================================================== */
+
+
+  /**
+  * Affichage du formulaire pour le brin (nouveau ou édition)
+  *
+  * @param {Brin}   brin Le brin à éditer (ou null pour un nouveau)
+  * @param {Objet}  params Les paramètres transmis
+  *       params.callback   Méthode à appeler après la définition du brin.
+  **/
+  showForm ( brin, params )
+  {
+    const my = this
+    currentPanneau.section.appendChild(my.form)
+    my.form.displayed = true
+    my.form.setAttribute('style','')
+    my.form.opened = true
+
+    /*- On mémorise les paramètres transmis -*/
+    my.formParams = params || {}
+
+    /*- Map des autres lettres -*/
+
+    let mapLetters = new Map([
+        ['Enter',   brin ? my.updateCurrent.bind(my) : my.createNew.bind(my)]
+      , ['Escape',  my.cancelEdition.bind(my)]
+      , ['@',       my.helpWanted.bind(my)]
+      , ['l',       my.showPanneau.bind(my)]
+      , ['j',       ()=>{return false} /* pour le désactiver*/]
+    ])
+
+    /*- Divers préparations et réglage pour l'édition -*/
+
+    let mapTab = {} // pour setupAsTabulator
+    Brin.PROPERTIES.forEach( (dProp, prop) => {
+      mapTab[prop] = my.editProperty.bind(my, prop)
+    })
+    // Si un brin est défini, il faut mettre ses valeurs dans les champs
+    brin && my.setFormValues(brin)
+
+    // On la rend tabularisable
+    Tabulator.setupAsTabulator(my.form, {
+        Map         : mapTab
+      , MapLetters  : mapLetters
+    })
+  }
+  /**
+  * Ferme le formulaire de création du brin.
+  **/
+  hideForm ()
+  {
+    const my = this
+    my.form.setAttribute('style','display:none')
+    my.form.opened = false
+    Tabulator.isTabulatorized(my.form) && Tabulator.unsetAsTabulator(my.form)
+  }
+
+  /**
+  * Pour redéfinir les propriétés à l'aide du formulaire d'édition
+  **/
+  editProperty (property)
+  {
+    const my  = this
+    const obj = DOM.get(`brin_${property}`)
+    my.projet.ui.activateEditableField(obj)
+  }
+
+
+  /**
+  * @return {Object} contenant les données modifiées du brin (à créer ou édité)
+  *
+  * Soit ces valeurs sont celles dans le formulaire, soit ce sont celles
+  * modifiées (mais bon, on aurait pu prendre toujours celles du formulaire)
+  **/
+  getFormValues ()
+  {
+    const my = this
+    let dataBrin = {}
+    Brin.PROPERTIES.forEach( (dProp, prop) => {
+      dataBrin[prop] = my.getFormValue(prop).trim()
+      if ( dataBrin[prop] == '' ) dataBrin[prop] = null
+    })
+    dataBrin.type && ( dataBrin.type = Number(dataBrin.type) )
+    return dataBrin
+  }
+  /**
+  * Pour mettre les valeurs de +brin+ dans le formulaire avant l'édition
+  **/
+  setFormValues ( brin )
+  {
+    const my = this
+    Brin.PROPERTIES.forEach((dProp, prop)=>{my.setFormValue(prop, brin[prop])})
+  }
+  getFormValue(prop)
+  {
+    return this.form.querySelector(`span#brin_${prop}`).innerHTML
+  }
+  setFormValue(prop, value)
+  {
+    this.form.querySelector(`span#brin_${prop}`).innerHTML = value || ''
+  }
+  /**
+  * Traite la valeur modifiée et la remet dans le champ
+  **/
+  updateFormValue(prop, nv)
+  {
+    this.setFormValue(prop, UI.epureEditedValue(nv))
+  }
+  /**
+  * 4 méthodes appelée par le formulaire d'édition du brin quand
+  * on modifie les valeurs.
+  **/
+  redefine_brin_titre (nv)        { this.updateFormValue('titre', nv)       }
+  redefine_brin_description (nv)  { this.updateFormValue('description', nv) }
+  redefine_brin_parent_id (nv)    { this.updateFormValue('parent_id', nv)   }
+  redefine_brin_type (nv)         { this.updateFormValue('type', nv)        }
+
+  /**
+  * @return {HTMLElement} La section du formulaire d'édition.
+  **/
+  get form ()
+  {
+    this._form || this.buildForm()
+    return this._form
   }
 
   /**
@@ -781,15 +815,14 @@ class Brins {
       newo = DOM.create('div', {class:'row'})
       let label = dprop.hname || prop.titleize()
       let lab  = DOM.create('label', {for:`brin_${prop}`, inner: label})
-      let inner = dprop.default || ''
       let spanData = {
           id              : `brin_${prop}`
         , 'data-tab'      : prop
-        , inner           : inner
         , 'owner'         : 'currentProjet.brins'
         , 'class'         : 'editable'
       }
-      dprop.enableReturn && (spanData['enable-return'] = 'true')
+      dprop.default       && ( spanData.inner = dprop.default )
+      dprop.enableReturn  && ( spanData['enable-return'] = 'true' )
       let span = DOM.create('span', spanData)
       newo.appendChild(lab)
       newo.appendChild(span)

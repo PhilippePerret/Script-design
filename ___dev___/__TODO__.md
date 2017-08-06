@@ -1,7 +1,9 @@
-* Le raccourci B (majuscule), n'importe où, doit ouvrir le panneau des brins
+* Retirer le "l" pour obtenir la liste des brins dans le formulaire de brin et mettre B pour la cohérence
 
-* Implémenter le repérage des Majuscule en captant le keydown sur ShiftKey
-* Poursuivre les tests sur les brins
+* Quand on ouvre le formulaire de brin sans brin, on doit initialiser les champs
+
+* Documenter "B" et "b" n'importe où => liste des brins / formulaire création
+
 
 * La création d'un nouveau brin doit entrainer la reconstruction du panneau des brins (qui peut être affiché quand on crée un nouveau brin)
 

@@ -65,6 +65,12 @@ global.USER_DATA_PATH = path.join(require('os').homedir(),'Library','Application
   *
 *** --------------------------------------------------------------------- */
 
+global.resetTabulator = function ()
+{
+  Tabulator.SectionMaps   = new Map()
+  Tabulator.curSectionMap = undefined
+}
+
 /**
 * Méthode pour "décharger" un parag existant. Par exemple pour tester
 * son chargement.

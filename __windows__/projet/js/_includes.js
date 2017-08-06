@@ -13,6 +13,7 @@ global.C                = require(path.resolve('./lib/constants.js'))
 
 require(path.join(LIB_UTILS_JS,'Number.js'))
 require(path.join(LIB_UTILS_JS,'String.js'))
+require(path.join(LIB_UTILS_JS,'Object_extension.js'))
 
 /* - Objets de l'application - */
 

@@ -17,8 +17,8 @@ describe.only('Panneau du listing des brins', function () {
     it("chooseCurrent", function(){
       expect(brins).to.respondsTo('chooseCurrent')
     })
-    it("adopterChoix", function(){
-      expect(brins).to.respondsTo('adopterChoix')
+    it("confirmerChoix", function(){
+      expect(brins).to.respondsTo('confirmerChoix')
     })
     it("renoncerChoix", function(){
       expect(brins).to.respondsTo('renoncerChoix')
@@ -205,7 +205,7 @@ describe.only('Panneau du listing des brins', function () {
     })
   });
 
-  describe('#chooseCurrent puis #adopterChoix', function () {
+  describe('#chooseCurrent puis #confirmerChoix', function () {
     it("choisit le brin courant et le met en exergue (chosen) et indique la modification", function(){
 
       brins.showPanneau({parag: parag5})
@@ -279,7 +279,7 @@ describe.only('Panneau du listing des brins', function () {
 
       // ========> T E S T <=========
 
-      brins.adopterChoix()
+      brins.confirmerChoix()
 
       // ======== V É R I F I C A T I O N S ========
 
@@ -349,16 +349,21 @@ describe.only('Panneau du listing des brins', function () {
 
   describe('#createNew', function () {
     before(function () {
+      resetBrins()
+      resetTabulator()
+
       const parag = parag2
       brins.showPanneau({parag: parag})
       brins.wantsNew()
       expect(currentPanneau.section).to.haveTag('section', {id: 'form_brins'})
       expect(currentPanneau.section).not.to.haveTag('section', {id: 'form_brins', style:'display:none'})
+      expect(brins.currentParag).not.to.be.undefined
+      expect(brins.currentParag.id).to.equal(2)
 
-      this.nombre_brins_depart = Brins.items.size
-      this.current_brin_ids_init = brins.current_brin_ids.map(n=>{return n})
+      this.nombre_brins_depart    = Brins.items.size
+      brins.current_brin_ids = []
 
-      let form = currentPanneau.section.querySelector('section#form_brins')
+      let form = brins.form
       // console.log("\nformulaire", cont.outerHTML)
 
       // On met des valeurs dans le formulaire
@@ -369,8 +374,13 @@ describe.only('Panneau du listing des brins', function () {
 
       projet.modified = false
 
+      // Il faut indiquer la méthode qui suivra la création
+      brins.formParams = {callback_oncreate: brins.onCreateNew.bind(brins) }
+
       // ===========> TEST <=============
+
       brins.createNew()
+
     });
     it("crée un nouveau brin", function(){
       expect(Brins.items.size).to.equal(this.nombre_brins_depart + 1)
@@ -388,12 +398,6 @@ describe.only('Panneau du listing des brins', function () {
     it("Tabulator.sectionMap est de nouveau le panneau des brins", function(){
       expect(Tabulator.curSectionMap.get('objet_id')).to.equal('panneau_brins')
     })
-    it("Remet le gestionnaire de keyUp du panneau des brins", function(){
-      // expect(currentPanneau.section).to.haveTag('section', {id:'panneau_brins'})
-      // expect(currentPanneau.section).not.to.haveTag('section', {id:'panneau_brins', style:'display:none'})
-      // window.onkeyup({key:'Escape'})
-      // expect(currentPanneau.section).to.haveTag('section', {id:'panneau_brins', style:'display:none'})
-    })
     it("ajoute le brin au panneau des brins", function(){
       let brin_id = Brin._lastID
       expect(brins.panneau).to.haveTag('li', {id: `brin-${brin_id}`})
@@ -402,15 +406,154 @@ describe.only('Panneau du listing des brins', function () {
       let brin_id = Brin._lastID
       expect(brins.panneau).to.haveTag('li', {id: `brin-${brin_id}`, class: 'selected'})
     })
-    it("ajoute le brin au parag courant par défaut", function(){
+    it("ajoute le brin à la liste des brins courant (current_brin_ids)", function(){
       // En fait, c'est à la liste current_brin_ids qu'il suffit de l'ajouter
       let brin_id = Brin._lastID
-      expect(brins.panneau).to.haveTag('li', {id: `brin-${brin_id}`, class: 'chosen'})
       expect(brins.current_brin_ids).to.include(brin_id)
+      expect(brins.currentBrin.id).to.equal(brin_id)
+      // expect(brins.ULlisting).to.haveTag('li', {id: `brin-${brin_id}`, class: 'chosen'})
     })
     it("marque le projet modifié", function(){
       expect(projet.modified).to.be.true
     })
+  });
+
+
+  describe('#confirmerChoix', function () {
+    before(function () {
+
+      // ======== PRÉPARATION ============
+      if ( ! brins.panneau.opened ) {
+        brins.showPanneau({parag:parag4})
+      } else {
+        brins.currentParag = parag4
+      }
+
+      parag4.modified = false
+      expect(brins.currentParag.id).to.equal(4)
+      parag4.brin_ids = [0,1,2]
+      brin.data.parag_ids = [4,2]
+      brin1.data.parag_ids = [4,2]
+      brin2.data.parag_ids = [4,2]
+      expect(Parags.get(4).brin_ids).to.deep.equal([0,1,2])
+      brins.current_brin_ids = [1,2,3]
+      // C'est-à-dire qu'on doit retirer le 0 et ajouter le 3
+
+      // =========> TEST <=============
+      brins.confirmerChoix()
+
+    });
+    it("attribut les bons brins au parag", function(){
+      expect(parag4.brin_ids).to.deep.equal([1,2,3])
+    })
+    it("attribut le bon parag aux nouveaux brins", function(){
+      expect(brin3.parag_ids).to.include(4)
+    })
+    it("retire bien le parag aux ancienx brins", function(){
+      expect(brin.parag_ids).not.to.include(4)
+    })
+    it("marque le parag modifié", function(){
+      expect(parag4.modified).to.be.true
+    })
+    it("marque les brins modifiés modifiés (sic)", function(){
+      expect(brin.modified).to.be.true
+      expect(brin3.modified).to.be.true
+    })
+  });
+
+  describe('#editCurrent', function () {
+    before(function () {
+
+      resetTabulator()
+
+      // On mocke des méthodes
+      const my    = brins
+      const brin  = brins.currentBrin
+
+      my.oldBrinsCreateNew = Brins.prototype.createNew
+      Brins.prototype.createNew = undefined
+      Brins.prototype.createNew = function(){ throw 'Brins#createNew'}
+      my.oldBrinUpdate = Brins.prototype.updateCurrent
+      Brins.prototype.updateCurrent = undefined
+      Brins.prototype.updateCurrent = function(){throw 'Brins#updateCurrent'}
+
+      expect(()=>{brins.updateCurrent()}).to.throw('Brins#updateCurrent')
+      expect(()=>{brins.createNew()}).to.throw('Brins#createNew')
+
+      brins.showPanneau()
+      brins.iselected = 0
+
+      // On met des données propres pour vérifier
+      brins.titrePourTest = `Un titre le ${moment().format()}`
+      brins.currentBrin.data.titre = brins.titrePourTest
+
+      brins.currentBrin.modified = false
+
+      // ======= PRÉ-VÉRIFICATIONS =========
+
+      if ( brins.form.displayed ) {
+        expect(brins.form.opened).to.be.false
+        expect(currentPanneau.section).to.haveTag('section', {id:'form_brins', style:'display:none'})
+        // Si le formulaire est déjà affiché, il doit être fermé
+      }
+
+    });
+    after(function () {
+      // On remet les méthodes originales (mais normalement, elles doivent être
+      // remise déjà avant)
+      const my = brins
+      Brins.prototype.createNew     = my.oldBrinsCreateNew
+      Brins.prototype.updateCurrent = my.oldBrinUpdate
+    });
+    it("est déclenchée par la touche 'e'", function(){
+
+      // ========> TEST <==========
+
+      window.onkeyup({key:'e'})
+
+      // ======== VÉRIFICATIONS ============
+
+      expect(currentPanneau.section).not.to.haveTag('section', {id:'form_brins', style:'display:none'})
+      expect(currentPanneau.section).to.haveTag('section', {id:'form_brins'})
+      expect(brins.form.opened).to.be.true
+
+    })
+    it("met les valeurs du brin dans les champs", function(){
+      expect(brins.form.querySelector('span#brin_titre').innerHTML).to.equal(brins.titrePourTest)
+    })
+    it("appelle l'actualisation du brin avec la touche Enter", function(){
+      // Un peu violent mais simple et pratique (pour voir si elle n'est
+      // pas utilisée ailleurs)
+      expect(brins.form.opened).to.be.true
+      expect(()=>{window.onkeyup({key:'Enter'})}).to.throw('Brins#updateCurrent')
+    })
+    it("actualise les données du brin en le marquant modifié", function(){
+      const my    = brins
+      const brin  = brins.currentBrin
+      // Remettre les méthodes
+      Brins.prototype.createNew     = my.oldBrinsCreateNew
+      Brins.prototype.updateCurrent = my.oldBrinUpdate
+
+      let nouveauTitre = "Nouveau titre pour update"
+      let newDescription = "Une nouvelle description pour l'update du brin dans les tests"
+      expect(brin.titre).not.to.equal( nouveauTitre )
+      expect(brin.description).not.to.equal(newDescription)
+      brins.form.querySelector('span#brin_titre').innerHTML = nouveauTitre
+      brins.form.querySelector('span#brin_description').innerHTML = newDescription
+
+      // window.onkeyup({key:'Enter'}) // on le fait vraiment
+      brins.updateCurrent()
+
+      expect(brin.titre).to.equal(nouveauTitre)
+      expect(brin.description).to.equal(newDescription)
+      expect(brin.modified).to.be.true
+    })
+
+    it("ferme le formulaire", function(){
+      expect(brins.form.opened, 'La propriété opened du formulaire devrait être à false').to.be.false
+    })
+
+
   });
 
 

@@ -3,12 +3,9 @@
 
 require('../lib/utils/Number')
 
-let res = []
+let res = {un:'1', deux:'2'}
+forEach(res, (v, k) => { console.log("La clé %s vaut %s", k, v)})
 
-let realLetter = "Arrow"
+console.log("Les clés sont : ", map(res, (v, k) => { return k }))
 
-if ( realLetter >= 'A' && realLetter <= 'Z' ){
-      res = "Majuscule"
-    } else { res = "min"}
-
-console.log(res)
+// console.log(res)

@@ -154,6 +154,12 @@ const KBShortcuts = class {
       case 'o':
         alert("La fenêtre des outils n'est pas encore implémentée")
         break
+      case 'B':
+        currentProjet.brins.showPanneau()
+        return DOM.stopEvent(evt)
+      case 'b':
+        currentProjet.brins.showForm()
+        return DOM.stopEvent(evt)
       default:
         // Pour voir la touche :
         // console.log(evt.key)

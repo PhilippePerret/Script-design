@@ -41,7 +41,6 @@ class Brin
 
   static newID ()
   {
-    console.log("projet.data.last_brin_id au départ de newID vaut %d", currentProjet.data.last_brin_id)
     if ( undefined === this._lastID )
     {
       this._lastID = undefined === currentProjet.data.last_brin_id
@@ -54,7 +53,6 @@ class Brin
     }
     currentProjet.data.last_brin_id = this._lastID
     currentProjet.modified = true
-    console.log("projet.data.last_brin_id a été mis à %d", currentProjet.data.last_brin_id)
     return this._lastID
   }
 
@@ -76,11 +74,14 @@ class Brin
     this._menu_types = s
   }
 
-  /** ---------------------------------------------------------------------
-    *
-    *   INSTANCES
-    *
-  *** --------------------------------------------------------------------- */
+  /****** =================================================================== */
+  /****** ------------------------------------------------------------------- */
+  /******                                                                     */
+  /******   INSTANCE
+  /******                                                                     */
+  /******-------------------------------------------------------------------- */
+  /******==================================================================== */
+
   constructor (data)
   {
     this.projet = data.projet || currentProjet
@@ -108,7 +109,10 @@ class Brin
 
   get titre       ()  { return this.data.titre        || 'Titre du brin par défaut'   }
   get description ()  { return this.data.description  || 'Description brin par défaut'}
-  get parent_id   ()  { return this.data.parent_id          }
+  get parent_id   ()  {
+    if ( 'undefined' === this.data.parent_id ) this.data.parent_id = null ;
+    return this.data.parent_id
+  }
   get type        ()  {
     if ( undefined === this._type ) {
       this._type = this.data.type ? Number(this.data.type) : 0
@@ -164,11 +168,14 @@ class Brin
     if ( v.length > Brin.MAX_DESCRIPTION_LENGTH) {
       throw `La description ne doit pas excéder les ${Brin.MAX_DESCRIPTION_LENGTH} caractères !`
     }
-    if ( v == '' ) { v = null }
+    if ( v == '' ) v = null ;
     this.data.description = v
     this.modified = true
   }
-
+  set parent_id (v) {
+    this.data.parent_id = v
+    this.modified = true
+  }
   /**
   * @param {Brin|Null} v Le brin parent ou null
   **/
@@ -178,7 +185,7 @@ class Brin
     } else if ( 'number' === typeof b ) {
       this.data.parent_id = Number(b)
     } else {
-      this.data.parent_id = undefined
+      this.data.parent_id = null
     }
     this.modified = true
   }
@@ -196,6 +203,21 @@ class Brin
     this._id32 = undefined
   }
 
+  /**
+  * Méthode appelée par le formulaire de brin pour confirmer les
+  * nouvelles données et les enregistrer (en fait : marquer le brin modifié)
+  *
+  * @param {Map} newData  La map des nouvelles données du brin.
+  **/
+  update ( newData )
+  {
+    const my = this
+    if ( newData )
+    {
+      newData && forEach(newData, (v, k) => {my[k] = v} )
+      my.modified = true
+    }
+  }
 
   /** ---------------------------------------------------------------------
     *

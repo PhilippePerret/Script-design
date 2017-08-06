@@ -40,6 +40,9 @@
 | (verso) Choisir type3         | g - Fl / j/l  | verso |
 | (verso) Choisir type4         | h - Fl / j/l  | verso |
 | --- | --- | --- |
+| Liste des brins               | B             |  |
+| Nouveau brin                  | b             |  |
+|-------|
 
 ### Introduction {#projet_introduction}
 

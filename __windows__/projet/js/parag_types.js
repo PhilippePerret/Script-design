@@ -121,16 +121,12 @@ class ParagTypes {
       , onchange    : methodOnChange
       , 'data-tab'  : typeX // pour Tabulator
     })
-    for (let id in dataType)
-    {
-      if (!dataType.hasOwnProperty(id)){continue}
-      let dataOption = {id: `type-${xType}-${id}`, value: String(id), inner: dataType[id].hname}
+    forEach(dataType, (hvalue, id) => {
+      let dataOption = {id: `type-${xType}-${id}`, value: String(id), inner: hvalue.hname}
       if ( options && options.selected == id) { dataOption.selected = 'SELECTED' }
       let option = DOM.create('option', dataOption)
-      // console.log("opion", option.outerHTML)
       select.appendChild(option)
-    }
-    // console.log("select", select.outerHTML)
+    })
     return select
   }
 

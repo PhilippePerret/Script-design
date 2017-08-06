@@ -18,6 +18,7 @@ class UI
   **/
   static epureEditedValue ( c )
   {
+    if ( undefined === c || null === c || '' === c ) return '' ;
     c = c.replace(/<\/div>/g,'').trim()
     c = c.replace(/<div>/g, "\n").trim()
     c = c.replace(/\r/g, "\n")

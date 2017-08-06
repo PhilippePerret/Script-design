@@ -316,7 +316,7 @@ class Parag
   get duration    ()  { return this._duration   || 60 }
   get position    ()  { return this._position   || -1 }
   get type        ()  { return this._type       || '0000' }
-  get brin_ids    ()  { return this._brin_ids   || ''    }
+  get brin_ids    ()  { return this._brin_ids   || ''     }
   get updated_at  ()  { return this._updated_at   }
   get created_at  ()  { return this._created_at   }
 
@@ -358,7 +358,12 @@ class Parag
     return this._loaded
   }
 
-
+  get brin_ids () {
+    if ( undefined === this._brin_ids ) {
+      this._brin_ids = this.brin_ids_str
+    }
+    return this._brin_ids
+  }
 
 
   /** ---------------------------------------------------------------------

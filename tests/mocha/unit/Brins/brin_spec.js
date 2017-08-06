@@ -317,9 +317,20 @@ describe('Brin', function () {
 
   /** ---------------------------------------------------------------------
     *
+    *   MÉTHODES DE DATA
+    *
+  *** --------------------------------------------------------------------- */
+  describe.only('#update', function () {
+    it("répond", function(){
+      expect(brin).to.respondsTo('update')
+    })
+  });
+  /** ---------------------------------------------------------------------
+    *
     *   PROPRIÉTÉS DE DOM
     *
   *** --------------------------------------------------------------------- */
+
   describe('div', function () {
     it("existe", function(){
       expect(brin.div).not.to.be.undefined

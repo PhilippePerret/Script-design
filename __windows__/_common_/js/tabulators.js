@@ -72,18 +72,16 @@ class Tabulator
     // https://github.com/PhilippePerret/Script-design/wiki/NoI#n0003
     Tabulator.SectionMaps || ( Tabulator.SectionMaps = new Map() )
 
-    if ( my.isNotTabulatorized(obj) )
+    let sectionMap  = Tabulator.SectionMaps.get(obj.id)
+
+    if ( undefined === sectionMap )
     {
       // <= L'élément n'est pas encore préparé pour Tabulator
       // => Il faut observer tous ses champs portant une data-tab
-      my.tabulatorizeObjet(obj, params)
+      sectionMap = my.tabulatorizeObjet(obj, params)
     }
 
-    /*- On prend la sectionMap demandée -*/
-    let sectionMap  = Tabulator.SectionMaps.get(obj.id)
-
     if ( my.curSectionMap ) {
-      console.log("[Tabulator] Une section map courante est définie quand on tabulatorise '%s' : '%s'", obj.id, my.curSectionMap.get('objet_id'))
       sectionMap.set('previous_objet_id', my.curSectionMap.get('objet_id'))
     }
 
@@ -118,6 +116,8 @@ class Tabulator
   *
   * @param {HTMLElement}  obj Objet DOM à tabulatoriser
   * @param {Object}       params  Paramètres optionnels
+  *
+  * @return {Object} La section Map initiée
   **/
   static tabulatorizeObjet (obj, params)
   {
@@ -162,6 +162,7 @@ class Tabulator
 
     DOM.addClass(obj, 'tabulatorized') // Marquer que l'élément est préparé
 
+    return sectionMap
   }
 
   static onKeyDown_TabulatorLike ( sectionMap, evt )
@@ -175,6 +176,7 @@ class Tabulator
   **/
   static onKeyUp_TabulatorLike ( sectionMap, evt )
   {
+    // console.log("-> Tabulator#onKeyUp_TabulatorLike (avec '%s')", evt.key)
     const my = this
 
     let fonction = sectionMap.get(evt.key) || sectionMap.get(evt.key.toLowerCase())
@@ -195,7 +197,7 @@ class Tabulator
         modifiers.shiftKey = true
       }
 
-      if ( 'function' === typeof(fonction)) { fonction.call(null, modifiers) }
+      if ( 'function' === typeof(fonction)) fonction.call(null, modifiers) ;
       else {
         alert(`La méthode ${fonction} n'est pas définie…`)
       }
