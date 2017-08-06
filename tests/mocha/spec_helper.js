@@ -84,7 +84,7 @@ global.unloadParag = function( pid )
     delete global[`parag${pid}`]
     expect(eval(`'undefined' == typeof(parag${pid})`)).to.be.true
   }
-  delete Parags._items[pid]
+  Parags._items.delete(pid)
   expect(Parags.get(pid)).to.be.undefined
   // Dans son panneau
   if ( pan )

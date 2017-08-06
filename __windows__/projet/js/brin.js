@@ -143,9 +143,9 @@ class Brin
     this._div || this.build()
     return this._div
   }
-  get divChildren () {
-    this._divChildren || ( this._divChildren = this.div.querySelector('div.children'))
-    return this._divChildren
+  get ULChildren () {
+    this._ULChildren || ( this._ULChildren = this.div.querySelector(`ul#brin-${this.id}-children`))
+    return this._ULChildren
   }
   /**
    * Noter que les méthodes suivantes, jusqu'à besoin contraire, ne doivent être
@@ -315,12 +315,16 @@ class Brin
           , 'data-tag':"brin_titre"
         })
     divbrin.appendChild(divtitre)
-    let divchild= DOM.create('div', {class: 'children', id: `${divb_id}-children`})
+    let divchild= DOM.create('ul', {class: 'children', id: `${divb_id}-children`})
     divbrin.appendChild(divchild)
     this._div = divbrin
     return this._div
   }
 
+  get LI () {
+    this._li || ( this._li = DOM.get(`li#brin-${this.id}`))
+    return this._li
+  }
   /**
   * Fabrique l'élément LI du brin, pour affichage dans une liste UL
   *

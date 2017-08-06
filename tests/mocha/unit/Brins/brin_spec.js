@@ -360,16 +360,16 @@ describe('Brin', function () {
       brin.data.id = 0
       brin._div = undefined
       expect(brin.div).to.haveTag('div', {class:'titre', id:'brin-0-titre'})
-      expect(brin.div).to.haveTag('div', {class:'children', id:'brin-0-children'})
+      expect(brin.div).to.haveTag('ul', {class:'children', id:'brin-0-children'})
     })
   });
 
-  describe('divChildren', function () {
+  describe('ULChildren', function () {
     it("existe", function(){
-      expect(brin.divChildren).not.to.be.undefined
+      expect(brin.ULChildren).not.to.be.undefined
     })
     it("retourne un HTMLElement", function(){
-      expect(brin.divChildren).to.be.instanceOf(HTMLDivElement)
+      expect(brin.ULChildren).to.be.instanceOf(HTMLElement)
     })
   });
   /** ---------------------------------------------------------------------

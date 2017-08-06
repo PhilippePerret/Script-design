@@ -16,6 +16,7 @@ require('../../spec_helper.js')
 function reinitialisationInitiale ()
 {
   resetTests({nombre_parags: 20})
+  resetBrins()
 
   /*- Introduction du parag #12 dans le panneau Scénier -*/
 
@@ -224,8 +225,9 @@ describe('Verso du parag', function () {
   describe('Contrôle du verso du parag', function () {
     before(function () {
 
-      /*- Mettre le parag en édition pour voir son verso -*/
+      Parag._paragVersoForm = undefined
 
+      /*- Mettre le parag en édition pour voir son verso -*/
       parag12.showVerso()
 
       panneauManuscrit.add(parag12)

@@ -1800,6 +1800,7 @@ class Parag
   {
     const my = this
 
+    console.log("\n\n\nParag.paragVersoForm:", Parag.paragVersoForm)
     my.mainDiv.querySelector('div.p-verso').appendChild(Parag.paragVersoForm)
     Parag.paragVersoForm.style.display = 'block'
     my.recto.className = 'p-recto hidden'
@@ -1966,7 +1967,7 @@ class Parag
 
   static get paragVersoForm ()
   {
-    if ( undefined === this._paragVersoForm )
+    if ( ! this._paragVersoForm )
     {
       const my = this
       my._paragVersoForm = undefined
@@ -1977,6 +1978,8 @@ class Parag
 
       if ( ! my._paragVersoForm )
       {
+        // ON ne l'a pas trouvé dans le document, on le cherche dans les
+        // panneau
         Projet.PANNEAU_LIST.forEach( (panid) => {
           if ( my._paragVersoForm ) { return }
           else {
@@ -1984,6 +1987,14 @@ class Parag
             my._paragVersoForm = container.querySelector('form#parag_verso_form')
           }
         })
+      }
+
+      if ( ! my._paragVersoForm )
+      {
+        // On ne l'a vraiment trouvé nulle part on le charge artificiellement
+        let code = fs.readFileSync('./__windows__/projet/html/verso_parag_form.ejs')
+        currentPanneau.section.insertAdjacentHTML('beforeend', code)
+        my._paragVersoForm = currentPanneau.section.querySelector('form#parag_verso_form')
       }
     }
     return this._paragVersoForm

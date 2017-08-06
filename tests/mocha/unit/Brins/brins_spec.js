@@ -259,9 +259,7 @@ describe('Brins', function () {
         brins._panneau = undefined // forcer sa reconstruction
 
         expect(brins.panneau).to.haveTag('li',{id:'brin-1'})
-        let o = brins.panneau.querySelector('li#brin-1')
-        expect(o).to.haveTag('ul', {class:'children', id:'brin-1-children'})
-        o = o.querySelector('ul.children')
+        let o = brin.parent.ULChildren
         // Les deux brins enfants sont dans les enfants.
         expect(o).to.haveTag('li', {id:'brin-0'})
         expect(o).to.haveTag('li', {id:'brin-2'})

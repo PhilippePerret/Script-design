@@ -659,9 +659,9 @@ class Brins {
     // Maintenant qu'on a construit tous les brins, on peut les mettre
     // dans leur parent (en supposant bien entendu qu'ils appartiennent
     // au même groupe/type de brins)
-    Brins.items.forEach( (brin, bid) => {
-      if ( ! brin.parent_id ) return ;
-      brin.parent.divChildren.appendChild(brin.div)
+    Brins.items.forEach( (b, bid) => {
+      if ( ! b.parent_id ) return ;
+      b.parent.ULChildren.appendChild(b.LI)
     })
 
     newo = DOM.create('div', {class:'explication', inner: "<b>Enter</b> ou <b>Escape</b> pour quitter le panneau."})
