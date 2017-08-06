@@ -125,7 +125,7 @@ class Brin
   // Propriétés volatiles
 
   get parent () {
-    if ( undefined === this._parent && this.parent_id )
+    if ( undefined === this._parent && 'number' == typeof(this.parent_id) )
     {
       this._parent = Brins.get(this.parent_id)
     }
@@ -201,7 +201,10 @@ class Brin
 
   reset ()
   {
-    this._id32 = undefined
+    this._id32      = undefined
+    this._parent    = undefined
+    this._brin_ids  = undefined
+    this._type      = undefined
   }
 
   /**
@@ -213,8 +216,10 @@ class Brin
   update ( newData )
   {
     const my = this
+    console.log("Nouvelles données pour le brin :", newData)
     if ( newData )
     {
+      my.reset()
       newData && forEach(newData, (v, k) => {my[k] = v} )
       my.modified = true
     }

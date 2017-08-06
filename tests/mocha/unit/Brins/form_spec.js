@@ -105,28 +105,61 @@ describe.only('Formulaire de brin', function () {
     })
   });
 
-  describe('actualisation du parent_id du brin', function () {
+  describe.only('actualisation du parent_id du brin', function () {
+    function setParentIdTo (id)
+    {
+      brins.form.querySelector('span#brin_parent_id').innerHTML = String(id)
+    }
     describe('ajout dans un parent quand sans parent', function () {
+      before(function () {
+        resetBrins()
+        expect(brin.ULChildren).not.to.haveTag('li', {id:'brin-1'})
+        brins.showPanneau()
+        brins._selected = brin1
+        brins.showForm(brin1)
+        setParentIdTo(0)
+        window.onkeyup({key:'Enter'})
+      });
       it("modifie le parent_id du brin", function(){
-        this.skip()
+        expect(brin1.parent_id).to.equal(0)
+        expect(brin1.parent.id).to.equal(brin.id)
       })
       it("ajoute le brin dans le UL.children du parent", function(){
-        this.skip()
+        console.log("brin.ULChildren = ", brin.ULChildren.outerHTML)
+        expect(brin.ULChildren).to.haveTag('li', {id:'brin-1'})
       })
     });
-    describe('ajout dans un parent quand avait u n autre parent', function () {
+    describe.only('ajout dans un parent quand avait un autre parent', function () {
+      before(function () {
+        resetBrins()
+
+        brin1.update({parent_id: 3})
+        brins.showPanneau()
+        expect(brin3.ULChildren).to.haveTag('li', {id:'brin-1'})
+        expect(brin1.parent_id).to.equal(3)
+        brins._selected = brin1
+        brins.showForm(brin1)
+        expect(brins.currentBrin.id).to.equal(1)
+        // On change le parent du brin en le mettant dans le brin 0
+        setParentIdTo(0)
+        window.onkeyup({key:'Enter'})
+      });
       it("modifie le parent_id du brin", function(){
-        this.skip()
+        expect(brin1.parent_id).to.equal(0)
+        expect(brin1.parent.id).to.equal(0)
       })
       it("sort le brin de l'ancien parent", function(){
-        this.skip()
+        expect(brin3.ULChildren).not.to.haveTag('li', {id:'brin-1'})
       })
       it("ajoute le brin dans le UL.children du nouveau parent", function(){
-        this.skip()
+        expect(brin.ULChildren).to.haveTag('li', {id:'brin-1'})
       })
     });
 
     describe('retrait du parent (sans ajout autre part)', function () {
+      before(function () {
+
+      });
       it("retire du UL.children de l'ancien parent", function(){
         this.skip()
       })
@@ -139,6 +172,17 @@ describe.only('Formulaire de brin', function () {
     });
   });
 
+  describe('Choix du parent', function () {
+    it("sélectionne le brin courant comme parent du nouveau si brin sans parent sélectionné", function(){
+      this.skip()
+    })
+    it("ne sélectionne pas le brin courant comme parent du nouveau si brin sélectionné est un brin avec parent", function(){
+      this.skip()
+    })
+    it("propose un menu avec la liste des brins (ou la liste ?)", function(){
+      this.skip()
+    })
+  });
 
   describe('Modification du type du brin', function () {
     describe('avec un type déjà affiché (i.e. qui comprend déjà des brins)', function () {

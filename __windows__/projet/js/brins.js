@@ -90,9 +90,26 @@ class Brins {
     // console.log("-> Brins#updateCurrent")
     const my  = this
     const B   = my.currentBrin
+    const BparentId = B.parent_id
+    const oldParentId = (BparentId === undefined || BparentId === null)
+                          ? null : BparentId
     B.update( my.getFormValues() )
     if ( my._panneau ){
+      // Il faut prendre en compte le changement éventuel de titre
       my.ULlisting.querySelector(`div#brin-${B.id}-titre`).innerHTML = B.titre
+      // Il faut prendre en compte le changement éventuel de parent
+      if ( B.parent_id || B.parent_id === 0 )
+      {
+        // <= Le brin est introduit dans un brin
+        // => Il faut mettre son LI dans le UL des enfants de ce brin parent
+        B.parent.ULChildren.appendChild(B.LI)
+      }
+      else if ( null !== oldParentId )
+      {
+        // <= Le brin précédemment dans un parent
+        // => Il faut le sortir et le mettre au bout de la liste
+        my.ULlisting.appendChild(B.LI)
+      }
     }
     my.hideForm()
   }
@@ -764,7 +781,10 @@ class Brins {
       dataBrin[prop] = my.getFormValue(prop).trim()
       if ( dataBrin[prop] == '' ) dataBrin[prop] = null
     })
-    dataBrin.type && ( dataBrin.type = Number(dataBrin.type) )
+    for(let p of ['parent_id', 'type']){
+      dataBrin[p] && ( dataBrin[p] = Number(dataBrin[p]))
+    }
+
     return dataBrin
   }
   /**

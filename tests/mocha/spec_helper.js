@@ -226,6 +226,10 @@ global.resetBrins = function ()
   global.brin3 = new Brin({id: 3, projet: projet, titre: "Brin #3", type: 20})
   global.brin4 = new Brin({id: 4, projet: projet, titre: "Brin #4", type: 31})
   global.brin5 = new Brin({id: 5, projet: projet, titre: "Brin #5", type: 20})
+  global.brin6 = new Brin({id: 6, projet: projet, titre: "Brin #6", type: 0})
+  global.brin7 = new Brin({id: 7, projet: projet, titre: "Brin #7", type: 12})
+  global.brin8 = new Brin({id: 8, projet: projet, titre: "Brin #8", type: 12})
+  global.brin9 = new Brin({id: 9, projet: projet, titre: "Brin #9", type: 12})
 
   projet.panneau('data').setDefaultData()
   Brin._lastID = projet.panneau('data')._data.last_brin_id = 5
