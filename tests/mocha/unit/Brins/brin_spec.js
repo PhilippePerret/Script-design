@@ -228,13 +228,13 @@ describe('Brin', function () {
   describe('#parent= ', function () {
     it("permet de définir le parent si l'argument est un brin", function(){
       brin1.parent = undefined
-      expect(brin1.parent_id).to.be.undefined
+      expect(brin1.parent_id).to.be.null
       brin1.parent = brin2
       expect(brin1.parent_id).to.equal(2)
     })
     it("permet de définir le parent si l'argument est un ID", function(){
       brin1.parent = undefined
-      expect(brin1.parent_id).to.be.undefined
+      expect(brin1.parent_id).to.be.null
       brin1.parent = 2
       expect(brin1.parent_id).to.equal(2)
       expect(brin1.parent).to.be.instanceOf(Brin)
@@ -243,11 +243,11 @@ describe('Brin', function () {
       brin1.parent = brin2
       expect(brin1.parent_id).to.equal(2)
       brin1.parent = null
-      expect(brin1.parent_id).to.be.undefined
+      expect(brin1.parent_id).to.be.null
       brin1.parent = brin2
       expect(brin1.parent_id).to.equal(2)
       brin1.parent = undefined
-      expect(brin1.parent_id).to.be.undefined
+      expect(brin1.parent_id).to.be.null
     })
     it("définit le brin comme modifié", function(){
       brin1.modified = false
@@ -259,7 +259,7 @@ describe('Brin', function () {
       brin1.modified = false
       expect(brin1.modified).to.be.false
       brin1.parent = null
-      expect(brin1.parent_id).to.be.undefined
+      expect(brin1.parent_id).to.be.null
       expect(brin1.modified).to.be.true
 
     })
@@ -293,18 +293,18 @@ describe('Brin', function () {
       expect(brin.type).not.to.be.undefined
     })
     it("retourne le type_id s'il est défini", function(){
-      brin.data.type = 12
+      brin.type = 12
       expect(brin.type).to.equal(12)
     })
     it("retourne 0 s'il n'est pas défini", function(){
-      brin.data.type = undefined
+      brin.type = undefined
       expect(brin.type).to.equal(0)
     })
   });
 
   describe('@type=', function () {
     it("permet de définir le type", function(){
-      brin.data.type = undefined
+      brin.type = undefined
       brin.type = 4
       expect(brin.data.type).to.equal(4)
     })

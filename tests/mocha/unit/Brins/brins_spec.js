@@ -38,26 +38,26 @@ describe('Brins', function () {
     })
   });
 
-  describe('Brins#reset()', function () {
+  describe('Brins#resetAll()', function () {
     it("répond", function(){
       expect(brins).to.respondsTo('reset')
     })
     it("initialise Brins.items", function(){
       Brins._items = undefined
       expect(Brins._items).to.be.undefined
-      brins.reset()
+      brins.resetAll()
       expect(Brins._items).to.be.instanceOf(Map)
     })
     it("initialize _panneau", function(){
       brins.panneau
       expect(brins._panneau).to.be.instanceOf(HTMLElement)
-      brins.reset()
+      brins.resetAll()
       expect(brins._panneau).to.be.undefined
     })
     it("initialize _form", function(){
       brins.form
       expect(brins._form).to.be.instanceOf(HTMLElement)
-      brins.reset()
+      brins.resetAll()
       expect(brins._form).to.be.undefined
     })
   });

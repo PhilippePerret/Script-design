@@ -194,7 +194,8 @@ class Brin
   * Définit le type du brin
   **/
   set type (v) {
-    this.data.type = this._type = Number(v)
+    if ( undefined !== v && null !== v ) v = Number(v) ;
+    this.data.type = this._type = v
     this.modified  = true
   }
 
@@ -272,10 +273,9 @@ class Brin
     if ( 'number' === typeof pid )
     {
       const my    = this
-      const bid   = my.id
       const parag = Parags.get(pid)
 
-      let decBrin   = parag.brin_ids.indexOf(bid)
+      let decBrin   = parag.brin_ids.indexOf(my.id)
       if ( decBrin < 0 ) { return false } // faux retrait
       let decParag  = my.parag_ids.indexOf(pid)
 

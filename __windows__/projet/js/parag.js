@@ -53,7 +53,7 @@ class Parag
         , 'updated_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD')  }
         , 'position'    : {length: 6  , type: 'n', default: null    }
         , 'type'        : {length: 4  , type: 's', default: '0000'  }
-        , 'brin_ids'    : {length: 16 , type: 's', default: ''      }
+        , 'brin_ids_32' : {length: 16 , type: 's', default: ''      }
         // Les nouvelles données doivent obligatoirement être ajoutées après et il
         // faut retirer la longueur à 'vide' ci-dessous pour ne pas avoir à tout
         // recalculer
@@ -255,8 +255,8 @@ class Parag
         throw new DataValidityError(`Le type ${my.type} devrait faire exactement 4 caractères`)
       }
 
-      if ( my.brin_ids.length > dData.brin_ids.length ) {
-        throw new DataValidityError(`La donnée brins (brin_ids) est trop longue. Elle ne devrait pas excéder ${dData.brin_ids.length} caractères`)
+      if ( my.brin_ids_32.length > dData.brin_ids_32.length ) {
+        throw new DataValidityError(`La donnée brins (brin_ids_32) est trop longue. Elle ne devrait pas excéder ${dData.brin_ids_32.length} caractères`)
       }
 
       /*- Tout est OK -*/
@@ -316,7 +316,10 @@ class Parag
   get duration    ()  { return this._duration   || 60 }
   get position    ()  { return this._position   || -1 }
   get type        ()  { return this._type       || '0000' }
-  get brin_ids    ()  { return this._brin_ids   || ''     }
+  get brin_ids    ()  {
+    this._brin_ids || this.defineBrinIds()
+    return this._brin_ids
+  }
   get updated_at  ()  { return this._updated_at   }
   get created_at  ()  { return this._created_at   }
 
@@ -326,7 +329,7 @@ class Parag
     else { this._position = v }
   }
   set type        (v) { this._type = v        }
-  set brin_ids    (v) { this._brin_ids = v    }
+  set brin_ids    (v) { this._brin_ids = v ; this.updateBrinIds() }
   set updated_at  (v) { this._updated_at = v  }
   set created_at  (v) { this._created_at = v  }
 
@@ -358,12 +361,43 @@ class Parag
     return this._loaded
   }
 
-  get brin_ids () {
-    if ( undefined === this._brin_ids ) {
-      this._brin_ids = this.brin_ids_str
-    }
-    return this._brin_ids
+  /**
+  * Méthode appelée quand on redéfinit la liste des brins auxquels
+  * appartient le parag. Actualise toutes les données en rapport, et
+  * principalement _brins_ids_32, la version en base 32 et string
+  **/
+  updateBrinIds (bids)
+  {
+    this._brins_ids_32 =
+      (this._brin_ids||[]).map(bid => {
+        let b = Number(bid).toBase32()
+        return b.length > 1 ? b : ` ${b}`
+      }).join('')
   }
+  /**
+  * Méthode définissant la liste brin_ids à partir de la valeur de brin_ids_32
+  *
+  * @produit this._brin_ids
+  **/
+  defineBrinIds ()
+  {
+    const my = this
+    my._brin_ids = []
+    if ( ! my.brin_ids_32 ) return ;
+    else {
+      for(let i = 0 ; i < 16 ; i += 2){
+        let bid = my.brin_ids_32.substr(i, 2).trim()
+        if ( bid === '' ) continue ;
+        my._brin_ids.push(Number(bid))
+      }
+    }
+  }
+
+  /**
+  * La liste des brins auxquels appartient le parag, mais en version string 32
+  **/
+  get brin_ids_32 () { return this._brin_ids_32 || (new Array(16).fill(' ').join(''))}
+  set brin_ids_32 (v){ this._brin_ids_32 = v    }
 
 
   /** ---------------------------------------------------------------------
@@ -482,7 +516,7 @@ class Parag
   display (callback)
   {
     const my = this
-    console.log("<#Parag %d>#display()", my.id)
+    // console.log("<#Parag %d>#display()", my.id)
     if ( ! my.displayed )
     {
       my.panneau.container.appendChild(my.mainDiv)

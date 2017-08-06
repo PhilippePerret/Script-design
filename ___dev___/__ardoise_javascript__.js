@@ -3,9 +3,6 @@
 
 require('../lib/utils/Number')
 
-let res = {un:'1', deux:'2'}
-forEach(res, (v, k) => { console.log("La clé %s vaut %s", k, v)})
+let res = `'${(new Array(16).fill(' ').join(''))}'`
 
-console.log("Les clés sont : ", map(res, (v, k) => { return k }))
-
-// console.log(res)
+console.log(res)
