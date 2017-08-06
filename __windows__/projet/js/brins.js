@@ -812,6 +812,15 @@ class Brins {
     my.form.querySelector('span#brin_type').innerHTML = type
   }
 
+  setTitreFormTo (newTitre)
+  {
+    const my = this
+    if (undefined === newTitre) {
+      newTitre = my.currentParag ? `Brins du parag #${my.currentParag.id}` : 'Formulaire de brin'
+    }
+    my.form.querySelector('div#titre-form-brin').innerHTML = newTitre
+  }
+
   /**
   * @return {HTMLElement} La section du formulaire d'édition.
   **/
@@ -832,7 +841,7 @@ class Brins {
     let h = DOM.create('section', {id:'form_brins'})
     let newo = null
 
-    newo = DOM.create('div', {class:'titre', inner:'Formulaire de brin'})
+    newo = DOM.create('div', {id:'titre-form-brin', class:'titre', inner:'Formulaire de brin'})
     h.appendChild(newo)
 
     /*- Menu des types -*/

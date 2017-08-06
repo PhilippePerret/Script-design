@@ -43,7 +43,26 @@ describe.only('Formulaire de brin', function () {
         expect(brins).to.respondsTo('setTitreFormTo')
       })
       it("permet de définir le titre de la fenêtre", function(){
-        this.skip()
+        brins.showForm()
+        let divTitre = brins.form.querySelector('div#titre-form-brin')
+        brins.setTitreFormTo()
+        expect(divTitre.innerHTML).to.equal("Formulaire de brin")
+        let newTitre = 'Brins du parag #12'
+        brins.setTitreFormTo(newTitre)
+        expect(divTitre.innerHTML).to.equal(newTitre)
+      })
+      it("sans argument, permet de remettre le titre par défaut", function(){
+        brins.showForm()
+        let divTitre = brins.form.querySelector('div#titre-form-brin')
+        brins.setTitreFormTo()
+        expect(divTitre.innerHTML).to.equal("Formulaire de brin")
+      })
+      it("sans argument et avec un parag courant, met le titre adéquat", function(){
+        brins.currentParag = parag4
+        brins.showForm()
+        let divTitre = brins.form.querySelector('div#titre-form-brin')
+        brins.setTitreFormTo()
+        expect(divTitre.innerHTML).to.equal("Brins du parag #4")
       })
     });
 
