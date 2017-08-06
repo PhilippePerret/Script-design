@@ -67,7 +67,7 @@ class Brins {
   **/
   createNew ()
   {
-    // console.log("-> Brins#createNew")
+    console.log("-> Brins#createNew")
     const my = this
 
     let dataBrin = my.getFormValues()
@@ -87,8 +87,13 @@ class Brins {
   **/
   updateCurrent ()
   {
-    const my = this
-    my.currentBrin.update( my.getFormValues() )
+    // console.log("-> Brins#updateCurrent")
+    const my  = this
+    const B   = my.currentBrin
+    B.update( my.getFormValues() )
+    if ( my._panneau ){
+      my.ULlisting.querySelector(`div#brin-${B.id}-titre`).innerHTML = B.titre
+    }
     my.hideForm()
   }
   /**
@@ -708,17 +713,19 @@ class Brins {
     /*- Divers préparations et réglage pour l'édition -*/
 
     let mapTab = {} // pour setupAsTabulator
-    Brin.PROPERTIES.forEach( (dProp, prop) => {
-      mapTab[prop] = my.editProperty.bind(my, prop)
-    })
+    Brin.PROPERTIES.forEach((d, k) => {mapTab[k] = my.editProperty.bind(my,k)})
+
+    my.setFormValues(brin ? brin : 'default')
     // Si un brin est défini, il faut mettre ses valeurs dans les champs
-    brin && my.setFormValues(brin)
+    // Sinon, on met les valeurs par défaut
 
     // On la rend tabularisable
     Tabulator.setupAsTabulator(my.form, {
-        Map         : mapTab
-      , MapLetters  : mapLetters
-    })
+          Map         : mapTab
+        , MapLetters  : mapLetters
+      }
+      , true // pour forcer l'actualisation, même si le formulaire est connu
+    )
   }
   /**
   * Ferme le formulaire de création du brin.
@@ -761,11 +768,17 @@ class Brins {
   }
   /**
   * Pour mettre les valeurs de +brin+ dans le formulaire avant l'édition
+  * Si brin = 'default', on met les valeurs par défaut.
+  *
+  * @param {Brin|String} brin Le brin ou 'default'
   **/
   setFormValues ( brin )
   {
     const my = this
-    Brin.PROPERTIES.forEach((dProp, prop)=>{my.setFormValue(prop, brin[prop])})
+    Brin.PROPERTIES.forEach((d, k)=>{
+      let val = ('default' === brin) ? d.default : brin[k]
+      my.setFormValue(k, val)
+    })
   }
   getFormValue(prop)
   {
@@ -829,7 +842,7 @@ class Brins {
       h.appendChild(newo)
     })
 
-    let textExp = "'<b>q</b>', '<b>s</b>', '<b>d</b>', '<b>f</b>'… pour éditer dans l'ordre des champs.</b>. '<b>l</b>' : liste des brins. <b>Enter</b> : enregistrer les données du brin (ou le créer). <b>Escape</b> : renoncer."
+    let textExp = "'<b>q</b>', '<b>s</b>', '<b>d</b>', '<b>f</b>'-> Éditer (ordre des champs).</b>. '<b>B</b>'-> Liste des brins. <b>Enter</b>-> Enregistrer les données du brin (ou le créer). <b>Escape</b>-> Renoncer."
     newo = DOM.create('div', {class:'explication', inner: textExp})
     h.appendChild(newo)
 

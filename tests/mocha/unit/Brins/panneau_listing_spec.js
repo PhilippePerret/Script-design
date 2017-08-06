@@ -1,6 +1,6 @@
 require('../../spec_helper.js')
 
-describe.only('Panneau du listing des brins', function () {
+describe('Panneau du listing des brins', function () {
   before(function () {
     return resetProjetWithBrins()
   });

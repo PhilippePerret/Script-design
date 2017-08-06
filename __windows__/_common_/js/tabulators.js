@@ -56,6 +56,8 @@ class Tabulator
   *                           Map         [Obligatoire]
   *                           mapLetters  [Optionnel, pour définir d'autres
   *                                       lettres]
+  * @param {Boolean} forcer   Si true, on actualise la donnée SectionMaps même
+  *                           si l'objet était connu.
   *
   * TODO Plus tard, il faudrait que Tabulator puisse prendre en compte les
   * champs possédant la classe "editable" pour les gérer automatiquement, sans
@@ -63,7 +65,7 @@ class Tabulator
   * span/div doit être activés par la méthode d'UI normal, et les autres champs
   * doivent être focussés (les select et checkbox)
   **/
-  static setupAsTabulator ( DOMObj, params )
+  static setupAsTabulator ( DOMObj, params, forcer )
   {
     const my  = this
     const obj = DOM.get(DOMObj)
@@ -74,7 +76,7 @@ class Tabulator
 
     let sectionMap  = Tabulator.SectionMaps.get(obj.id)
 
-    if ( undefined === sectionMap )
+    if ( undefined === sectionMap || forcer )
     {
       // <= L'élément n'est pas encore préparé pour Tabulator
       // => Il faut observer tous ses champs portant une data-tab
@@ -160,7 +162,7 @@ class Tabulator
     */
     Tabulator.SectionMaps.set( obj.id, sectionMap )
 
-    DOM.addClass(obj, 'tabulatorized') // Marquer que l'élément est préparé
+    if (!DOM.hasClass(obj,'tabulatorized')) DOM.addClass(obj,'tabulatorized');
 
     return sectionMap
   }

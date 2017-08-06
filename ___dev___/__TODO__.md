@@ -1,8 +1,6 @@
-* Retirer le "l" pour obtenir la liste des brins dans le formulaire de brin et mettre B pour la cohérence
 
-* Quand on ouvre le formulaire de brin sans brin, on doit initialiser les champs
-
-* Documenter "B" et "b" n'importe où => liste des brins / formulaire création
+* Ajouter "Brin « ... »" aux titres des sous-titres de brin ("Brin « non définis »", "Brin « Personnages »", etc.)
+  OU mettre simplement 'Non définis' pour le premier au lieu de "Non défini" qui donne l'impression d'une erreur (ou définir explicitement le titre)
 
 
 * La création d'un nouveau brin doit entrainer la reconstruction du panneau des brins (qui peut être affiché quand on crée un nouveau brin)

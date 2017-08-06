@@ -321,8 +321,26 @@ describe('Brin', function () {
     *
   *** --------------------------------------------------------------------- */
   describe.only('#update', function () {
+    before(function () {
+      brin.modified = false
+      brin.data.parent_id = null
+      expect(brin.modified).to.be.false
+      expect(brin.parent_id).to.be.null
+      expect(brin.parent).to.be.undefined
+      // ========> TEST <===========
+      brin.update({titre: "Nouveau titre pour update", parent_id: 2})
+
+    });
     it("répond", function(){
       expect(brin).to.respondsTo('update')
+    })
+    it("prend en compte les nouvelles valeurs", function(){
+      expect(brin.titre).to.equal("Nouveau titre pour update")
+      expect(brin.parent_id).to.equal(2)
+      expect(brin.parent.id).to.equal(2)
+    })
+    it("marque le brin modifié", function(){
+      expect(brin.modified).to.be.true
     })
   });
   /** ---------------------------------------------------------------------
