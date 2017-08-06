@@ -707,6 +707,7 @@ class Brins {
       , ['Escape',  my.cancelEdition.bind(my)]
       , ['@',       my.helpWanted.bind(my)]
       , ['l',       my.showPanneau.bind(my)]
+      , ['t',       my.form.querySelector('select#types_brin').focus()]
       , ['j',       ()=>{return false} /* pour le désactiver*/]
     ])
 
@@ -802,7 +803,14 @@ class Brins {
   redefine_brin_titre (nv)        { this.updateFormValue('titre', nv)       }
   redefine_brin_description (nv)  { this.updateFormValue('description', nv) }
   redefine_brin_parent_id (nv)    { this.updateFormValue('parent_id', nv)   }
-  redefine_brin_type (nv)         { this.updateFormValue('type', nv)        }
+  // redefine_brin_type (nv)         { this.updateFormValue('type', nv)        }
+
+  onChooseTypeBrin ()
+  {
+    const my = this
+    let type = my.form.querySelector('select#types_brin').value
+    my.form.querySelector('span#brin_type').innerHTML = type
+  }
 
   /**
   * @return {HTMLElement} La section du formulaire d'édition.
@@ -813,36 +821,63 @@ class Brins {
     return this._form
   }
 
+
   /**
   * Construction du formulaire d'édition des brins
   **/
   buildForm ()
   {
+    const my = this
+
     let h = DOM.create('section', {id:'form_brins'})
     let newo = null
 
     newo = DOM.create('div', {class:'titre', inner:'Formulaire de brin'})
     h.appendChild(newo)
 
+    /*- Menu des types -*/
+    let opt
+    let menuTypes = DOM.create('select', {id: 'types_brin'})
+    Brin.TYPES.forEach( (dType, type) => {
+      opt = DOM.create('option', {value: String(type), inner: dType.hname})
+      menuTypes.appendChild(opt)
+    })
+
+    menuTypes.addEventListener('change', my.onChooseTypeBrin.bind(my))
+    menuTypes.addEventListener('keyup', my.onChooseTypeBrin.bind(my))
+
     Brin.PROPERTIES.forEach( (dprop, prop) => {
       newo = DOM.create('div', {class:'row'})
       let label = dprop.hname || prop.titleize()
       let lab  = DOM.create('label', {for:`brin_${prop}`, inner: label})
-      let spanData = {
-          id              : `brin_${prop}`
-        , 'data-tab'      : prop
-        , 'owner'         : 'currentProjet.brins'
-        , 'class'         : 'editable'
-      }
+
+      let spanData ;
+
+      if ( prop != 'type' ) {
+        spanData = {
+            'data-tab'      : prop
+          , 'owner'         : 'currentProjet.brins'
+          , 'class'         : 'editable'
+        }
+      } else { spanData = {} }
+
+      spanData.id = `brin_${prop}`
+
       dprop.default       && ( spanData.inner = dprop.default )
       dprop.enableReturn  && ( spanData['enable-return'] = 'true' )
       let span = DOM.create('span', spanData)
       newo.appendChild(lab)
       newo.appendChild(span)
+      if ( prop == 'type' )
+      {
+        span.style.display = 'none'
+        newo.appendChild(menuTypes)
+      }
       h.appendChild(newo)
     })
 
-    let textExp = "'<b>q</b>', '<b>s</b>', '<b>d</b>', '<b>f</b>'-> Éditer (ordre des champs).</b>. '<b>B</b>'-> Liste des brins. <b>Enter</b>-> Enregistrer les données du brin (ou le créer). <b>Escape</b>-> Renoncer."
+
+    let textExp = "<b>t</b> : choisir le type, <b>q</b>, <b>s</b>, <b>d</b>, <b>f</b> : éditer (ordre des champs).</b>. <b>B</b> : liste des brins. <b>Enter</b> : enregistrer les données du brin (ou le créer). <b>Escape</b> : renoncer."
     newo = DOM.create('div', {class:'explication', inner: textExp})
     h.appendChild(newo)
 

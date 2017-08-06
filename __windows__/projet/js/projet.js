@@ -363,7 +363,7 @@ class Projet
       /*- Sauvegarde des relatives (si nécessaire) */
       .then( my.saveRelatives.bind(my) )
       .then( () => {
-        console.log("= Fin de l'enregistrement de tous les éléments.")
+        // console.log("= Fin de l'enregistrement de tous les éléments.")
         my.saving   = false
         my.saved    = true
         my.modified = false
@@ -413,7 +413,7 @@ class Projet
   **/
   saveRelatives ()
   {
-    console.log("* Enregistrement des relatives")
+    // console.log("* Enregistrement des relatives")
     return this.relatives.save.bind(this.relatives).call()
   }
 

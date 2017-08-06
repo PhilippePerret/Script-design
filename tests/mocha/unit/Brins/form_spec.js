@@ -1,7 +1,10 @@
 require('../../spec_helper.js')
 
 
-describe('Formulaire de brin', function () {
+describe.only('Formulaire de brin', function () {
+  before(function () {
+    resetBrins()
+  });
   describe('#showForm', function () {
     // Note : la méthode est déjà bien testée dans panneau_listing_spec.js
 
@@ -30,6 +33,20 @@ describe('Formulaire de brin', function () {
       })
 
     })
+
+    it("possède un menu avec tous les types", function(){
+      expect(projet.brins.form).to.haveTag('select', {id:'types_brin'})
+    })
+
+    describe('#setTitreFormTo', function () {
+      it("répond", function(){
+        expect(brins).to.respondsTo('setTitreFormTo')
+      })
+      it("permet de définir le titre de la fenêtre", function(){
+        this.skip()
+      })
+    });
+
   });
 
 
