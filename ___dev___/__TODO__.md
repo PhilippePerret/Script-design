@@ -1,5 +1,6 @@
 * Voir les bugs sur le site…
 
+* Poursuivre le test des relatives
 * Les relatives restent à remettre complètement (il y a notamment une méthode importante qui est entièrement commentée)
 
 * Tester le titre dans le panneau des brins ("Liste des brins" ou "Brins du parag #x" quand un parag est sélectionné — ouverture à partir du verso)

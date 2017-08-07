@@ -696,7 +696,7 @@ describe('Panneau du listing des brins', function () {
             // expect(brins.iselected).to.equal(1+iselected_initial)
           })
         });
-        describe.only('Noeud suivant est un Brin avec enfant(s)', function () {
+        describe('Noeud suivant est un Brin avec enfant(s)', function () {
           before(function () {
             // PRÉPARATION
             resetBrins()
@@ -751,7 +751,7 @@ describe('Panneau du listing des brins', function () {
             expect(brins.iselected).to.equal(1 + iselected_initial + nombre_enfants)
           })
         });
-        describe.only('Nœud suivant est un titre de type', function () {
+        describe('Nœud suivant est un titre de type', function () {
           before(function () {
             // On met le brin courant dans le type 0
             // On met le brin 1 dans le type 10
@@ -808,8 +808,8 @@ describe('Panneau du listing des brins', function () {
           })
         });
       });
-      describe.only('Brin courant sans enfants', function () {
-        describe.only('Brin suivant sans enfant', function () {
+      describe('Brin courant sans enfants', function () {
+        describe('Brin suivant sans enfant', function () {
           before(function () {
             resetBrins()
 
@@ -846,7 +846,7 @@ describe('Panneau du listing des brins', function () {
           //   expect(brins.iselected).to.equal(1 + iselected_initial)
           // })
         });
-        describe.only('Brin suivant avec enfants', function () {
+        describe('Brin suivant avec enfants', function () {
           before(function () {
             resetBrins()
 

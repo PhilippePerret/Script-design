@@ -113,11 +113,9 @@ class Relatives
 
   get store ()
   {
-    this._store || ( this._store = new Store(this.relative_path, this) )
+    this._store || ( this._store = new Store(path.join('projets',this.projet.id,'relatives'), this) )
     return this._store
   }
-  get relative_path ()
-  { return path.join('projets',this.projet.id,'relatives') }
 
   /**
   * Premier temps de l'association, on regroupe les paragraphes par

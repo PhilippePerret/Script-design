@@ -89,6 +89,7 @@ class Parags
   * @param {Object} params  Les paramètres pour l'instanciation. C'est là
   *                         qu'on peut par exemple définir le contents ou
   *                         la duration.
+  *                         Si l'ID n'est pas défini, il sera défini ici.
   *
   * @param {Object} options Les options pour la méthode `add`. C'est là qu'on
   *                         peut définir par exemple le `before` pour dire avant
