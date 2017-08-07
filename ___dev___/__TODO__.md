@@ -1,5 +1,7 @@
 * Voir les bugs sur le site…
 
+* Tester le titre dans le panneau des brins ("Liste des brins" ou "Brins du parag #x" quand un parag est sélectionné — ouverture à partir du verso)
+
 * Tester l'enregistrement de 'brin_ids' en testant les méthodes :
   get brin_ids_32
   set brin_ids_32
@@ -7,7 +9,6 @@
   defineBrinIds() - en modifiant _brin_ids_32
 
 * tester qu'on ne puisse pas choisir plus de 8 brins pour le parag
-  (pour le moment, je crois qu'on peut le faire)
   Note : il faut créer 9 brins
 
 

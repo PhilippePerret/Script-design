@@ -1919,7 +1919,7 @@ class Parag
   **/
   chooseBrins ()
   {
-    console.log("-> chooseBrins dans parag#%d", this.id)
+    // console.log("-> chooseBrins dans parag#%d", this.id)
     this.projet.brins.showPanneau({parag: this})
   }
 

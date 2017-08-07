@@ -62,7 +62,6 @@ class ProjetOptions
   **/
   define ( args )
   {
-    // console.log(args)
     let my = this
       , rien
       , optionProp
@@ -72,7 +71,6 @@ class ProjetOptions
     this._data || load()
     args.forEach( (arg) => {
       [rien, optionProp] = arg.split('-')
-      // console.log('optionProp',optionProp)
       spanb   = this.getSpanButton(arg)
       bouton  = this.getButton(arg)
       if ( bouton )
@@ -125,6 +123,7 @@ class ProjetOptions
     this._data || ( this._data = {} )
     return this._data
   }
+
   /**
   * Sauvegarde des options du projet
   **/
@@ -154,10 +153,7 @@ class ProjetOptions
   **/
   set ( hd )
   {
-    for( let p in hd ) {
-      if( ! hd.hasOwnProperty(p) ) { continue }
-      this.data[p] = hd[p]
-    }
+    forEach(hd, (v, p) => { this.data[p] = v})
     this.save()
   }
 
@@ -168,7 +164,7 @@ class ProjetOptions
 
 
   get store     () {
-    this._store || (this._store = new Store(`projets/${this.projet.id}/options`) )
+    this._store || (this._store = new Store(`projets/${this.projet.id}/options`, this) )
     return this._store
   }
 
@@ -210,19 +206,18 @@ class ProjetOptions
   **/
   build ()
   {
-    let option, bouton, value, vNumber
+    let bouton, value, vNumber
     // '<button data-tab="option-autosave" value="0">Sauvegarde manuelle</button>'
-    for(option in ProjetOptions.DATA)
-    {
-      value   = this.get(option)
+    forEach(ProjetOptions.DATA, (dOption, option) => {
+      value = this.get(option)
       vNumber = value ? 1 : 0
       bouton  = DOM.create('button', {
           'data-tab': `option-${option}`
         , 'value'   : String(vNumber)
-        , inner     : ProjetOptions.DATA[option][vNumber]
+        , inner     : dOption[vNumber]
       })
       this.container.appendChild(bouton)
-    }
+    })
     return Promise.resolve()
   }
 }
