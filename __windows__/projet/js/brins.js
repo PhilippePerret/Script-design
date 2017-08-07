@@ -29,19 +29,13 @@ class Brins {
   * @return {Brin} l'instance Brin d'ID +bid+
   * @param {Number} bid IDentifiant du brin
   **/
-  static get (bid)
-  {
-    return this.items.get(Number(bid))
-  }
+  static get (bid) { return this.items.get(Number(bid)) }
 
   /**
   * @return {Brin} l'instance Brin d'ID 32 +bid32+
   * @param {String} bid32 Identifiant du brin exprimé en base 32.
   **/
-  static getWithId32 ( bid32 )
-  {
-    return this.get( bid32.fromBase32() )
-  }
+  static getWithId32 ( bid32 ) { return this.get( bid32.fromBase32() ) }
 
   /** ---------------------------------------------------------------------
     *
@@ -67,14 +61,19 @@ class Brins {
   **/
   createNew ()
   {
-    console.log("-> Brins#createNew")
+    // console.log("-> Brins#createNew")
     const my = this
 
     let dataBrin = my.getFormValues()
+
+    // On met toujours le type du brin sélectionné
+    dataBrin['type'] = my.selected ? my.selected.type : 0
+
     my.add( dataBrin )
     my.modified = true
 
     my.hideForm()
+    console.log("my.formParams est %s", my.formParams ? 'défini' : 'non défini')
     my.formParams && my.formParams.callback_oncreate && my.formParams.callback_oncreate.call()
 
   }
@@ -153,19 +152,32 @@ class Brins {
   {
     const my = this
     let container = null
+    const obrin   = brin.buildAsLI()
 
-    if ( brin.parent_id ) {
-      if ( brin.parent_id == 'undefined')
-      {
-        try{throw new Error("brin.parent_id est 'undefined' en string")}
-        catch(err){console.log(err)}
-      }
+    if ( brin.hasParent() )
+    {
       let parent  = my.ULlisting.querySelector(`li#brin-${brin.parent_id}`)
-      container   = parent.querySelector('ul.children')
+      brin.parent.ULChildren.appendChild( obrin )
     } else {
-      container = my.ULlisting
+      // On ajoute le brin en fonction de son type
+      let canAdd = false, added = false
+      let children = my.ULlisting.childNodes
+      let nb_children = children.length
+      let child
+      for(let ichild = 0; ichild < nb_children; ++ichild) {
+        child = children[ichild]
+        if ( child.tagName == 'DIV' ) {
+          if ( child.getAttribute('data-type') == String(brin.type) ) {
+            canAdd = true
+          } else if ( canAdd ) {
+            my.ULlisting.insertBefore(obrin, child)
+            added  = true
+            break
+          }
+        }
+      }
+      if ( ! added ) my.ULlisting.appendChild(obrin)
     }
-    container.appendChild( brin.buildAsLI() )
   }
 
   remove( bid )
@@ -547,6 +559,7 @@ class Brins {
   **/
   currentBrinDown (evt)
   {
+    // console.log("-> currentBrinDown")
     const my = this
     const hasParent = !!my.selected.hasParent()
 
@@ -561,19 +574,23 @@ class Brins {
 
       if ( nextNode )
       {
+        // console.log("  Pas de parent mais un noeud suivant")
         const nextIsTitreType = 'DIV' == nextNode.tagName
 
         if ( nextIsTitreType )
         {
           const newType = Number(nextNode.getAttribute('data-type'))
-          my.selected.update({type: newType})
+          // console.log('newType de brin #%d mis à =', my.selected.id, newType)
+          my.selected.update.call(my.selected, {type: newType})
           UILog(`Le nouveau type du brin est « ${Brin.TYPES.get(newType).hname} »`)
           my.ULlisting.insertBefore(my.selected.LI, nextNode.nextSibling)
         }
-        else
+        else // next is Brin
         {
+          // console.log("Le prochain est un brin")
           if ( my.selected.hasChildren() )
           {
+            // console.log("Je place le brin après le prochain")
             my.ULlisting.insertBefore(my.selected.LI, nextNode.nextSibling)
           }
           else
@@ -636,6 +653,7 @@ class Brins {
               newType = Number(o.getAttribute('data-type')) ; break
             }
           }
+          if ( null === newType) newType = 0 ; // quand on passe au-dessus du premier
           my.selected.update({type: newType})
           UILog(`Type du brin #${my.selected.id} défini à « ${Brin.TYPES.get(newType).hname} ».`)
         }
@@ -756,19 +774,10 @@ class Brins {
 
     let newBrin = Brins.get(Brin._lastID)
 
-    // On le sélectionne en le mettant en courant
-    let iselected = 0
-      , librins = my.ULlisting.querySelectorAll('li.brin')
-      , librin  = null
+    my.iselected = my.getIndexOfBrin(newBrin)
+    console.log("my.iselected = ", my.iselected)
 
-    for(let len = librins.length ; iselected < len ; ++iselected) {
-      let librin = librins[iselected]
-      if ( Number(librin.getAttribute('data-id')) == newBrin.id ) break
-    }
-    my.iselected = iselected
     my.currentParag && my.chooseCurrent()
-    // Un nouveau brin est toujours sélectionné par défaut pour le parag
-    // courant s'il existe
 
   }
 
@@ -918,15 +927,17 @@ class Brins {
         ['Enter',   brin ? my.updateCurrent.bind(my) : my.createNew.bind(my)]
       , ['Escape',  my.cancelEdition.bind(my)]
       , ['@',       my.helpWanted.bind(my)]
-      , ['l',       my.showPanneau.bind(my)]
-      , ['t',       my.form.querySelector('select#types_brin').focus()]
+      , ['B',       my.showPanneau.bind(my)]
       , ['j',       ()=>{return false} /* pour le désactiver*/]
     ])
 
     /*- Divers préparations et réglage pour l'édition -*/
 
     let mapTab = {} // pour setupAsTabulator
-    Brin.PROPERTIES.forEach((d, k) => {mapTab[k] = my.editProperty.bind(my,k)})
+    Brin.PROPERTIES.forEach((d, k) => {
+      if ( false == d.editable ) return ;
+      mapTab[k] = my.editProperty.bind(my,k)}
+    )
 
     my.setFormValues(brin ? brin : 'default')
     // Si un brin est défini, il faut mettre ses valeurs dans les champs
@@ -973,12 +984,10 @@ class Brins {
     const my = this
     let dataBrin = {}
     Brin.PROPERTIES.forEach( (dProp, prop) => {
+      if ( ! dProp.editable ) return ;
       dataBrin[prop] = my.getFormValue(prop).trim()
       if ( dataBrin[prop] == '' ) dataBrin[prop] = null
     })
-    for(let p of ['parent_id', 'type']){
-      dataBrin[p] && ( dataBrin[p] = Number(dataBrin[p]))
-    }
 
     return dataBrin
   }
@@ -992,6 +1001,7 @@ class Brins {
   {
     const my = this
     Brin.PROPERTIES.forEach((d, k)=>{
+      if ( false === d.editable ) return ;
       let val = ('default' === brin) ? d.default : brin[k]
       my.setFormValue(k, val)
     })
@@ -1059,18 +1069,8 @@ class Brins {
     newo = DOM.create('div', {id:'titre-form-brin', class:'titre', inner:'Formulaire de brin'})
     h.appendChild(newo)
 
-    /*- Menu des types -*/
-    let opt
-    let menuTypes = DOM.create('select', {id: 'types_brin'})
-    Brin.TYPES.forEach( (dType, type) => {
-      opt = DOM.create('option', {value: String(type), inner: dType.hname})
-      menuTypes.appendChild(opt)
-    })
-
-    menuTypes.addEventListener('change', my.onChooseTypeBrin.bind(my))
-    menuTypes.addEventListener('keyup', my.onChooseTypeBrin.bind(my))
-
     Brin.PROPERTIES.forEach( (dprop, prop) => {
+      if ( ! dprop.editable ) return ;
       newo = DOM.create('div', {class:'row'})
       let label = dprop.hname || prop.titleize()
       let lab  = DOM.create('label', {for:`brin_${prop}`, inner: label})
@@ -1092,11 +1092,6 @@ class Brins {
       let span = DOM.create('span', spanData)
       newo.appendChild(lab)
       newo.appendChild(span)
-      if ( prop == 'type' )
-      {
-        span.style.display = 'none'
-        newo.appendChild(menuTypes)
-      }
       h.appendChild(newo)
     })
 
@@ -1104,8 +1099,7 @@ class Brins {
 
     let textExp = `
 <shortcut>t</shortcut> = choisir le type, <shortcut>q</shortcut> <shortcut>s</shortcut>
-<shortcut>d</shortcut> <shortcut>f</shortcut> = éditer (ordre des champs).
-<shortcut>B</shortcut> = liste des brins.
+… = éditer (ordre des champs) <shortcut>B</shortcut> = Liste des brins.
 <shortcut>Enter</shortcut> = enregistrer les données du brin (ou le créer).
 <shortcut>Escape</shortcut> = renoncer.`
     newo = DOM.create('div', {class:'explication', inner: textExp})

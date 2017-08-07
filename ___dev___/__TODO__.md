@@ -1,3 +1,5 @@
+* Sélectionner le nouveau brin
+* On crée toujours le nouveau brin après le brin sélectionné
 
 * Tester l'enregistrement de 'brin_ids' en testant les méthodes :
   get brin_ids_32

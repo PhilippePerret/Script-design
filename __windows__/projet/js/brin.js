@@ -30,10 +30,10 @@ class Brin
   static get PROPERTIES () {
     this._properties || (
       this._properties = new Map([
-          ['titre',       {hname: 'Titre',        default: 'Titre du brin'}]
-        , ['description', {hname: 'Description',  default: 'Description du brin', enableReturn: true}]
-        , ['parent_id',   {hname: 'Brin parent'}]
-        , ['type',        {hname: 'Type brin'}]
+          ['titre',       {hname: 'Titre',        editable: true, default: 'Titre du brin'}]
+        , ['description', {hname: 'Description',  editable: true, default: 'Description du brin', enableReturn: true}]
+        , ['parent_id',   {hname: 'Brin parent',  editable: false}]
+        , ['type',        {hname: 'Type brin',    editable: false}]
       ])
     )
     return this._properties
@@ -115,7 +115,8 @@ class Brin
   }
   get type        ()  {
     if ( undefined === this._type ) {
-      this._type = this.data.type ? Number(this.data.type) : 0
+      this._type = Number(this.data.type || 0)
+      if ( isNaN(this._type) ) this._type = 0
     }
     return this._type
   }
@@ -231,7 +232,8 @@ class Brin
   **/
   set type (v) {
     if ( undefined !== v && null !== v ) v = Number(v) ;
-    this.data.type = this._type = v
+    this.data.type = v
+    this._type = v
     this.modified  = true
   }
 
@@ -255,7 +257,7 @@ class Brin
     if ( newData )
     {
       my.reset()
-      newData && forEach(newData, (v, k) => {my[k] = v} )
+      newData && forEach(newData, (v, k) => { my[k] = v })
       my.modified = true
     }
   }

@@ -217,8 +217,9 @@ global.resetBrins = function ()
   projet._brins   = undefined
   global.brins = projet.brins
 
-  brins._panneau  = undefined // forcer la reconstruction
-  brins._form     = undefined
+  brins._panneau    = undefined // forcer la reconstruction
+  brins._ULlisting  = undefined
+  brins._form       = undefined
 
   global.brin  = new Brin({id: 0, projet: projet, titre: "Brin sans titre"})
   global.brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1", type: 20})
@@ -232,7 +233,7 @@ global.resetBrins = function ()
   global.brin9 = new Brin({id: 9, projet: projet, titre: "Brin #9", type: 12})
 
   projet.panneau('data').setDefaultData()
-  Brin._lastID = projet.panneau('data')._data.last_brin_id = 5
+  Brin._lastID = projet.panneau('data')._data.last_brin_id = 9
 
 }
 

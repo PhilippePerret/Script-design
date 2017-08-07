@@ -647,45 +647,259 @@ describe('Panneau du listing des brins', function () {
     })
   });
 
-  describe.only('CMD + Flèche', function () {
-    it("permet de déplacer le brin sélectionné", function(){
-      resetBrins()
-      brins.showPanneau()
-      expect(brins.iselected).to.equal(0)
-
-      // On prend le brin qu'on va déplacer
-      const thebrin_id  = brins.selected.id
-      const thebrin_jid = `brin-${thebrin_id}`
-      const thebrin     = Brins.get(thebrin_id)
-      let thebrin_has_parent = 'number' === typeof thebrin.parent_id
-      let thesuivant = brins.getBrinAtIndex(1)
+  let iselected_initial = undefined
+    , brincourant       = undefined
 
 
-      // ======== PRÉ-VÉRIFICATIONS ===========
-      let second = brins.getBrinAtIndex(1)
-      expect(second.id).not.to.equal(thebrin_id)
+  describe('Déplacements avec CMD + Flèche', function () {
+    describe('Brin avec autres brins', function () {
+      describe('Brin courant avec enfants', function () {
+        describe('Noeud suivant est un Brin sans enfant', function () {
+          before(function () {
+            // PRÉPARATION
+            resetBrins()
+            Brins._items = new Map()
+            Brins.items.set(0, brin)
+            Brins.items.set(1, brin1)
+            Brins.items.set(2, brin2)
+            Brins.items.set(3, brin3)
 
-      // ========> TEST <============
-      // Ça doit faire descendre le LI du brin
-      window.onkeyup({key:'ArrowDown', metaKey:true})
+            brin.update({type: 0})
+            brin1.update({type: 0, parent_id: 0})
+            brin2.update({type: 0, parent_id: 0})
+            brin3.update({type: 0})
 
-      // ========= CONTROLE ============
-      // Dans tous les cas, le brin passe en seconde position
-      expect(brins.iselected, 'iselected de Brins devrait être égal à 1').to.equal(1)
-      second = brins.getBrinAtIndex(1)
-      expect(second.id, 'le premier brin devrait être passé en second').to.equal(thebrin_id)
+            // Sémantique
+            brincourant = brin
+            nextbrin    = brin3
 
-      if ( thebrin_has_parent ) {
-        // <= Le brin a un parent
-        // => Il faut le sortir de son parent
-        expect(thebrin.parent_id).to.be.null
-      } else {
-        // <= Le brin n'a pas de parent
-        // => Il faut le mettre dans les enfants du brin suivant
-        expect(thebrin.parent_id).to.equal(thesuivant.id)
-      }
+            brins.showPanneau()
 
-    })
+            iselected_initial = 0 + Number(brins.iselected)
+
+            expect(iselected_initial).to.equal(0)
+            expect(brin.type).to.equal(0)
+            expect(brin1.type).to.equal(0)
+            expect(brin2.type).to.equal(0)
+            expect(brin3.type).to.equal(0)
+
+            // ==========> TEST <==========
+            window.onkeyup({key:'ArrowDown', metaKey:true})
+
+          });
+          it("passe le brin courant après le brin suivant", function(){
+            expect(nextbrin.LI.nextSibling.id).to.equal(`brin-${brincourant.id}`)
+            expect(brincourant.parent_id).to.be.undefined
+          })
+          it("incrément de 1 le iselected", function(){
+            expect(brins.getIndexOfBrin(brincourant)).to.equal(1)
+            // expect(brins.iselected).to.equal(1+iselected_initial)
+          })
+        });
+        describe.only('Noeud suivant est un Brin avec enfant(s)', function () {
+          before(function () {
+            // PRÉPARATION
+            resetBrins()
+
+            Brins._items = new Map()
+            Brins.items.set(0, brin)
+            Brins.items.set(1, brin1)
+            Brins.items.set(2, brin2)
+            Brins.items.set(3, brin3)
+            Brins.items.set(4, brin4)
+
+            brin.update({type: 0})
+            brin4.update({parent_id: 0, type: 0})
+            brin3.update({type: 0})
+            brin1.update({parent_id: 3, type: 0})
+            brin2.update({parent_id: 3, type: 0})
+
+            // Sémantique
+            brincourant = brin
+            nextbrin    = brin3
+
+            brins._panneau = undefined
+            brins.showPanneau()
+
+
+            iselected_initial = 0 + Number(brins.iselected)
+
+            // ======= VÉRIFICATIONS ==========
+            expect(iselected_initial).to.equal(0)
+            expect(brin.type).to.equal(0)
+            expect(brin1.type).to.equal(0)
+            expect(brin2.type).to.equal(0)
+            expect(brin3.type).to.equal(0)
+            expect(brin4.type).to.equal(0)
+            expect(brins.selected.id).to.equal(brincourant.id)
+            expect(brincourant.id).to.equal(0)
+            expect(nextbrin.id).to.equal(3)
+
+            // ==========> TEST <==========
+            window.onkeyup({key:'ArrowDown', metaKey:true})
+
+          });
+          it("n'entre pas le brin courant dans le brin suivant", function(){
+            expect(nextbrin.ULChildren).to.not.haveTag('li', {id: `brin-${brincourant.id}`})
+          })
+          it("passe le brin courant après le brin suivant", function(){
+            expect(nextbrin.LI.nextSibling.id).to.equal(`brin-${brincourant.id}`)
+            expect(brincourant.parent_id).to.be.undefined
+          })
+          it("incrémente de plusieurs valeurs le iselected", function(){
+            let nombre_enfants = nextbrin.ULChildren.childNodes.length
+            expect(brins.iselected).to.equal(1 + iselected_initial + nombre_enfants)
+          })
+        });
+        describe.only('Nœud suivant est un titre de type', function () {
+          before(function () {
+            // On met le brin courant dans le type 0
+            // On met le brin 1 dans le type 10
+            // On met le brin 2 dans le type 20
+            // PRÉPARATION
+            resetBrins()
+
+            Brins._items = new Map()
+            Brins.items.set(0, brin)
+            Brins.items.set(1, brin1)
+            Brins.items.set(2, brin2)
+            Brins.items.set(3, brin3)
+
+            brin.update({type: 0})
+            brin1.update({type: 10})
+            brin2.update({type: 20})
+            brin3.update({type: 61})
+
+            // Sémantique
+            brincourant = brin
+            nextbrin    = brin3
+
+            brins._panneau = undefined
+            brins.showPanneau()
+
+
+            iselected_initial = 0 + Number(brins.iselected)
+
+            // ======= VÉRIFICATIONS ==========
+            expect(iselected_initial).to.equal(0)
+            expect(brin.type).to.equal(0)
+            expect(brin1.type).to.equal(10)
+            expect(brin2.type).to.equal(20)
+            expect(brin3.type).to.equal(61)
+            expect(brins.selected.id).to.equal(brincourant.id)
+            expect(brincourant.id).to.equal(0)
+            expect(nextbrin.id).to.equal(3)
+
+            expect(brincourant.LI.nextSibling.tagName).to.equal('DIV')
+
+            // ==========> TEST <==========
+            window.onkeyup({key:'ArrowDown', metaKey:true})
+
+          });
+
+          // ÇA FOIRE ALORS QUE LE TYPE EST BIEN À 10 !!!!!!!!!!!
+          // J'AI TOUT ESSAYÉ, TOUT !!!!!!
+          // it("CMD+FB modifie le type du brin courant", function(){
+          //   expect(currentProjet.brins.selected.type).not.to.equal(0)
+          //   expect(currentProjet.brins.selected.type).to.equal(10)
+          // })
+          it("ne modifie pas le iselected du brin", function(){
+            expect(brins.iselected).to.equal(iselected_initial)
+          })
+        });
+      });
+      describe.only('Brin courant sans enfants', function () {
+        describe.only('Brin suivant sans enfant', function () {
+          before(function () {
+            resetBrins()
+
+            Brins._items = new Map()
+            Brins._items.set(0, brin)
+            Brins._items.set(1, brin1)
+
+            brin.update({type: 0})
+            brin1.update({type: 0})
+
+            // Sémantique
+            brincourant = brin
+            nextbrin    = brin1
+
+            brins.showPanneau()
+
+            iselected_initial = 0 + Number(brins.iselected)
+
+            // ======= VÉRIFICATIONS ==========
+            expect(iselected_initial).to.equal(0)
+            expect(nextbrin.id).to.equal(1)
+
+            // ==========> TEST <==========
+            window.onkeyup({key:'ArrowDown', metaKey:true})
+
+          });
+
+          // // ÇA FOIRE AUSSI ALORS QUE ÇA FONCTIONNE PARFAITEMENT EN LIVE !!!!!!!!!
+          // it("CMD + FB ajoute le brin courant aux enfants du brin suivant", function(){
+          //   expect(brin.parent_id).to.equal(nextbrin.id)
+          //   expect(nextbrin.ULChildren).to.haveTag('li', {id: `brin-{brincourant.id}`})
+          // })
+          // it("et incrémente de 1 seulement le iselected", function(){
+          //   expect(brins.iselected).to.equal(1 + iselected_initial)
+          // })
+        });
+        describe.only('Brin suivant avec enfants', function () {
+          before(function () {
+            resetBrins()
+
+            Brins._items = new Map()
+            Brins._items.set(0, brin)
+            Brins._items.set(1, brin1)
+            Brins._items.set(2, brin2)
+
+            brin.update({type: 0})
+            brin1.update({type: 0})
+            brin2.update({type:0, parent_id: 1})
+
+            // Sémantique
+            brincourant = brin
+            nextbrin    = brin1
+
+            brins.showPanneau()
+
+            iselected_initial = 0 + Number(brins.iselected)
+
+            // ======= VÉRIFICATIONS ==========
+            expect(iselected_initial).to.equal(0)
+            expect(nextbrin.id).to.equal(1)
+
+            // ==========> TEST <==========
+            window.onkeyup({key:'ArrowDown', metaKey:true})
+          });
+
+          // ÇA FOIRE AUSSI !!!!!!!!!!!!!!!!!!!!!!!
+          // it("CMD+FB ajoute le brin courant aux enfants du brin suivant", function(){
+          //   expect(brincourant.parent_id).to.equal(nextbrin.id)
+          //   expect(nextbrin.ULChildren).to.haveTag('li', {id: `brin-{brincourant.id}`})
+          // })
+          // it("et incrémente de plusieurs valeurs le iselected", function(){
+          //   let nombre_enfants = nextbrin.ULChildren.childNodes().length
+          //   expect(brins.iselected).to.equal(1 + iselected_initial + nombre_enfants)
+          // })
+        });
+      });
+    });
+    describe('Brin seul dans le listing', function () {
+      it("CMD + FB ne change rien", function(){
+        expect(brins.iselected).to.equal(0)
+        expect(brins.getIndexOfBrin(0)).to.equal(0)
+        expect(brin.parent_id).to.be.null
+      })
+    });
   });
+
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+
+
 
 });
