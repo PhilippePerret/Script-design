@@ -1,3 +1,12 @@
+
+class DataValidityError extends Error {
+  constructor(message) {
+    super ( message )
+    this.name = this.constructor.name
+    Error.captureStackTrace(this, this.constructor)
+  }
+}
+
 /** ---------------------------------------------------------------------
   *   Parag (classe)
   *   --------------
@@ -37,11 +46,18 @@ class Parag
         // Le type 'e' suit le type 'd', date, mais seulement YYMMJJ
         //
           'id'          : {length: 8  , type: 'n' }
-        , 'panneau_let' : {length: 1  , type: 's', default: 'n'}
-        , 'ucontents'   : {length: 512, type: 's', default: '' }
-        , 'duration'    : {length: 12 , type: 'n', default: 60 }
+        , 'panneau_let' : {length: 1  , type: 's', default: 'n'     }
+        , 'ucontents'   : {length: 512, type: 's', default: ''      }
+        , 'duration'    : {length: 4  , type: 'n', default: 60      }
         , 'created_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD') }
         , 'updated_at'  : {length: 6  , type: 'e', default: moment().format('YYMMDD')  }
+        , 'position'    : {length: 6  , type: 'n', default: null    }
+        , 'type'        : {length: 4  , type: 's', default: '0000'  }
+        , 'brin_ids_32' : {length: 16 , type: 's', default: ''      }
+        // Les nouvelles données doivent obligatoirement être ajoutées après et il
+        // faut retirer la longueur à 'vide' ci-dessous pour ne pas avoir à tout
+        // recalculer
+        , 'vide'        : {length: 68 , type: 's', default: ''}
       }
     )
     return this.__data
@@ -90,8 +106,36 @@ class Parag
   }
 
 
-
-
+  /** ---------------------------------------------------------------------
+    *   Les méthodes qui gèrent le verso du parag
+    *
+  *** --------------------------------------------------------------------- */
+  /**
+  * @return {Parag} Le parag courant
+  **/
+  static get current () {
+    return currentPanneau.parags.selection.current
+  }
+  static createNewBrinForCurrent ()
+  {
+    const cur = this.current
+    return cur.createNewBrin.call(cur)
+  }
+  static chooseBrinsForCurrent ()
+  {
+    const cur = this.current
+    return cur.chooseBrins.call(cur)
+  }
+  static showRectoForCurrent ()
+  {
+    const cur = this.current
+    return cur.showRecto.call(cur)
+  }
+  static editPropertyForCurrent (prop)
+  {
+    const cur = this.current
+    return cur.editProperty.call(cur, prop)
+  }
 
 
   /** ---------------------------------------------------------------------
@@ -136,18 +180,29 @@ class Parag
     const my        = this
     const openFlag  = fs.existsSync(my.parags_file_path) ? 'r+' : 'w'
 
-    return new Promise( (ok, ko) => {
-      fs.open(my.parags_file_path, openFlag, (err, fd) => {
-        if ( err ) throw err
-        fs.write(fd, my.data_infile, my.startPos, 'utf8', (err, sizew, writen) => {
-          if (err) { ko(err) }
-          else {
-            my.modified = false
-            ok()
-          }
-        })
+    if ( my.dataAreValid() )
+    {
+      return new Promise( (ok, ko) => {
+          fs.open(my.parags_file_path, openFlag, (err, fd) => {
+            if ( err ) throw err
+            fs.write(fd, my.data_infile, my.startPos, 'utf8', (err, sizew, writen) => {
+              if (err) { ko(err) }
+              else {
+                my.modified = false
+                ok()
+              }
+            })
+          })
       })
-    })
+    }
+    else
+    {
+      // <= Les données sont invalides
+      // => On n'enregistre pas la donnée et on ajoute un message
+      //    d'erreur au rapport
+      my.projet.savingReporter.push({type:'error', message: `Le parag #${my.id} n'a pas pu être enregistré : ${my.savingError}`})
+      return Promise.resolve()
+    }
 
   }
 
@@ -175,6 +230,77 @@ class Parag
   set modified (v){
     this._modified = v
     this._modified && this.panneau && ( this.panneau.modified = true )
+  }
+
+
+
+  /**
+  * Test la validité des données avant l'enregistrement et
+  * produit l'erreur savingError ({String} contenant le message d'erreur) en
+  * cas d'erreur
+  **/
+  dataAreValid ()
+  {
+    // DataValidityError
+    const my    = this
+    const dData = Parag.DATA
+
+    try
+    {
+      if ( 'number' != typeof my.id ){
+        throw new DataValidityError('L’ID devrait être un nombre.')
+      }
+      if ( String(my.id).length > dData.id.length ) {
+        throw new DataValidityError(`L’ID ${my.id} est trop grand.`)
+      }
+
+      /*- Le texte unicode ne doit pas être plus long que prévu -*/
+
+      if ( my.ucontents.length > dData['ucontents'].length )
+      {
+        throw new DataValidityError("Le texte est trop long.")
+      }
+
+      if ( 'string' != typeof(my.panneau_let)){
+        throw new DataValidityError('La lettre du panneau devrait être un string')
+      }
+      if ( my.panneau_let.length != 1 ){
+        throw new DataValidityError('La lettre du panneau devrait ne faire qu’une seule lettre')
+      }
+
+      if ( 'number' != typeof my.duration ) {
+        throw new DataValidityError(`La durée devrait être un nombre. Or, ${my.duration} est un ${typeof my.duration}`)
+      }
+      if ( String(my.duration).length > dData.duration.length ) {
+        throw new DataValidityError(`La durée ${my.duration} est trop longue (${dData.duration.length} caractères max attendus)`)
+      }
+
+      if ( String(my.position).length > dData.position.length ) {
+        throw new DataValidityError(`La position ${my.position} est trop longue (max chiffres : ${dData.position.length})`)
+      }
+
+      if ( my.type.length != 4 ) {
+        throw new DataValidityError(`Le type ${my.type} devrait faire exactement 4 caractères`)
+      }
+
+      if ( my.brin_ids_32.length > dData.brin_ids_32.length ) {
+        throw new DataValidityError(`La donnée brins (brin_ids_32) est trop longue. Elle ne devrait pas excéder ${dData.brin_ids_32.length} caractères`)
+      }
+
+      /*- Tout est OK -*/
+
+      return true
+
+    }
+    catch(err)
+    {
+      if ( 'DataValidityError' == err.name ) {
+        my.savingError = `${err.message}.`
+        return false
+      } else {
+        throw err
+      }
+    }
   }
   /** ---------------------------------------------------------------------
   *
@@ -214,12 +340,26 @@ class Parag
     this._panneau_let = v
     this._panneau_id = Projet.PANNEAUX_DATA[v]
   }
-  get duration    ()  { return this._duration    }
-  set duration    (v) { this._duration = v ; this.reset()  }
-  get created_at  ()  { return this._created_at   }
-  set created_at  (v) { this._created_at = v ; this.reset() }
+
+  get duration    ()  { return this._duration   || 60 }
+  get position    ()  { return this._position   || -1 }
+  get type        ()  { return this._type       || '0000' }
+  get brin_ids    ()  {
+    this._brin_ids || this.defineBrinIds()
+    return this._brin_ids
+  }
   get updated_at  ()  { return this._updated_at   }
-  set updated_at  (v) { this._updated_at = v ; this.reset() }
+  get created_at  ()  { return this._created_at   }
+
+  set duration    (v) { this._duration = v    }
+  set position    (v) {
+    if ( v == '-1' || v == 'auto' ){ this._position = -1 }
+    else { this._position = v }
+  }
+  set type        (v) { this._type = v        }
+  set brin_ids    (v) { this._brin_ids = v ; this.updateBrinIds() }
+  set updated_at  (v) { this._updated_at = v  }
+  set created_at  (v) { this._created_at = v  }
 
 
   /** ---------------------------------------------------------------------
@@ -248,6 +388,46 @@ class Parag
     (undefined === this._loaded) && ( this._loaded = 'string' == typeof(this.contents) )
     return this._loaded
   }
+
+  /**
+  * Méthode appelée quand on redéfinit la liste des brins auxquels
+  * appartient le parag. Actualise toutes les données en rapport, et
+  * principalement _brins_ids_32, la version en base 32 et string
+  **/
+  updateBrinIds (bids)
+  {
+    bids = bids || this._brin_ids || []
+    this._brin_ids_32 =
+      bids.map(bid => {
+        let b = Number(bid).toBase32()
+        return b.length > 1 ? b : ` ${b}`
+      }).join('')
+  }
+  /**
+  * Méthode définissant la liste brin_ids à partir de la valeur de brin_ids_32
+  *
+  * @produit this._brin_ids
+  **/
+  defineBrinIds ()
+  {
+    const my = this
+    my._brin_ids = []
+    if ( ! my.brin_ids_32 ) return ;
+    else {
+      for(let i = 0 ; i < 16 ; i += 2){
+        let bid = my.brin_ids_32.substr(i, 2).trim()
+        if ( bid === '' ) continue ;
+        my._brin_ids.push(String(bid).fromBase32())
+      }
+    }
+  }
+
+  /**
+  * La liste des brins auxquels appartient le parag, mais en version string 32
+  **/
+  get brin_ids_32 () { return this._brin_ids_32 || (new Array(16).fill(' ').join(''))}
+  set brin_ids_32 (v){ this._brin_ids_32 = v    }
+
 
   /** ---------------------------------------------------------------------
     *
@@ -304,6 +484,7 @@ class Parag
       let startPos = my.id * Parag.dataLengthInFile
       let buffer   = new Buffer(Parag.dataLengthInFile)
       fs.open(my.projet.parags_file_path, 'r', (err, fd) => {
+        if ( err ) { throw err }
         fs.read(fd, buffer, 0, Parag.dataLengthInFile, startPos, (err, bsize, buf) => {
           if ( err ) { throw err }
           ok( buf.toString() )
@@ -328,6 +509,7 @@ class Parag
   reset ()
   {
     const my = this
+    delete my._ucontents
     delete my._contents_formated
     delete my._contents_simple
     delete my._duration_formated
@@ -363,7 +545,7 @@ class Parag
   display (callback)
   {
     const my = this
-    console.log("<#Parag %d>#display()", my.id)
+    // console.log("<#Parag %d>#display()", my.id)
     if ( ! my.displayed )
     {
       my.panneau.container.appendChild(my.mainDiv)
@@ -503,6 +685,7 @@ class Parag
         case 'b':
           val = val == '1' ? true : false
       }
+      // console.log("Prop '_%s' mise à %s", prop, val)
       this[`_${prop}`] = val
 
       // console.log(`Propriété '${prop}' mise à `, this[prop])
@@ -1134,7 +1317,7 @@ class Parag
   get divContents ()
   {
     if (!this._div_contents)
-    {this._div_contents=this.mainDiv.getElementsByClassName('p-contents')[0]}
+    {this._div_contents=this.mainDiv.getElementsByClassName('p-recto')[0]}
     return this._div_contents
   }
 
@@ -1205,15 +1388,30 @@ class Parag
   {
 
     let
-          div_id  = `p-${this.id}`
-        , div     = DOM.create('div', {class:'p', id: div_id, 'data-id':String(this.id)})
-        , divCont = DOM.create('div',{class:'p-contents',id:`${div_id}-contents`,inner:this.contentsFormated})
+          div_id    = `p-${this.id}`
+        , div       = DOM.create('div', {class:'p', id: div_id, 'data-id':String(this.id)})
+        , divCont   = DOM.create('div', {class:'p-recto',id:`${div_id}-recto`, 'enable-return': 'true', inner:this.contentsFormated})
+        , divVerso  = DOM.create('div', {class:'p-verso hidden', id: `p-${this.id}-verso`})
     // Ajout du contenu textuel
 
     div.appendChild(divCont)
+    div.appendChild(divVerso)
     this.observe_div(div)
     this.observe_contents(divCont)
     return div
+  }
+
+  /**
+   * Méthode qui reconstruit le DIV du parag après certaines modifications
+   * (par exemple le type)
+   */
+  rebuild ()
+  {
+    const my  = this
+    my.desobserve_div()
+    my.desobserve_contents()
+    const div = my.build()
+    my.panneau.container.replaceChild(my.build, DOM.get(`p-${this.id}`))
   }
 
   observe_div (div)
@@ -1221,11 +1419,24 @@ class Parag
     div || (div = this.mainDiv)
     div.addEventListener('click', this.onClick.bind(this))
   }
+  desobserve_div ( div )
+  {
+    div || (div = this.mainDiv)
+    div.removeEventListener('click', this.onClick.bind(this))
+  }
   observe_contents (divCont)
   {
-    divCont || (divCont = this.divContents)
-    divCont.addEventListener('click', this.doEdit.bind(this))
-    divCont.addEventListener('blur',  this.undoEdit.bind(this))
+    const my = this
+    divCont || (divCont = my.divContents)
+    divCont.addEventListener('click', my.doEdit.bind(my))
+    divCont.addEventListener('blur',  my.undoEdit.bind(my))
+  }
+  desobserve_contents (divCont)
+  {
+    const my = this
+    divCont || (divCont = my.divContents)
+    divCont.removeEventListener('click', this.doEdit.bind(my))
+    divCont.removeEventListener('blur',  this.undoEdit.bind(my))
   }
 
   /**
@@ -1360,12 +1571,13 @@ class Parag
   doEdit (evt)
   {
     if ( evt && evt.metaKey ) { return true }
-    let o = this.divContents
+    const my = this
+    let o = my.divContents
     let realContents
     o.contentEditable = 'true'
     try
     {
-      realContents = this.contents.replace(/<br>/g,"\n")
+      realContents = my.contents.replace(/<br>/g,"\n")
     }
     catch(err)
     {
@@ -1374,26 +1586,11 @@ class Parag
       realContents = ''
     }
     o.innerHTML = realContents
-    o.focus()
 
-    let startNode = o.firstChild
-      , endNode   = o.firstChild
+    UI.setSelectionPerOption(o, my.projet.option('seloneditpar') ? 'all' : false)
 
-    if ( startNode )
-    {
-      let range     = document.createRange()
-      // Ci dessous, si on met '0', on sélectionne tout.
-      // À mettre dans les options : soit on se place à la fin soit on
-      // sélectionne tout
-      range.setStart(startNode, realContents.length /* 0 */ )
-      range.setEnd(endNode, realContents.length)
-      let sel = window.getSelection()
-      sel.removeAllRanges()
-      sel.addRange(range)
-    }
-
-    this.projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
-    this.actualContents = String(this.contents)
+    my.projet.mode_edition = true // C'est ça qui change les gestionnaires de keyup
+    my.actualContents = String(my.contents)
   }
   // Sortir le champ contents du mode édition (et enregistrer
   // la nouvelle donnée si nécessaire)
@@ -1402,6 +1599,7 @@ class Parag
     this.contentsHasChanged() && this.onChangeContents.bind(this)()
     this.endEdit()
   }
+
 
   /**
   * Sortir du champ contents en mode édition
@@ -1436,13 +1634,7 @@ class Parag
   **/
   defineNewContents ()
   {
-    let c = this.divContents.innerHTML
-    c = c.replace(/<\/div>/g,'').trim()
-    c = c.replace(/<div>/g, "\n").trim()
-    c = c.replace(/\r/g, "\n")
-    c = c.replace(/\n\n+/g, "\n") // pas de double-retours
-    c = c.replace(/\n/g,'<br>') // on garde des BR pour simplifier
-    this.newContents = c
+    this.newContents = UI.epureEditedValue(this.divContents.innerHTML)
   }
 
 
@@ -1575,6 +1767,267 @@ class Parag
       })
     }
     return this._relatives
+  }
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *   GESTION INTÉGRALE DES TYPES DU PARAG
+    *
+  *** --------------------------------------------------------------------- */
+  get types () {
+    this._types || ( this._types = new ParagTypes(this) )
+    return this._types
+  }
+
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES POUR LE VERSO DU DIV (PROPS)
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * @property {HTMLElement} Le div du recto du parag
+  **/
+  get recto ()
+  {
+    this._recto || (this._recto = this.mainDiv.querySelector('div.p-recto'))
+    return this._recto
+  }
+
+  /**
+  * @property {HTMLElement} Le div du verso du parag
+  **/
+  get verso ()
+  {
+    this._verso || ( this._verso = this.mainDiv.querySelector('div.p-verso'))
+    return this._verso
+  }
+
+  isRecto ()
+  {
+    if ( undefined === this._isRecto ) { this._isRecto = true }
+    return this._isRecto
+  }
+
+  /**
+  * Méthode principale qui bascule l'affiche du parag en fonction de
+  * son état actuel.
+  **/
+  toggleRectoVerso ()
+  {
+    this[ this.isRecto() ? 'showVerso' : 'showRecto' ].call(this)
+  }
+
+  /**
+   * Méthode qui demande l'affichage du recto du parag
+   *
+   * Elle commence par mettre le formulaire général dans le div.verso du
+   * mainDiv du parag.
+   */
+  showVerso ()
+  {
+    const my = this
+
+    my.mainDiv.querySelector('div.p-verso').appendChild(Parag.paragVersoForm)
+    Parag.paragVersoForm.style.display = 'block'
+    my.recto.className = 'p-recto hidden'
+    my.verso.className = 'p-verso'
+    my._isRecto = false
+
+    /*- On met les 4 menus des types -*/
+
+    if ( ! Parag.paragVersoForm.querySelector('#parag_type1') )
+    {
+      let selects = my.types.buildSelects()
+      for( let xtype = 1 ; xtype < 5 ; ++ xtype )
+      {
+        let ospan = Parag.paragVersoForm.querySelector(`span#span-type${xtype}`)
+        ospan.innerHTML = ''
+        ospan.appendChild(selects[-1 + xtype])
+      }
+    }
+
+    /*- Renseignement du formulaire avec valeurs parag -*/
+
+    ;(new Map([
+        ['id',        my.id]
+      , ['duration',  (my.duration||60).as_duree()]
+      , ['position',  (my.position < 0 ? 'auto' : my.position.as_horloge())]
+      , ['type1',     my.types.type1]
+      , ['type2',     my.types.type2]
+      , ['type3',     my.types.type3]
+      , ['type4',     my.types.type4]
+    ])).forEach( (v, k) => {
+      let o = Parag.paragVersoForm.querySelector(`#parag_${k}`)
+      v = String(v) // attention quand on utilisera des checkbox
+      switch(o.tagName.toLowerCase())
+      {
+        case 'select':
+          o.value = v
+          break
+        default:
+          o.innerHTML = v
+      }
+    })
+
+
+    /*- Définition pour le Tabulator -*/
+
+
+    let mesLettres = new Map([
+        ['b',           Parag.createNewBrinForCurrent.bind(Parag)]
+      , ['B',           Parag.chooseBrinsForCurrent.bind(Parag)]
+      , ['ArrowLeft',   Parag.showRectoForCurrent.bind(Parag)]
+      , ['Escape',      Parag.showRectoForCurrent.bind(Parag)]
+    ])
+
+    if (DOM.get('parag_verso_form')) // pas pour les tests
+    {
+      Tabulator.setupAsTabulator('parag_verso_form', {
+        Map:{
+            'duration'  : Parag.editPropertyForCurrent.bind(Parag, 'duration')
+          , 'position'  : Parag.editPropertyForCurrent.bind(Parag, 'position')
+          , 'type1'     : Parag.editPropertyForCurrent.bind(Parag, 'type1')
+          , 'type2'     : Parag.editPropertyForCurrent.bind(Parag, 'type2')
+          , 'type3'     : Parag.editPropertyForCurrent.bind(Parag, 'type3')
+          , 'type4'     : Parag.editPropertyForCurrent.bind(Parag, 'type4')
+        }
+        , MapLetters: mesLettres
+      })
+    }
+    return true
+  }
+
+
+  /** ---------------------------------------------------------------------
+    *
+    *   MÉTHODES D'ÉDITION DES DONNÉES
+    *
+  *** --------------------------------------------------------------------- */
+
+  /**
+  * Appelé par la touche "b" pour créer un nouveau brin
+  **/
+  createNewBrin ()
+  {
+    this.projet.brins.showForm()
+  }
+  /**
+  * Appelé par la touche "B" pour choisir les brins du parag quand on
+  * a retourné le parag (VERSO)
+  **/
+  chooseBrins ()
+  {
+    // console.log("-> chooseBrins dans parag#%d", this.id)
+    this.projet.brins.showPanneau({parag: this})
+  }
+
+
+  editProperty ( property )
+  {
+    const my  = this
+    const obj = DOM.get(`parag_${property}`)
+    switch(obj.tagName.toLowerCase())
+    {
+      case 'select':
+        obj.focus()
+        break
+      default:
+        my.projet.ui.activateEditableField(obj)
+    }
+  }
+
+  redefine_parag_duration (nv)
+  {
+    this.duration = nv.as_seconds()
+    DOM.get('parag_duration').innerHTML = this.duration.as_duree()
+    this.reset()
+    this.modified = true
+  }
+
+  redefine_parag_position (nv)
+  {
+    if ( nv === 'auto' || nv === '-1')
+    {
+      this.position = -1
+      DOM.get('parag_position').innerHTML = 'auto'
+    }
+    else
+    {
+      this.position = nv.as_seconds()
+      DOM.get('parag_position').innerHTML = this.position.as_horloge()
+    }
+    this.reset()
+    this.modified = true
+  }
+
+  /**
+  * Quand on choisit une nouvelle valeur dans un des 4 menus de type
+  **/
+  onChangeType( xType, nv )
+  {
+    const my = this
+
+    my.types[`type${xType}`]= parseInt(nv)
+    // modifie aussi la donnée générale
+
+    my.modified = true
+
+    // TODO remettre : this.rebuild()
+    // On doit peut-être reconstruire le parag, car les styles influent
+    // fortement sur le style.
+  }
+
+  showRecto ()
+  {
+    const my = this
+    if ( false === my._isRecto )
+    {
+      // <= C'est une vraie remise au verso, après affichage du verso
+      // => Il faut sortir le traitement de la gestion par le Tabulator
+      if ( DOM.get('parag_verso_form') /* inconnu en test unitaire */ ) {
+        Tabulator.unsetAsTabulator('parag_verso_form')
+      }
+    }
+    my.recto.className = 'p-recto'
+    my.verso.className = 'p-verso hidden'
+    my._isRecto = true
+  }
+
+  static get paragVersoForm ()
+  {
+    if ( ! this._paragVersoForm )
+    {
+      const my = this
+      my._paragVersoForm = undefined
+      // Je le cherche dans une des sections des panneaux
+      // Noter qu'on pourrait le rechercher dans le document, mais que
+
+      my._paragVersoForm = document.querySelector('form#parag_verso_form')
+
+      if ( ! my._paragVersoForm )
+      {
+        // ON ne l'a pas trouvé dans le document, on le cherche dans les
+        // panneau
+        Projet.PANNEAU_LIST.forEach( (panid) => {
+          if ( my._paragVersoForm ) { return }
+          else {
+            let container = Projet.current.panneau(panid).section
+            my._paragVersoForm = container.querySelector('form#parag_verso_form')
+          }
+        })
+      }
+
+      if ( ! my._paragVersoForm )
+      {
+        // On ne l'a vraiment trouvé nulle part on le charge artificiellement
+        let code = fs.readFileSync('./__windows__/projet/html/verso_parag_form.ejs')
+        currentPanneau.section.insertAdjacentHTML('beforeend', code)
+        my._paragVersoForm = currentPanneau.section.querySelector('form#parag_verso_form')
+      }
+    }
+    return this._paragVersoForm
   }
 
 }

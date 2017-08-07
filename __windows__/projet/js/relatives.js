@@ -20,11 +20,9 @@ class Relatives
   reset ()
   {
     this._data = this.defaultData
-    for(let pid in Parags.items){
-      if(Parags.items.hasOwnProperty(pid)){
-        this.resetParag(Parags.items[pid])
-      }
-    }
+    Parags.items.forEach( (parag, pid) => {
+      this.resetParag(parag)
+    })
   }
   /**
   * Ajout d'un paragraphe, sans association, dans la donnée des

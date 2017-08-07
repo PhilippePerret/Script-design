@@ -1,7 +1,20 @@
-* Poursuivre la vérification de tous les tests
-  J'en suis au dossier Parag
-  
-* Soit le parag 19
+* Voir les bugs sur le site…
+
+* Les relatives restent à remettre complètement (il y a notamment une méthode importante qui est entièrement commentée)
+
+* Tester le titre dans le panneau des brins ("Liste des brins" ou "Brins du parag #x" quand un parag est sélectionné — ouverture à partir du verso)
+
+* les brins sont encore à tester, mais il y a beaucoup de choses à comprendre je pense au niveau de l'initialisation…
+* tester qu'on ne puisse pas choisir plus de 8 brins pour le parag
+  Note : il faut créer 9 brins
+* Ranger un peu les classes `Brins` et `Brin`
+
+* Implémenter le même traitement que editablecontent on blur, mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
+  Essayer ça avec les types, dont on doit proposer une liste
+
+
+* RÉFLÉCHIR ENCORE AU PROBLÈME SUIVANT :
+  Soit le parag 19
   Il est demandé sa synchronisation
   On crée le #20 dans le panneau Notes
   On crée le #21 dans le panneau Manuscrit

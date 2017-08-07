@@ -19,8 +19,10 @@ describe('Affichage des panneaux', function () {
   describe('construction d’un panneau après chargement', function () {
     before(function () {
       resetTests({nombre_parags: 10})
-      panneauNotes.parags.add([parag2, parag0, parag5, parag6])
+      let arr = [parag2, parag0, parag5, parag6]
+      panneauNotes.parags.add(arr)
       panneauNotes.modified = true
+      arr.forEach(p => {p.modified = true})
       return projet.saveAll()
     })
 

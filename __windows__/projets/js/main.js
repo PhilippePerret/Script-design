@@ -19,7 +19,6 @@ const
     [
         C.LOG_MODULE_PATH
       , C.DOM_MODULE_PATH
-      , C.COMMON_UI_MODULE_PATH
       // ---- Cette fenêtre ---
       , PROJET_API_PATH
       , PROJET_KBS_PATH
@@ -27,11 +26,14 @@ const
   , function(
       log
     , DOM
-    , UI
     // --- Cette fenêtre ---
     , Projet
     , KBShortcuts
   ){
+
+    global.log = log
+    global.DOM = DOM
+    global.UI = require(path.join(C.COMMON_JS_FOLDER,'ui.js'))
 
     let timer = setInterval(
       function()

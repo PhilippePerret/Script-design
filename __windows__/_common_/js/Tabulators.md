@@ -3,6 +3,8 @@
 [map]: #tabulator_map
 [`Map`]: #tabulator_map
 
+> Note : voir aussi le fichier `Tabulators_implem.md` pour des détails sur l'implémentation qui aide à l'utilisation.
+
 ## Introduction {#introduction}
 
 Les `tabulators` sont un système de gestion de l'interface inédit qui fonctionne à l'image d'un menu : quand on focus sur le tabulator, il s'ouvre (ou pas) pour montrer ses outils. Chaque outil, ou menu, est associé à une lettre, dans l'ordre de la rangée intermédiaire du clavier (q, s, f, g, h, j, etc.) puis dans l'ordre de la rangée supérieure (a, z, e, r, etc.).
@@ -29,6 +31,13 @@ La troisième originalité consiste dans le fait que la touche entrée, pour cho
 * Faire un générateur de Tabulator où il suffira de donner les données pour qu'il construise le code HTML du tabulator.
 
 ## Implémentation {#tabulator_implementation}
+
+Il existe deux moyens très distinct d'implémenter des tabulators dans la page (voir les avantages et écueils de chaque moyen dans le fichier `Tabulators_implem.md`).
+
+* [Par balise `tabulator` et `button`](#implem_by_balise_tabulator),
+* [Par définition des attributs `data-tab` et envoi d'une section à la méthode `setupAsTabulator`](#implem_by_setupastabulator).
+
+### Implémentation par balise `tabulator` {#implem_by_balise_tabulator}
 
 * **Créer le code HTML des tabulators**. On commence pour créer le code dans la page, à l'aide de balises `tabulator` et de `button`(s) :
 
@@ -290,3 +299,80 @@ Tabulator.Map = {
 ```
 
 Maintenant, quelles que soient les associations de `keys` pour activer les menus/boutons, ce sont les bonnes opérations qui seront invoquées. That's it! :-)
+
+
+## Élément quelconque se comportant comme un tabulator {#implem_by_setupastabulator}
+
+On peut appliquer le comportement d'un `Tabulator` à tout élément du DOM qui contient des éléments éditable (span, div, select, checkbox) qui définissent l'attribut `data-tab`.
+
+Il doit simplement contenir des éléments focusable qui définissent l'attribut `data-tab`. Par exemple :
+
+```html
+
+<div id="ma-section-tabulatorisable">
+  <span>Un texte non éditable</span>
+  <span class="editable" data-tab="ma-prop">Une valeur éditable</span>
+  <span class="editable" data-tab="autre-prop">Autre valeur éditable</span>
+  <select data-tab="lemneu">...</select>
+  ...
+</div>
+
+```
+
+Dans l'exemple ci-dessus, ce sont les spans et le select définissant `data-tab` qui réagiront au tabulator.
+
+On utilisera par exemple à l'affichage de cet élément :
+
+```js
+
+Tabulator.setupAsTabulator(
+
+  'ma-section-tabulatorisable', {
+
+  Map: {
+      'ma-prop': methodePourEditerMaProp
+    , 'autre-prop': methodePourEditerAutreProp
+    , ...
+  }
+
+  [, mapLetters: ...]
+
+})
+
+```
+
+> Noter que dans cette utilisation, on ne peut pas encore choisir plusieurs commandes en même temps.
+
+> Noter que lors du premier traitemnt, une classe `tabulatorized` est ajouté à l'élément principal pour indiquer qu'il a déjà été préparé pour Tabulator.
+
+### Définir d'autres lettres {#define_autres_lettres}
+
+On peut également définir d'autres lettres que celles prévues pour les éléments possédant un attribut `data-tab`. Il ne s'agit pas de définir d'autres lettres pour ces éléments, mais d'assigner d'autres commandes quelconques à certaines lettres sans qu'il y ait d'élément `data-tab` associés.
+
+Cela se fait grâce à la propriété `mapLetters` transmise à la méthode `setupAsTabulator`, **qui doit obligatoirement être une `Map`**. Par exemple :
+
+```js
+
+  let mapLetters = new Map()
+  mesLettres.set('n', this.creerNouvelObjet.bind(this))
+  mesLettres.set('Escape', this.changerComportementDefault.bind(this))
+
+  Tabulator.setupAsTabulator('monObjet', {
+    Map: {
+      // définition des data-tab
+    },
+    mapLetters: mesLettres
+  })
+
+```
+
+> Note : si une lettre "conventionnelle" est déjà utilisée par `mapLetters`, elle n'est pas utilisé comme lettre pour les éléments à data-tab.
+
+### Sortir de la gestion par Tabulator {#sortir_gestion_tabulator}
+Pour sortir de ce traitement, on utilise la méthode inverse en envoyant le même élément :
+
+```js
+
+Tabulator.unsetAsTabulator('ma-section-tabulatorisable')
+
+```

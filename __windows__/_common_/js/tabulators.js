@@ -19,6 +19,14 @@ class Tabulator
     *
   *** --------------------------------------------------------------------- */
 
+  /**
+  * Place des listener sur tous les boutons en fonction de leur ordre
+  **/
+  static get LETTERS () {
+    return ['q','s','d','f','g','h','j','k','l','m',
+            'a','z','e','r','t','y','u','i','o','p']
+  }
+
 
   /**
   * Méthode appelée à l'ouverture du pan pour le préparer (quand la page
@@ -27,21 +35,343 @@ class Tabulator
   static setup ()
   {
     // console.log('-> Tabulator::setup')
-    this.ready = false // pour les tests
+    this.ready  = false // pour les tests
     this._items = {} // les tabulateurs
     this._list  = [] // Idem mais en array
     this.observe()
-    this.ready = true
+    this.ready  = true
     // console.log('<- Tabulator::setup')
   }
 
   /**
-  * Place des listener sur tous les boutons en fonction de leur ordre
+  * Méthode appelée pour gérer l'objet DOM quelconque +DOMObj+ comme un
+  * tabulateur normal avec les données +data+.
+  *
+  * Cf. "Élément se comportant comme un tabulator" dans le manuel
+  *
+  * @param {HTMLElement|String} DOMObj Soit l'élément HTML soit son ID
+  * @param {Object} params  Les paramètres caractérisant le comportement des
+  *                         éléments.
+  *                         Définit :
+  *                           Map         [Obligatoire]
+  *                           mapLetters  [Optionnel, pour définir d'autres
+  *                                       lettres]
+  * @param {Boolean} forcer   Si true, on actualise la donnée SectionMaps même
+  *                           si l'objet était connu.
+  *
+  * TODO Plus tard, il faudrait que Tabulator puisse prendre en compte les
+  * champs possédant la classe "editable" pour les gérer automatiquement, sans
+  * avoir à définir de méthode dans params.Map. Parce qu'en l'occurrence, les champs
+  * span/div doit être activés par la méthode d'UI normal, et les autres champs
+  * doivent être focussés (les select et checkbox)
   **/
-  static get LETTERS () {
-    return ['q','s','d','f','g','h','j','k','l','m',
-            'a','z','e','r','t','y','u','i','o','p']
+  static setupAsTabulator ( DOMObj, params, forcer )
+  {
+    const my  = this
+    const obj = DOM.get(DOMObj)
+
+    // N0003
+    // https://github.com/PhilippePerret/Script-design/wiki/NoI#n0003
+    Tabulator.SectionMaps || ( Tabulator.SectionMaps = new Map() )
+
+    let sectionMap  = Tabulator.SectionMaps.get(obj.id)
+
+    if ( undefined === sectionMap || forcer )
+    {
+      // <= L'élément n'est pas encore préparé pour Tabulator
+      // => Il faut observer tous ses champs portant une data-tab
+      sectionMap = my.tabulatorizeObjet(obj, params)
+    }
+
+    if ( my.curSectionMap ) {
+      sectionMap.set('previous_objet_id', my.curSectionMap.get('objet_id'))
+    }
+
+    my.curSectionMap = sectionMap
+    my.iMaxLetter    = sectionMap.get('iMaxLetter')
+
+    /*- Activer cette section en déasactivant le comportement courant -*/
+
+    sectionMap.set('previousWindowOnKeyUp',   window.onkeyup)
+    sectionMap.set('previousWindowOnKeyDown', window.onkeydown)
+
+    window.onkeyup    = undefined
+    window.onkeydown  = undefined
+
+    window.onkeyup    = my.onKeyUp_TabulatorLike  .bind(my, sectionMap)
+    window.onkeydown  = my.onKeyDown_TabulatorLike.bind(my, sectionMap)
+
+    /*- Message de confirmation à l'utilisateur -*/
+
+    UILog(`#${obj.id} est géré par ©Tabulator`)
   }
+
+  /**
+  * Retourne true si l'objet DOM désigné par +obj+ est tabulatorized
+  *
+  **/
+  static isTabulatorized    (obj) { return DOM.hasClass(obj, 'tabulatorized') }
+  static isNotTabulatorized (obj) { return !this.isTabulatorized(obj) }
+  /**
+  * Méthode utilisée par `setupAsTabulator` pour préparer l'élément
+  * et composer sa Map d'éléments éditables.
+  *
+  * @param {HTMLElement}  obj Objet DOM à tabulatoriser
+  * @param {Object}       params  Paramètres optionnels
+  *
+  * @return {Object} La section Map initiée
+  **/
+  static tabulatorizeObjet (obj, params)
+  {
+    const my  = this
+    params || ( params = {} )
+    let iletter = -1
+      , letter = null
+      , tagname
+      , data_tab
+      , title
+      , sectionMap = params.MapLetters || ( new Map() )
+
+    obj.querySelectorAll('*[data-tab]').forEach( (o) => {
+
+      data_tab = o.getAttribute('data-tab')
+
+      while(!letter || sectionMap.get(letter)){letter = Tabulator.LETTERS[++iletter]}
+      // N0001
+      // https://github.com/PhilippePerret/Script-design/wiki/NoI#n0001
+
+
+      /*- Ajout dans la map de la section -*/
+
+      sectionMap.set( letter, params.Map[data_tab] )
+
+      /*- Title pour aide -*/
+
+      title = o.getAttribute('title') || ''
+      title += ` Taper ${letter}/${letter.toUpperCase()} pour activer`
+      o.setAttribute('title', title.trim())
+
+    })
+
+    sectionMap.set( 'iMaxLetter', iletter )
+    sectionMap.set('objet_id',    obj.id)
+
+
+    /*  On met la map dans Tabulator.SectionMaps pour pouvoir l'utiliser
+        ici, maintenant et plus tard
+    */
+    Tabulator.SectionMaps.set( obj.id, sectionMap )
+
+    if (!DOM.hasClass(obj,'tabulatorized')) DOM.addClass(obj,'tabulatorized');
+
+    return sectionMap
+  }
+
+  static onKeyDown_TabulatorLike ( sectionMap, evt )
+  {
+    if ( ! evt.metaKey ) return ;
+    // On ne passe par ici que lorsque la touche META (CMD) est pressée
+    // Car sinon, elle ne passe pas par keyUp, en tout cas avec certaines
+    // touches
+    let fonction = sectionMap.get(evt.key) || sectionMap.get(evt.key.toLowerCase())
+    if ( fonction )
+    {
+      fonction.call(null, evt)
+      return DOM.stopEvent(evt)
+    }
+
+    /*- Quelque touche avec META -*/
+
+    switch(evt.key)
+    {
+      case 's':
+        currentProjet.mode_edition || currentProjet.saveAll()
+        return DOM.stopEvent(evt)
+    }
+    return true
+  }
+
+  /**
+  * Gestionnaire de l'évènement keyUp pour l'élément se comportant comme
+  * un Tabulator.
+  **/
+  static onKeyUp_TabulatorLike ( sectionMap, evt )
+  {
+    // console.log("-> Tabulator#onKeyUp_TabulatorLike (avec '%s')", evt.key)
+    const my = this
+
+    let fonction = sectionMap.get(evt.key) || sectionMap.get(evt.key.toLowerCase())
+
+    /*- Si la fonction est définie, il faut voir si elle existe
+        et l'appeler le cas échéant -*/
+
+    if ( fonction )
+    {
+      my.realLetter     = `${evt.key}`
+      my.currentLetter  = evt.key.toLowerCase()
+
+      // N0002
+      // https://github.com/PhilippePerret/Script-design/wiki/NoI#n0002
+      let modifiers = {altKey:null, metaKey:null, ctrlKey:null, shiftKey:null}
+      for(let modifier in modifiers) { modifiers[modifier] = evt[modifier] }
+      if ( my.realLetter.length == 1 && my.realLetter >= 'A' && my.realLetter <= 'Z' ){
+        modifiers.shiftKey = true
+      }
+
+      if ( 'function' === typeof(fonction)) fonction.call(null, modifiers) ;
+      else {
+        alert(`La méthode ${fonction} n'est pas définie…`)
+      }
+    }
+    else
+    {
+      // Ce n'est pas une fonction définie. Est-ce que ça peut
+      // être une autre touche.
+      // Noter qu'on ne gère pas ici les Tab, Escape et Enter quand on
+      // se trouve dans les champs d'édition puisque c'est une fonction
+      // du gestionnaire d'évènement keyup lorsque l'on passe en édition.
+      const target = evt.target
+      const tagname = target.tagName.toLowerCase()
+      switch(evt.key.toLowerCase())
+      {
+        case 'j':
+          my.selectPreviousEditable()
+          return DOM.stopEvent(evt)
+        case 'l':
+          // Même si c'est tentant, ne pas utiliser les flèches, les
+          // réserver pour entrer et sortir du champ.
+          my.selectNextEditable()
+          return DOM.stopEvent(evt)
+        case 'k': // simuler la flèche haut
+          if ( tagname == 'select' ) // Flèche haut sur un menu sélectionné
+          {
+            my.selectNextOptionOf(target)
+          }
+          else
+          {
+            Keyboard.press('ArrowDown', {target: evt.target})
+          }
+          break
+        case 'i': // simuler la flèche bas
+          if ( tagname == 'select' ) // Flèche haut sur un menu sélectionné
+          {
+            my.selectPreviousOptionOf(target)
+          }
+          else
+          {
+            Keyboard.press('ArrowUp', {target: evt.target})
+          }
+          break
+        case 'Escape':
+          // Quand la section ne définit pas explicitement la
+          // touche Escape
+          alert("Il faut définir explicitement le comportement de la touche Escape pour ce tabulator.")
+          return DOM.stopEvent(evt)
+        default:
+          // console.log("keyUp in onKeyUp_TabulatorLike : %s", evt.key)
+      }
+    }
+  }
+
+  static selectPreviousOptionOf ( select )
+  {
+    let i   = select.selectedIndex - 1
+      , nb  = select.childNodes.length
+    if ( i < 0 ) { i = nb - 1 }
+    select.childNodes[i].selected = true
+  }
+  static selectNextOptionOf ( select )
+  {
+    let i   = select.selectedIndex + 1
+      , nb  = select.childNodes.length
+    if ( i >= nb ) { i = 0 }
+    select.childNodes[i].selected = true
+  }
+  /**
+  * Méthode fonctionnant avec la précédente pour sortir l'élément
+  * de la gestion par Tabulator.
+  * Elle consiste principalement à remettre le gestionnaire de keyUp
+  * précédent.
+  **/
+  static unsetAsTabulator( DOMObj )
+  {
+    const my          = this
+    const sectionMap  = 'current' == DOMObj
+                          ? my.curSectionMap
+                          : Tabulator.SectionMaps.get(DOM.get(DOMObj).id)
+
+    let old_objet_id  = sectionMap.get( 'previous_objet_id' )
+
+    if ( old_objet_id )
+    {
+      // <= Un DOMElement était tabulatorisé avant celui-ci
+      // => On doit le remettre comme section courant activée
+      //    (cf. plus bas)
+    }
+    else
+    {
+      // <= Il n'y avait pas de DOMElement tabulatorisé avant celui-ci
+      // => On remet les gestionnaires d'évènement enregistrés.
+
+      window.onkeyup    = sectionMap.get('previousWindowOnKeyUp')
+      window.onkeydown  = sectionMap.get('previousWindowOnKeyDown')
+
+    }
+
+    // Dans tous les cas, on remet à rien les gestionnaires d'évènements
+    // keyUp/keyDown mémorisés (il y en aura d'autre quand on activera
+    // le DOM Element à nouveau, si c'est le cas)
+    sectionMap.delete('previousWindowOnKeyUp'   )
+    sectionMap.delete('previousWindowOnKeyDown' )
+
+    my.curSectionMap = old_objet_id ? my.activatePreviousSection(old_objet_id) : undefined
+
+    // UILog(`#${sectionMap.get('objet_id')} n'est plus géré par le Tabulator`)
+  }
+
+  /**
+  * Quand on active un DOMElement avec setupAsTabulator, il mémorise l'objet
+  * qui peut être activé. Lorsque que ce DOMElement est désactivé (fermé),
+  * on doit réactiver l'objet activé précédemment. C'est cet objet +objet_id+
+  * dont cette méthode s'occupe.
+  **/
+  static activatePreviousSection (objet_id)
+  {
+    const my = this
+    let sectionMap = my.SectionMaps.get(objet_id)
+    window.onkeyup    = my.onKeyUp_TabulatorLike.bind(my, sectionMap)
+    window.onkeydown  = my.onKeyDown_TabulatorLike.bind(my, sectionMap)
+
+    return sectionMap // Pour la définition
+  }
+
+    /**
+    * Sélectionne l'élément éditable précédent (avec la flèche gauche)
+    **/
+    static selectPreviousEditable ()
+    {
+      const my = this
+      let prevOffset = my.LETTERS.indexOf(my.currentLetter) - 1
+      if ( prevOffset < 0 ) return // rien à faire
+      my.selectOtherEditable(my.LETTERS[prevOffset])
+    }
+    /**
+    * Sélectionne l'élément éditable suivant (avec la flèche droite)
+    **/
+    static selectNextEditable ()
+    {
+      const my = this
+      let nextOffset = my.LETTERS.indexOf(my.currentLetter) + 1
+      if ( nextOffset > my.iMaxLetter ) return // on est au bout
+      my.selectOtherEditable(my.LETTERS[nextOffset])
+    }
+
+    static selectOtherEditable ( letter )
+    {
+      const my = this
+      my.currentLetter = letter
+      my.curSectionMap.get(letter).call()
+    }
 
   /**
   * @return {Tabulator} l'instance du tabulateur d'identifiant +tabulator_id+
@@ -277,6 +607,7 @@ class Tabulator
         my.hasBeforeEach && my.Map.beforeEach.call()
 
         // === Exécution de la méthode de data ou de lettre ===
+
         // console.log(`Bouton ${bouton.key} traité`)
         method = my.Map[bouton.data]
         if ( 'function' == typeof method ) { method.call() }
@@ -331,7 +662,7 @@ class Tabulator
         }
         break
       case 'Enter':
-
+        // console.log("-> Le case:Enter du tabulator")
         this.onEnter(evt)
         return DOM.stopEvent(evt)
 
@@ -339,6 +670,7 @@ class Tabulator
         this.hasBeenRan = false
         this.tabulator.blur()
         return DOM.stopEvent(evt)
+
       default:
 
         // console.log(evt)

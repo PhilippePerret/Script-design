@@ -50,7 +50,6 @@ class ProjetOptions
   constructor ( projet )
   {
     this.projet = projet
-    this.load()
   }
 
 
@@ -63,7 +62,6 @@ class ProjetOptions
   **/
   define ( args )
   {
-    // console.log(args)
     let my = this
       , rien
       , optionProp
@@ -73,7 +71,6 @@ class ProjetOptions
     this._data || load()
     args.forEach( (arg) => {
       [rien, optionProp] = arg.split('-')
-      // console.log('optionProp',optionProp)
       spanb   = this.getSpanButton(arg)
       bouton  = this.getButton(arg)
       if ( bouton )
@@ -84,7 +81,7 @@ class ProjetOptions
         spanb.innerHTML = statestr
         bouton.setAttribute('value', String(newval))
         this._data[optionProp] = newval
-        UILog(`Option '${statestr}' activée`)
+        UILog(`${statestr} activé(e)`)
         // Les options qui doivent entrainer un changement immédiat
         switch ( optionProp )
         {
@@ -122,36 +119,32 @@ class ProjetOptions
 
   get data ()
   {
-    this._data || this.load()
+    this._data || this.store.loadSync() // exceptionnellement (tests)
+    this._data || ( this._data = {} )
     return this._data
   }
+  set data (v) { this._data = v }
+
   /**
   * Sauvegarde des options du projet
   **/
-  save ()
-  {
-    this.store_options.saveSync()
-  }
+  save () { this.store.saveSync() }
 
   /**
   * Chargement des données des options
   *
   * La méthode définit this._data
   *
-  * Si le fichier des options n'existe pas encore, la méthode met {}
-  * à la donnée _data.
+  * @return {Promise}
+  *
   **/
-  load ( callback )
+  PRload ()
   {
-    if ( fs.existsSync(this.store_path) )
-    {
-      this._data = this.store_options.loadSync() || {}
-    }
-    else
-    {
-      this._data = {}
-    }
-    if ('function' == typeof callback){ callback.call() }
+    const my = this
+
+    my._data = {}
+    if ( my.store.exists() ) { return my.store.load() }
+    else { return Promise.resolve() }
   }
 
   /**
@@ -161,10 +154,7 @@ class ProjetOptions
   **/
   set ( hd )
   {
-    for( let p in hd ) {
-      if( ! hd.hasOwnProperty(p) ) { continue }
-      this.data[p] = hd[p]
-    }
+    forEach(hd, (v, p) => { this.data[p] = v})
     this.save()
   }
 
@@ -174,14 +164,9 @@ class ProjetOptions
   }
 
 
-  get store_options     () {
-    this._store_options || (this._store_options = new Store(`projets/${this.projet.id}/options`) )
-    return this._store_options
-  }
-
-  get store_path () {
-    this._store_path || ( this._store_path = path.join(Store.user_data_folder,'projets',this.projet.id,'options.json') )
-    return this._store_path
+  get store     () {
+    this._store || (this._store = new Store(`projets/${this.projet.id}/options`, this) )
+    return this._store
   }
 
   /**
@@ -214,21 +199,27 @@ class ProjetOptions
     *   Méthodes DOM
     *
   *** --------------------------------------------------------------------- */
+
+  /**
+  * Fabrique le menu pour choisir les options
+  *
+  * @return {Promise} (pour chainage seulement)
+  **/
   build ()
   {
-    let option, bouton, value, vNumber
+    let bouton, value, vNumber
     // '<button data-tab="option-autosave" value="0">Sauvegarde manuelle</button>'
-    for(option in ProjetOptions.DATA)
-    {
-      value   = this.get(option)
+    forEach(ProjetOptions.DATA, (dOption, option) => {
+      value = this.get(option)
       vNumber = value ? 1 : 0
       bouton  = DOM.create('button', {
           'data-tab': `option-${option}`
         , 'value'   : String(vNumber)
-        , inner     : ProjetOptions.DATA[option][vNumber]
+        , inner     : dOption[vNumber]
       })
       this.container.appendChild(bouton)
-    }
+    })
+    return Promise.resolve()
   }
 }
 

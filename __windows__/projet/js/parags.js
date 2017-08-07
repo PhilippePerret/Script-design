@@ -46,13 +46,14 @@ class Parags
   **/
   reset ()
   {
-    this.selection.reset()
-    this._items = []
+    const my = this
+    my.selection.reset()
+    my._items = []
     // this._dict  = {}
-    this._dict = new Map()
-    this._ids   = []
-    this._count = 0
-    this.panneau.container.innerHTML = ''
+    my._dict = new Map()
+    my._ids   = []
+    my._count = 0
+    my.panneau.container.innerHTML = ''
   }
 
 
@@ -792,11 +793,17 @@ class Parags
   **/
   static add (iparag)
   {
-    this._items || ( this._items = {} )
-    this._items[iparag.id] = iparag
+    this._items || ( this._items = new Map() )
+    this._items.set(iparag.id, iparag)
   }
 
-  static get items () { return this._items }
+  /**
+  * @return {Map} La map de tous les parags
+  **/
+  static get items () {
+    this._items || ( this._items = new Map() )
+    return this._items
+  }
 
   /**
   * Retourne l'instance Parag du paragraphe d'identifiant +parag_id+
@@ -805,7 +812,7 @@ class Parags
   *
   * @return {Parag} Le parag d'identifiant +parag_id+ ou null s'il n'existe pas
   **/
-  static get ( parag_id ) { return this.items[parag_id] }
+  static get ( parag_id ) { return this.items.get(parag_id) }
 
 }
 

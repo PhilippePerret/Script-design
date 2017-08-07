@@ -18,7 +18,7 @@ describe('Parag', function () {
     it('retourne un élément DOM valide pour le paragraphe', function(){
       expect(res).to.haveTag('div', {id: 'p-0', class:'p', 'data-id': '0'})
       // res = parag0.build().querySelector('div#p-0')
-      expect(res).to.haveTag('div', {id:'p-0-contents', class:'p-contents'})
+      expect(res).to.haveTag('div', {id:'p-0-recto', class:'p-recto'})
     })
 
     it("indique qu'il a des relatifs s'il en a par un picto", function(){
@@ -31,8 +31,7 @@ describe('Parag', function () {
     })
 
     it("contient un panneau arrière de données", function(){
-      // expect(res).to.haveTag('div', {id:'p-0-props', class: 'p-props'})
-      this.skip()
+      expect(res).to.haveTag('div', {id:'p-0-recto', class: 'p-recto'})
     })
   })
 })

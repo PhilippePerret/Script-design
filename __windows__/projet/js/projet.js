@@ -21,7 +21,7 @@ class Projet
   /**
   * Pour faire comme en ruby : Projet.new(<projet id>)
   **/
-  static new (projet_id )
+  static new (projet_id)
   {
     return new Projet(projet_id)
   }
@@ -74,24 +74,19 @@ class Projet
     return this._panneauData
   }
 
-  static UIprepare ()
-  {
-
-  }
-
-  /**
-  *   Chargement du projet data.projet_id
-  *
-  * La méthode regarde aussi s'il y a d'autres choses à faire, comme mettre
-  * en route la boucle de sauvegarde en fonction des options.
-  * TODO Plus tard, on pourra aussi avoir des notes à rappeler à l'ouverture,
-  * par exemple.
-  **/
-  static load (data)
-  {
-    this.current = new Projet(data.projet_id)
-    this.current.prepare()
-  }
+  // /**
+  // *   Chargement du projet data.projet_id
+  // *
+  // * La méthode regarde aussi s'il y a d'autres choses à faire, comme mettre
+  // * en route la boucle de sauvegarde en fonction des options.
+  // * TODO Plus tard, on pourra aussi avoir des notes à rappeler à l'ouverture,
+  // * par exemple.
+  // **/
+  // static load (data)
+  // {
+  //   // this.current = new Projet(data.projet_id)
+  //   // this.current.prepare()
+  // }
 
   /**
   * Méthode appelée par le tabulator des panneaux pour ouvrir un ou plusieurs
@@ -133,6 +128,24 @@ class Projet
     this.__ID = Projet.newID()
   }
 
+  /**
+  * Chargement du projet
+  * --------------------
+  * La méthode est appelée au chargement de la fenêtre
+  **/
+  PRload ()
+  {
+    const my = this
+
+    return my.prepare()
+      // .then( my.data.load.bind(my.data) )
+      .then( my.brins.PRload.bind(my.brins)     )
+      .then( my.options.PRload.bind(my.options) )
+      .then( my.options.build.bind(my.options)  )
+      .then( my.setupOptions.bind(my)           )
+      .catch( err => { throw err }              )
+  }
+
   /** ---------------------------------------------------------------------
     *
     *   Propriétés générales
@@ -169,24 +182,6 @@ class Projet
     if (v) { this.ui.setProjetSaving() }
   }
 
-  /**
-  * Méthode appelée après chaque sauvegarde de panneau (ou autre) qui
-  * vérifie l'état de sauvegarde du projet en général.
-  * C'est également la méthode qui est appelée par la boucle de sauvegarde
-  * automatique.
-  * Noter que cette méthode ne fait rien d'autre, en soi, que vérifier l'état
-  * général et de régler l'indicateur de sauvegarde dans l'interface.
-  **/
-  checkModifiedState ()
-  {
-    let my  = this
-      , mod = false // Sera mis à true si on trouve quelque chose modifié
-    Projet.PANNEAU_LIST.forEach( (pan_id) => {
-      my.panneau(pan_id).modified && ( mod = true )
-    })
-    my.modified = mod // changera l'indicateur de sauvegarde
-  }
-
   /* --- publiques --- */
 
   afficherStatistiques ()
@@ -203,8 +198,8 @@ class Projet
   {
     const my = this
     my.current_panneau.PRactivate()
-    my.observeEditableFields()
-    my.options.load(my.prepareSuivantOptions.bind(my))
+    my.ui.observeEditablesIn(document)
+    return Promise.resolve()
   }
 
   /** ---------------------------------------------------------------------
@@ -313,47 +308,20 @@ class Projet
   //  FIN MÉTHODES PANNEAUX
   // ---------------------------------------------------------------------
 
-
-  /**
-  * Place les observers pour les contenus éditables
-  **/
-  observeEditableFields ()
-  {
-    let
-        editables = document.getElementsByClassName('editable')
-      , len       = editables.length
-      , i         = 0
-      , my        = this
-    for(;i<len;++i){
-      editables[i].addEventListener('click', (evt) => {
-        let o = evt.target
-        o.contentEditable = 'true'
-        o.focus()
-        this.mode_edition = true
-      })
-      editables[i].addEventListener('blur', (evt) => {
-        let o = evt.target
-        my.onChangeData.bind(my)(o)
-        o.contentEditable = 'false'
-        this.mode_edition = false
-      })
-    }
-  }
-
   /**
   * Méthode qui prépare l'interface et le programme en fonction des options
   * choisies par l'auteur. Par exemple, c'est cette méthode qui met en route
   * la sauvegarde automatique si nécessaire.
   **/
-  prepareSuivantOptions ()
+  setupOptions ()
   {
-    // console.log('-> Projet#prepareSuivantOptions')
+    // console.log('-> Projet#setupOptions')
     if ( this.option('autosave') )
     {
-      console.log('   * activation de l’autosave')
+      // console.log('   * activation de l’autosave')
       this.options.activateAutosave()
     }
-    // console.log('<- Projet#prepareSuivantOptions')
+    return Promise.resolve()
   }
 
   /**
@@ -361,7 +329,6 @@ class Projet
    */
   doAutosave () {
     if ( this.mode_edition || this.busy ) { return false }
-    this.checkModifiedState()
     this.modified && this.saveAll()
     return true
   }
@@ -380,19 +347,44 @@ class Projet
     const my = this
     my.saving = true
     my.saved  = false
+
+    my.savingReporter = []
+    // Permet d'enregistrer des messages de processus et notamment les
+    // messages d'erreur. Les éléments sont des {Object}s qui contiennent au
+    // minimum {type: 'error|notice', message: 'le message string'}
+    // Ce reporter est inscrit à la fin de l'opération dans une fenêtre
+
     /*- Sauvegarde de tous les panneaux modifiés -*/
     return my.saveAllPanneaux()
-      /*- Sauvegarde de tous les parags -*/
+      /*- Sauvegarde de tous les brins (si nécessaire) -*/
+      .then( my.brins.PRsave.bind(my.brins) )
+      /*- Sauvegarde de tous les parags (si nécessaire) -*/
       .then( my.saveParags.bind(my) )
+      /*- Sauvegarde des relatives (si nécessaire) */
       .then( my.saveRelatives.bind(my) )
       .then( () => {
-        my.saving = false
-        my.saved  = true
+        // console.log("= Fin de l'enregistrement de tous les éléments.")
+        my.saving   = false
+        my.saved    = true
+        my.modified = false
+        if ( my.savingReporter.length ) { my.afficheSavingReporter() }
+        return Promise.resolve()
       })
       .catch( (err) => { throw err } )
 
   }
 
+  /**
+  * Affiche le reporter de sauvegarde
+  *
+  * Pour le moment, je mets juste une alerte disant de regarder en console.
+  **/
+  afficheSavingReporter ()
+  {
+    console.log("RAPPORT D'ERREUR AU COURS DE LA SAUVEGARDE")
+    console.log(this.savingReporter)
+    alert("Des erreurs sont survenues pendant la sauvegarde, merci de consulter la console (CMD + i)")
+  }
 
   /**
   * Sauvegarde de tous les panneaux modifiés (et seulement les panneaux
@@ -405,12 +397,13 @@ class Projet
     const my = this
     let panos_modified = []
     Projet.PANNEAU_LIST.forEach( (pan_id) => {
-      ( all || my.panneau(pan_id)._modified ) && panos_modified.push( my.panneau(pan_id) )
+      ;( all || my.panneau(pan_id)._modified ) && panos_modified.push( my.panneau(pan_id) )
       // Attention = si on met une ligne de code avant ce ( all || ... ) il
       // faut impérativement la terminer par un ';' pour que JS ne croie pas
       // qu'il s'agit d'une fonction
     })
-    return Promise.all( panos_modified.map( p => { return p.save.bind(p).call() } ) )
+    return Promise.all( panos_modified.map( pan => { return pan.save.call(pan) } ) )
+
   }
 
   /**
@@ -420,6 +413,7 @@ class Projet
   **/
   saveRelatives ()
   {
+    // console.log("* Enregistrement des relatives")
     return this.relatives.save.bind(this.relatives).call()
   }
 
@@ -442,16 +436,19 @@ class Projet
   saveParags ( all )
   {
     const my = this
+    // console.log("* Enregistrement des Parags")
     let modified_parags = []
-    for (let pid in Parags.items )
-    {
-      if ( Parags.items.hasOwnProperty(pid) ) {
-        let parag = Parags.get(pid) ; // ATTENTION ";" obligatoire !
-        ( all || parag.modified ) && ( modified_parags.push( parag ) )
-      }
-    }
+    Parags.items/*{Map}*/.forEach( (parag, pid) => {
+      ;/*(1)*/( all || parag.modified ) && modified_parags.push(parag)
+      // (1) Ce ';' est obligatoire car sinon, le programme comprend
+      // ça : `console.log(...)(all || parag.modified)`
+    })
     my.saved_parags_count = modified_parags.length
-    return Promise.all( modified_parags.map( p => { return p.save() } ))
+    // console.log("= Nombre de parags à sauver : %d", my.saved_parags_count)
+    return Promise.all( modified_parags.map( p => {
+      // console.log("Je sauve le paragraphe #",p.id)
+      return p.save()
+    }))
   }
 
 
@@ -461,20 +458,44 @@ class Projet
   onChangeData (o)
   {
     let
-          prop = o.id // par exemple 'authors' ou 'title'
-        , newValue = o.innerHTML.trim()
+          prop      = o.id // par exemple 'authors' ou 'title'
+        , newValue  = o.innerHTML.trim()
+        , owner     = this
+        , ownerStr  = 'Projet'
 
-    // Traitement des valeurs pour certains champs spéciaux
-    switch(prop)
+    if (o.getAttribute('owner'))
     {
-      case 'authors':
-        newValue = newValue.split(/[ ,]/).map(p =>{return p.trim()}).filter(p => {return p != ''})
-        break
+      // <= Le champ à un propriétaire propre, qui n'est pas le projet
+      // => Il faut utiliser ses méthodes pour actualiser la donnée
+      ownerStr  = o.getAttribute('owner')
+      owner     = eval(ownerStr)
+
     }
+    else
+    {
+      // <= L'objet n'a pas de propriétaire propre
+      // => C'est une propriété du projet courant
+      // Traitement des valeurs pour certains champs spéciaux
+      switch(prop)
+      {
+        case 'authors':
+          newValue = newValue.split(/[ ,]/).map(p =>{return p.trim()}).filter(p => {return p != ''})
+          break
+      }
+      this.data[prop] = newValue // dans PanData (panneau('data'))
+    }
+
     // On enregistre la donnée et on l'actualise dans l'affichage
-    this.data[prop] = newValue // dans PanData (panneau('data'))
-    this[`set_${prop}`](newValue)
-    this.set_updated_at()
+    // pour le Projet comme pour tout autre propriétaire défini dans l'attribut
+    // `owner` du champ.
+    let methode = `redefine_${prop}`
+    if ( 'function' === typeof owner[methode] ) {
+      owner[methode](newValue)
+    } else {
+      throw new Error(`Il faut implémenter la méthode ${ownerStr}#${methode} pour pouvoir éditer la propriété de l'objet.`)
+    }
+
+
   }
 
   /**
@@ -499,6 +520,16 @@ class Projet
     this._ui || ( this._ui = new ProjetUI(this) )
     return this._ui
   }
+
+  /**
+  * Object pour la gestion des brins du projet
+  **/
+  get brins ()
+  {
+    this._brins || ( this._brins = new Brins(this) )
+    return this._brins
+  }
+
   /**
   * @property {PanData} Le panneau 'data', qui s'occupe des données
   * générales du projet.
@@ -542,32 +573,28 @@ class Projet
   * dans le document)
   *
   * Noter que le nom de ces méthodes ne doivent pas être modifiée, car elles
-  * sont appelées de façon dynamique en construisant "set_<propriété>"
+  * sont appelées de façon dynamique en construisant "redefine_<propriété>"
   *
   **/
-  set_title (v) {
+  redefine_title (v) {
     v || ( v = "Projet sans titre")
     if ( v != this.data.title ) this.data.title = v
     DOM.setTitle(v)
     DOM.inner('title', v)
   }
-  set_authors (v) {
+  redefine_authors (v) {
     v || ( v = ['pas d’auteur'])
     if ( v != this.data.authors ) this.data.authors = v
     DOM.inner('authors', (v||[]).join(', '))
   }
-  set_summary (v) {
+  redefine_summary (v) {
     v || ( v = 'Projet sans résumé' )
     if ( v != this.data.summary ) this.data.summary = v
     DOM.inner('summary', (v||'').split("\n").join('<br>'))
   }
-  set_created_at(){
+  redefine_created_at(){
     let c = moment(this.created_at)
     DOM.inner('created_at', `${c.format('LLL')} (${c.fromNow()})`)
-  }
-  set_updated_at(){
-    let c = moment(this.updated_at)
-    DOM.inner('updated_at', `${c.format('LLL')} (${c.fromNow()})`)
   }
 
   /**
@@ -587,7 +614,7 @@ class Projet
   **/
   get folder ()
   {
-    this._folder || ( this._folder = this.store_data.folder )
+    this._folder || ( this._folder = this.data.store.folder )
     return this._folder
   }
 

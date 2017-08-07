@@ -65,6 +65,12 @@ global.USER_DATA_PATH = path.join(require('os').homedir(),'Library','Application
   *
 *** --------------------------------------------------------------------- */
 
+global.resetTabulator = function ()
+{
+  Tabulator.SectionMaps   = new Map()
+  Tabulator.curSectionMap = undefined
+}
+
 /**
 * Méthode pour "décharger" un parag existant. Par exemple pour tester
 * son chargement.
@@ -78,7 +84,7 @@ global.unloadParag = function( pid )
     delete global[`parag${pid}`]
     expect(eval(`'undefined' == typeof(parag${pid})`)).to.be.true
   }
-  delete Parags._items[pid]
+  Parags._items.delete(pid)
   expect(Parags.get(pid)).to.be.undefined
   // Dans son panneau
   if ( pan )
@@ -136,7 +142,22 @@ PanProjet.resetContainers = function()
 Object.defineProperties(PanProjet.prototype, {
   'section': {
     get: function(){
-      this._section || (this._section = DOM.create('div', {id: `panneau-${this.id}`, class:'panneau'}))
+      if ( ! this._section )
+      {
+
+        this._section = DOM.create('div', {id: `panneau-${this.id}`, class:'panneau'})
+
+        /*- Ajout du verso du parag ici, si pas encore fait -*/
+
+        if ( ! PanProjet.formVersoParagAlreadyAdded )
+        {
+          html = fs.readFileSync('./__windows__/projet/html/verso_parag_form.ejs', 'utf8')
+          this._section.innerHTML = html
+          PanProjet.formVersoParagAlreadyAdded = true
+        }
+
+
+      }
       return this._section
     }
   },
@@ -149,6 +170,7 @@ Object.defineProperties(PanProjet.prototype, {
           this._container = DOM.create('div', {id:`panneau-contents-${this.id}`, 'index': (++container_index)})
           // l'attribut 'index' ci-dessus a été ajouté pour vérifier qu'on avait bien le même
           // container.
+
           PanProjet.keepContainer(this.id, this._container)
         }
       }
@@ -171,6 +193,7 @@ Object.defineProperties(PanData.prototype, {
         if ( ! this._container )
         {
           this._container = DOM.create('div', {id:`panneau-contents-data`, 'index': (++container_index)})
+
           // l'attribut 'index' ci-dessus a été ajouté pour vérifier qu'on avait bien le même
           // container.
           PanProjet.keepContainer(this.id, this._container)
@@ -181,6 +204,119 @@ Object.defineProperties(PanData.prototype, {
   }
 })
 
+/** ---------------------------------------------------------------------
+  *
+  * Méthodes utiles pour les BRINS
+  *
+*** --------------------------------------------------------------------- */
+
+global.resetBrins = function ()
+{
+  // console.log("-> resetBrins()")
+  Brins._items    = new Map()
+  projet._brins   = undefined
+  global.brins = projet.brins
+
+  brins._panneau    = undefined // forcer la reconstruction
+  brins._ULlisting  = undefined
+  brins._form       = undefined
+
+  global.brin  = new Brin({id: 0, projet: projet, titre: "Brin sans titre"})
+  global.brin1 = new Brin({id: 1, projet: projet, titre: "Brin #1", type: 20})
+  global.brin2 = new Brin({id: 2, projet: projet, titre: "Brin #2"})
+  global.brin3 = new Brin({id: 3, projet: projet, titre: "Brin #3", type: 20})
+  global.brin4 = new Brin({id: 4, projet: projet, titre: "Brin #4", type: 31})
+  global.brin5 = new Brin({id: 5, projet: projet, titre: "Brin #5", type: 20})
+  global.brin6 = new Brin({id: 6, projet: projet, titre: "Brin #6", type: 0})
+  global.brin7 = new Brin({id: 7, projet: projet, titre: "Brin #7", type: 12})
+  global.brin8 = new Brin({id: 8, projet: projet, titre: "Brin #8", type: 12})
+  global.brin9 = new Brin({id: 9, projet: projet, titre: "Brin #9", type: 12})
+
+  projet.panneau('data').setDefaultData()
+  Brin._lastID = projet.panneau('data')._data.last_brin_id = 9
+
+}
+
+global.createProjetNoSave = function ()
+{
+  // console.log("-> createProjetNoSave")
+
+  return new Promise( (ok, ko) => {
+    resetTests({nombre_parags:20})
+
+    resetBrins()
+
+    // ========= DONNÉES ============
+
+    panneauNotes.add([parag1, parag3, parag5])
+    panneauScenier.add([parag0])
+    panneauSynopsis.add([parag2, parag4])
+    panneauTreatment.add([parag6, parag7, parag8, parag9])
+
+    /*= le brin #0 dans les parags #1 et #0 et #4 =*/
+
+    brin.addParag(parag1)
+    brin.addParag(parag0)
+    brin.addParag(parag4)
+
+    /*= le brin #2 dans les parags #1 et #5 =*/
+
+    brin2.addParag(parag1)
+    brin2.addParag(parag5)
+
+    // Dans le brin #5 on met les 10 premiers parags (0 à 9)
+    for(var i = 0 ; i < 10 ; ++i ){
+      brin5.addParag(Parags.get(Number(i)))
+    }
+    ok()
+  })
+}
+/**
+* Crée un projet avec des brins, des brins associés à des
+* parag puis initialize tout.
+*
+* @return {Promise}
+* Donc il faut utiliser dans le test :
+*   resetProjetWithBrins()
+*   .then( () => {
+*       // ... le test ici ...
+*   })
+**/
+global.resetProjetWithBrins = function ()
+{
+
+  // console.log("-> resetProjetWithBrins")
+
+  return createProjetNoSave()
+  .then( () => {
+    // ========= FIN DONNÉES ============
+
+    parag0.modified       = true
+    parag1.modified       = true
+    parag4.modified       = true
+    parag5.modified       = true
+    brin.modified         = true
+    brin1.modified        = true
+    brin2.modified        = true
+    brin3.modified        = true
+    panneauNotes.modified     = true
+    panneauScenier.modified   = true
+    panneauSynopsis.modified  = true
+    projet.brins.modified = true
+
+    return Promise.resolve()
+  })
+  .then( projet.saveAll.bind(projet ))
+  .then( () => {
+    expect(fs.existsSync(projet.parags_file_path)).to.be.true
+    return Promise.resolve()
+  })
+  // .then(ok)
+  .then( () => {
+    console.log("= Fin de la préparation de resetProjetWithBrins")
+    return Promise.resolve()
+  })
+}
 
 // ---------------------------------------------------------------------
 
@@ -263,12 +399,14 @@ resetCurrentProjet = function( params )
   params.options || (params.options = {})
   params.options.autosync || (params.options['autosync'] = 0)
   params.options.autosave || (params.options['autosave'] = 0)
-  for(var p in params.options){
-    if (params.options.hasOwnProperty(p)){
-      projet.option(p, params.options[p])
-    }
-  }
+  forEach(params.options, (v, p) => { projet.option(p, v) })
   Parag._lastID = -1
+
+  /*- Destruction du fichier brins s'il existe -*/
+
+  let pth = projet.brins.store.path
+  if (fs.existsSync(pth)) {fs.unlinkSync(pth)}
+
 
 }
 global.resetAllPanneaux = function( params)
@@ -295,18 +433,12 @@ global.resetAllPanneaux = function( params)
   })
 
   // On définit les données général du projet, dans le panneau Data
-  let h = {
-      'title'         : "Exemple pour tests"
-    , 'summary'       : "Le résumé du projet donné en exemple."
-    , 'author'        : ["Phil", "Marion", "Ernest"]
-    , 'created_at'    : now
-    , 'updated_at'    : now
-    , 'last_parag_id' : 0
-  }
-  panneauData.data = h
+  panneauData.setDefaultData()
   panneauData.store.saveSync()
+  projet._data = panneauData
 
 }
+
 
 function resetAllParags (params) {
   let pth
@@ -321,6 +453,7 @@ function resetAllParags (params) {
   let lastid = initXParags( params.nombre_parags )
   return lastid
 }
+
 /**
 * @param  {Object} params
 *   params.nombre_parags      Nombre de paragraphes à construire
@@ -328,6 +461,7 @@ function resetAllParags (params) {
 **/
 global.initTests = function ( params )
 {
+  // console.log("-> initTests")
   params || ( params = {} )
   resetApp( params )
   resetCurrentProjet( params )
