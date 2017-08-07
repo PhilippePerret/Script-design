@@ -6,8 +6,10 @@ class Brin
     *
   *** --------------------------------------------------------------------- */
 
-  static get MAX_TITRE_LENGTH       () { return 99 }
+  static get MAX_TITRE_LENGTH       () { return 99  }
   static get MAX_DESCRIPTION_LENGTH () { return 256 }
+
+  static get NOMBRE_BRINS_MAX       () { return 8   }
 
   static get TYPES () {
     this._types || (
@@ -284,20 +286,13 @@ class Brin
     if ( 'number' == typeof pid )
     {
       const parag = Parags.get(pid)
-      parag._brin_ids || ( parag._brin_ids = [] )
-      if ( parag._brin_ids.indexOf(my.id) > -1 )
-      {
-        // <= Le parag appartient déjà à ce brin
-        // => Ne rien faire
-        return false
-      }
-      // Note : on fait le test sur la liste des brins du parag car elle
-      // est certainement moins longue que la liste des parags du brin.
+      let brin_ids = parag.brin_ids || []
+      if ( brin_ids.includes(my.id) ) return false ;
 
       my.data.parag_ids || ( my.data.parag_ids = [] )
       my.data.parag_ids.push( pid )
-      parag._brin_ids.push(my.id)
-
+      brin_ids.push(my.id)
+      parag.brin_ids  = brin_ids
       parag.modified  = true
       my.modified     = true
 

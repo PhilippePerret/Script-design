@@ -106,8 +106,36 @@ class Parag
   }
 
 
-
-
+  /** ---------------------------------------------------------------------
+    *   Les méthodes qui gèrent le verso du parag
+    *
+  *** --------------------------------------------------------------------- */
+  /**
+  * @return {Parag} Le parag courant
+  **/
+  static get current () {
+    return currentPanneau.parags.selection.current
+  }
+  static createNewBrinForCurrent ()
+  {
+    const cur = this.current
+    return cur.createNewBrin.call(cur)
+  }
+  static chooseBrinsForCurrent ()
+  {
+    const cur = this.current
+    return cur.chooseBrins.call(cur)
+  }
+  static showRectoForCurrent ()
+  {
+    const cur = this.current
+    return cur.showRecto.call(cur)
+  }
+  static editPropertyForCurrent (prop)
+  {
+    const cur = this.current
+    return cur.editProperty.call(cur, prop)
+  }
 
 
   /** ---------------------------------------------------------------------
@@ -368,8 +396,9 @@ class Parag
   **/
   updateBrinIds (bids)
   {
-    this._brins_ids_32 =
-      (this._brin_ids||[]).map(bid => {
+    bids = bids || this._brin_ids || []
+    this._brin_ids_32 =
+      bids.map(bid => {
         let b = Number(bid).toBase32()
         return b.length > 1 ? b : ` ${b}`
       }).join('')
@@ -1800,7 +1829,6 @@ class Parag
   {
     const my = this
 
-    console.log("\n\n\nParag.paragVersoForm:", Parag.paragVersoForm)
     my.mainDiv.querySelector('div.p-verso').appendChild(Parag.paragVersoForm)
     Parag.paragVersoForm.style.display = 'block'
     my.recto.className = 'p-recto hidden'
@@ -1848,21 +1876,22 @@ class Parag
 
 
     let mesLettres = new Map([
-        ['b',           my.createNewBrin.bind(my)]
-      , ['B',           my.chooseBrins.bind(my)]
-      , ['ArrowLeft',   my.showRecto.bind(my)]
+        ['b',           Parag.createNewBrinForCurrent.bind(Parag)]
+      , ['B',           Parag.chooseBrinsForCurrent.bind(Parag)]
+      , ['ArrowLeft',   Parag.showRectoForCurrent.bind(Parag)]
+      , ['Escape',      Parag.showRectoForCurrent.bind(Parag)]
     ])
 
     if (DOM.get('parag_verso_form')) // pas pour les tests
     {
       Tabulator.setupAsTabulator('parag_verso_form', {
         Map:{
-            'duration'  : my.editProperty.bind(my, 'duration')
-          , 'position'  : my.editProperty.bind(my, 'position')
-          , 'type1'     : my.editProperty.bind(my, 'type1')
-          , 'type2'     : my.editProperty.bind(my, 'type2')
-          , 'type3'     : my.editProperty.bind(my, 'type3')
-          , 'type4'     : my.editProperty.bind(my, 'type4')
+            'duration'  : Parag.editPropertyForCurrent.bind(Parag, 'duration')
+          , 'position'  : Parag.editPropertyForCurrent.bind(Parag, 'position')
+          , 'type1'     : Parag.editPropertyForCurrent.bind(Parag, 'type1')
+          , 'type2'     : Parag.editPropertyForCurrent.bind(Parag, 'type2')
+          , 'type3'     : Parag.editPropertyForCurrent.bind(Parag, 'type3')
+          , 'type4'     : Parag.editPropertyForCurrent.bind(Parag, 'type4')
         }
         , MapLetters: mesLettres
       })
@@ -1890,6 +1919,7 @@ class Parag
   **/
   chooseBrins ()
   {
+    console.log("-> chooseBrins dans parag#%d", this.id)
     this.projet.brins.showPanneau({parag: this})
   }
 

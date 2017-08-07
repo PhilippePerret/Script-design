@@ -70,7 +70,6 @@ class Brins {
     my.modified = true
     my.hideForm()
     my.formParams && my.formParams.callback_oncreate && my.formParams.callback_oncreate.call()
-
   }
 
   /**
@@ -348,6 +347,8 @@ class Brins {
       my.oldBrinIds = (params.parag.brin_ids||[]).map( bid => { return bid })
       my.currentParag = params.parag
 
+      console.log('Le parag #%d est choisi', my.currentParag.id)
+
       // La listes qui vont permettre de gérer provisoirement les
       // ajouts et les retraits.
       // C'est cette liste, comparée à la liste initiale, qui va déterminer
@@ -399,23 +400,18 @@ class Brins {
 
     let o = null
 
+    console.log("Brins à sélectionner pour le parag #%d : ", my.currentParag.id, ids)
+
     Brins.items.forEach( (brin, bid) => {
       o = my.ULlisting.querySelector(`li#brin-${bid}`)
       if ( ! o ) { return /* brin introuvable */}
-      if ( ids.indexOf(bid) < 0 )
+      if ( ids.includes(bid) )
       {
-        o.className = 'brin'
-        // Au cours d'un affichage précédent, le brin a peut-être été
-        // mise en exergue (chosen)
-      }
-      else
-      {
-        o.className = 'brin chosen'
-        // On mémorise cet ID de brin qui appartient au parag édité
-        // (if any)
+        DOM.addClass(o, 'chosen')
         my.current_brin_ids && my.current_brin_ids.push(bid)
-
       }
+      else {
+        o.className = 'brin' }
     })
   }
 
@@ -685,9 +681,15 @@ class Brins {
     let mess = `Le brin « ${brin.titre} » a été `
     if ( forAjout )
     {
-      my.current_brin_ids && my.current_brin_ids.push( brin.id )
-      DOM.addClass(oBrin, 'chosen')
-      UILog(`${mess}ajouté.`)
+      let nombre_chosen = my.ULlisting.querySelectorAll('li.brin.chosen').length
+      if ( nombre_chosen >= Brin.NOMBRE_BRINS_MAX ) {
+        alert(`Vous avez atteint le nombre maximum de brins (${Brin.NOMBRE_BRINS_MAX}).`)
+      }
+      else {
+        my.current_brin_ids && my.current_brin_ids.push( brin.id )
+        DOM.addClass(oBrin, 'chosen')
+        UILog(`${mess}ajouté.`)
+      }
     } else {
       my.current_brin_ids && my.current_brin_ids.splice(my.current_brin_ids.indexOf(brin.id), 1)
       DOM.removeClass(oBrin, 'chosen')
@@ -767,6 +769,7 @@ class Brins {
   {
     const my = this
     let newBrin = Brins.get(Brin._lastID)
+    my.reset()
     my.iselected = my.getIndexOfBrin(newBrin)
     my.currentParag && my.chooseCurrent()
   }
