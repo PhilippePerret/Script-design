@@ -179,6 +179,15 @@ class Tabulator
       fonction.call(null, evt)
       return DOM.stopEvent(evt)
     }
+
+    /*- Quelque touche avec META -*/
+
+    switch(evt.key)
+    {
+      case 's':
+        currentProjet.mode_edition || currentProjet.saveAll()
+        return DOM.stopEvent(evt)
+    }
     return true
   }
 
@@ -253,6 +262,11 @@ class Tabulator
             Keyboard.press('ArrowUp', {target: evt.target})
           }
           break
+        case 'Escape':
+          // Quand la section ne définit pas explicitement la
+          // touche Escape
+          alert("Il faut définir explicitement le comportement de la touche Escape pour ce tabulator.")
+          return DOM.stopEvent(evt)
         default:
           // console.log("keyUp in onKeyUp_TabulatorLike : %s", evt.key)
       }
@@ -282,8 +296,9 @@ class Tabulator
   static unsetAsTabulator( DOMObj )
   {
     const my          = this
-        , obj         = DOM.get(DOMObj)
-        , sectionMap  = Tabulator.SectionMaps.get(obj.id)
+    const sectionMap  = 'current' == DOMObj
+                          ? my.curSectionMap
+                          : Tabulator.SectionMaps.get(DOM.get(DOMObj).id)
 
     let old_objet_id  = sectionMap.get( 'previous_objet_id' )
 
@@ -311,8 +326,7 @@ class Tabulator
 
     my.curSectionMap = old_objet_id ? my.activatePreviousSection(old_objet_id) : undefined
 
-
-    UILog(`#${obj.id} n'est plus géré par ©Tabulator`)
+    // UILog(`#${sectionMap.get('objet_id')} n'est plus géré par le Tabulator`)
   }
 
   /**

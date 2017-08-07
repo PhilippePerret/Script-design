@@ -6,10 +6,7 @@
 */
 const KBShortcuts = class {
 
-  static onEnter (evt)
-  {
-    // log ('-> Projet::onEnter')
-  }
+  static onEnter (evt) {}
 
   static onkeydown (evt)
   {
@@ -45,13 +42,8 @@ const KBShortcuts = class {
         break
 
       case 's':
-        if( ! curProj.mode_edition )
-        if( ! curProj.mode_edition )
-        {
-          evt.metaKey && curProj.saveAll()
-          evt.metaKey && curProj.saveAll()
-          return DOM.stopEvent(evt)
-        }
+        evt.metaKey && !curProj.mode_edition && curProj.saveAll()
+        return DOM.stopEvent(evt)
 
       case 'Q':
       case 'q':

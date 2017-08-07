@@ -9,15 +9,6 @@
   Note : il faut créer 9 brins
 * Ranger un peu les classes `Brins` et `Brin`
 
-* Tester l'enregistrement de 'brin_ids' en testant les méthodes :
-  get brin_ids_32
-  set brin_ids_32
-  updateBrinIds() - en modifiant _brin_ids
-  defineBrinIds() - en modifiant _brin_ids_32
-
-* Ajouter "Brin « ... »" aux titres des sous-titres de brin ("Brin « non définis »", "Brin « Personnages »", etc.)
-  OU mettre simplement 'Non définis' pour le premier au lieu de "Non défini" qui donne l'impression d'une erreur (ou définir explicitement le titre)
-
 * Implémenter le même traitement que editablecontent on blur, mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
   Essayer ça avec les types, dont on doit proposer une liste
 

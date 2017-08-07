@@ -14,7 +14,7 @@ class Brin
   static get TYPES () {
     this._types || (
       this._types = new Map([
-          [0 , {hname: 'Non défini'}]
+          [0 , {hname: 'Non défini', astitre: 'Brins sans type'}]
         , [10, {hname: 'Personnage'}]
         , [11, {hname: 'Relation de personnage'}]
         , [12, {hname: 'Protagoniste'}]
@@ -23,7 +23,7 @@ class Brin
         , [31, {hname: 'Décor'}]
         , [60, {hname: 'Thématique'}]
         , [61, {hname: 'Documentation'}]
-        , [99, {hname: 'Autre'}]
+        , [99, {hname: 'Autre', astitre: "Autres types de brins"}]
       ])
     )
     return this._types

@@ -817,7 +817,12 @@ class Brins {
 
   buildDivTitre (typeId)
   {
-    return DOM.create('div', {class:'titre', 'data-type': String(typeId), inner: Brin.TYPES.get(typeId).hname})
+    const dType = Brin.TYPES.get(typeId)
+    return DOM.create('div', {
+        class       :'titre'
+      , 'data-type' : String(typeId)
+      , inner       : dType.astitre ? dType.astitre : `Brins « ${dType.hname} »`
+    })
   }
   /**
   * Construction du panneau des brins
