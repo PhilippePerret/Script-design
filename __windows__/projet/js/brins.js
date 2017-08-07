@@ -336,7 +336,16 @@ class Brins {
     *   MÉTHODES D'HELPER
     *
   *** --------------------------------------------------------------------- */
+  setTitrePanneau ()
+  {
+    const my = this
 
+    let titre = my.currentParag
+                  ? `Brins du parag #${my.currentParag.id}`
+                  : 'Liste des brins'
+    my.panneau.querySelector('div#titre_panneau_brins').innerHTML = titre
+
+  }
   showPanneau ( params )
   {
     const my = this
@@ -346,8 +355,6 @@ class Brins {
     if ( params.parag ) {
       my.oldBrinIds = (params.parag.brin_ids||[]).map( bid => { return bid })
       my.currentParag = params.parag
-
-      console.log('Le parag #%d est choisi', my.currentParag.id)
 
       // La listes qui vont permettre de gérer provisoirement les
       // ajouts et les retraits.
@@ -365,6 +372,7 @@ class Brins {
 
     currentPanneau.section.appendChild(my.panneau)
     my.panneau.setAttribute('style', '')
+    my.setTitrePanneau()
 
     if ( my.iselected ) { my.selectBrinCurrent() }
     else { my.iselected = 0 /* pseudo-méthode qui appelle selectBrinCurrent */}
@@ -372,8 +380,6 @@ class Brins {
     // La formule ci-dessus fait que lorsqu'on ré-ouvre le panneau, c'est
     // toujours le même brin qui est sélectionné. Peut-être qu'à l'usage il
     // faudra toujours remettre my.iselected à 0 ou TODO mettre une option
-
-    // TODO Il faut toujours désélectionner le sélectionné précédent ?
 
     my.panneau.opened = true
     Tabulator.setupAsTabulator(my.panneau, {
@@ -399,8 +405,6 @@ class Brins {
     const ids = my.currentParag.brin_ids || []
 
     let o = null
-
-    console.log("Brins à sélectionner pour le parag #%d : ", my.currentParag.id, ids)
 
     Brins.items.forEach( (brin, bid) => {
       o = my.ULlisting.querySelector(`li#brin-${bid}`)
@@ -823,7 +827,7 @@ class Brins {
     let h = DOM.create('section', {id:'panneau_brins'})
     let newo, listing
 
-    newo = DOM.create('div', {class:'titre', inner: "Liste des brins"})
+    newo = DOM.create('div', {id: 'titre_panneau_brins', class:'titre', inner: "Liste des brins"})
     h.appendChild(newo)
 
 
