@@ -2,35 +2,20 @@
 
 Electron's app to design and write movie scripts.
 
-Version 0.1.0
+* « 0-mouse »
+* use of « Tabulators »
 
-## PTests
 
-Also designed to create a new and simple tests framework (easier than Mocha and other Chai).
+## 0-mouse
 
-With PTests installed :
+Gestion profonde des raccourcis-clavier pour ne pas avoir à utiliser la souris. Ever.
 
-```js
+C'est une application tournée vers l'écriture, et l'important et de rester les mains au clavier, le plus possible. L'application encourage ce comportement en supprimant tout bouton ou élément d'interface qui pousse à utiliser sa souris.
 
-    // spec_helper.js (in ./tests/ptests/)
-    PTests.options.test_file = 'my_test_spec.js'
+## Use of « tabulators »
 
-    // my_test_spec.js (in ./tests/ptests/)
-    describe("My first test", [
-      , describe("with imbrication", [
-        , context("in first context", [
-          , it('addition 2+2 = 4 is a success', () => {
-            expect(2+2, 'number of eggs').equals(4)
-            // => SUCCESS
-            // report "OK, number of eggs is equal to 4"
-          })
-          , it('substraction 4 - 2 = 3 is a failure', () => {
-            expect(4 - 2,'4-2').equals(3)
-            // => FAILURE
-            // report "Error in line 10, 4-2 doesn't equal 3"
-          })
-        ])
-        , context('in second context')
-      ])
-    ])
-```
+Mon système de « Tabulators » est un système qui permet de gérer plus facilement les menus, les commandes, les options, etc. Au lieu qu'un touche soit affectée à un menu/commande/menu par son nom (comme « N » attaché à « Nouveau »), ce sont toujours les mêmes touches qui sont utilisées, et leur indice (1ère, 2e, 3e, etc.) permet de déterminer quel menu/commande/option il faut activer ou jouer.
+
+De plus, la répétition d'une touche entraine l'activation du menu/commande/option, sans avoir à passer par la touche Entrée.
+
+Enfin, last but not least, on peut activer plusieurs menus/commandes/options d'un seul coup grâce à la touche majuscule.

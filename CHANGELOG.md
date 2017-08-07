@@ -1,7 +1,11 @@
+# 0.2.0
+
+  * Passe (presque) tous les tests. Principales fonctions mises en place (proche de la version 1 — il reste les relatives).
+
 # 0.1.17
 
   * Gestion complète des brins (affichage et édition)
-  
+
 # 0.1.16
 
   * Gestion presque complète des Brins (création et enregistrement)
