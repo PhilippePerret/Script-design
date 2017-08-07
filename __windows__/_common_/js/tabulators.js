@@ -169,6 +169,16 @@ class Tabulator
 
   static onKeyDown_TabulatorLike ( sectionMap, evt )
   {
+    if ( ! evt.metaKey ) return ;
+    // On ne passe par ici que lorsque la touche META (CMD) est pressée
+    // Car sinon, elle ne passe pas par keyUp, en tout cas avec certaines
+    // touches
+    let fonction = sectionMap.get(evt.key) || sectionMap.get(evt.key.toLowerCase())
+    if ( fonction )
+    {
+      fonction.call(null, evt)
+      return DOM.stopEvent(evt)
+    }
     return true
   }
 

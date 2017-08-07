@@ -412,11 +412,30 @@ class Brins {
     })
   }
 
+
   get iselected () { return this._iselected }
   set iselected (v){
     this._iselected = v
     this._selected = undefined
     this.selectBrinCurrent()
+  }
+
+  getIndexOfBrin (brin)
+  {
+    return this.getIndexOfLI(brin.LI)
+  }
+  /**
+  * Retourne l'index du LI du brin dans le listing actuel
+  **/
+  getIndexOfLI (librin)
+  {
+    const my = this
+    const LIs = my.LIlist
+    let i = 0, len = LIs.length
+    for (; i < len ; ++i){
+      if ( LIs[i].id == librin.id ) return i ;
+    }
+    return null
   }
 
   get selected () {
@@ -431,11 +450,52 @@ class Brins {
   // Alias sémantique (pour correspondre à « currentParag »)
   get currentBrin () { return this.selected }
 
+  /**
+  * On fournit un objet DOM LI du brin et la méthode retourne l'identifiant
+  * du brin
+  **/
+  brin_LI_2_ID ( li )
+  {
+    return Number(li.getAttribute('data-id'))
+  }
+
+  /**
+  * @return {Array} La liste de LI du listing des brins
+  **/
+  get LIlist ()
+  {
+    return this.ULlisting.querySelectorAll('li.brin')
+  }
+
+  /**
+  * @param {Number} index L'index du LI de brin à obtenir
+  * @return {HTMLElement} Le LI du brin se trouvant à l'index +index+
+  **/
+  getBrinLIAtIndex ( index )
+  {
+    if ( index > this.nombre_brins_displayed - 1 ) return null
+    const my = this
+    index < 0 && (index = my.nombre_brins_displayed + index)
+    return my.LIlist[index] || null
+  }
+  getBrinIdAtIndex ( index )
+  {
+    if ( index > this.nombre_brins_displayed - 1 ) return null
+    const li = this.getBrinLIAtIndex(index)
+    return li ? this.brin_LI_2_ID(li) : null
+  }
+  getBrinAtIndex ( index )
+  {
+    if ( index > this.nombre_brins_displayed - 1 ) return null
+    let id = this.getBrinIdAtIndex(index)
+    return id === null ? null : Brins.get(id)
+  }
+
   selectBrinCurrent ()
   {
     const my = this
     my.deselectBrinSelected()
-    const o = my.ULlisting.querySelectorAll('li.brin')[my.iselected]
+    const o = my.getBrinLIAtIndex(my.iselected)
     o && DOM.addClass(o, 'selected')
   }
   deselectBrinSelected ()
@@ -467,6 +527,7 @@ class Brins {
   // Sélectionne le brin suivant dans le panneau
   selectNext (evt) {
     const my = this
+    if ( evt.metaKey ) return my.currentBrinDown(evt) ;
     if ( my.iselected >= my.imax_brin ) { return false }
     evt || ( evt = {} ) // pour les tests, au moins
     const increm = evt.shiftKey ? 10 : 1
@@ -476,16 +537,124 @@ class Brins {
     return true
   }
 
+  /**
+  * Déplace le brin vers le bas
+  *
+  * Commentaire  * N0004
+  * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0004
+  * N0005 (pour tout savoir sur les déplacements)
+  * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0005
+  **/
+  currentBrinDown (evt)
+  {
+    const my = this
+    const hasParent = !!my.selected.hasParent()
+
+    if ( hasParent )
+    {
+      my.ULlisting.insertBefore(my.selected.LI, my.selected.parent.LI.nextSibling)
+      my.selected.update({parent_id: null})
+    }
+    else
+    {
+      const nextNode = my.selected.LI.nextSibling
+
+      if ( nextNode )
+      {
+        const nextIsTitreType = 'DIV' == nextNode.tagName
+
+        if ( nextIsTitreType )
+        {
+          const newType = Number(nextNode.getAttribute('data-type'))
+          my.selected.update({type: newType})
+          UILog(`Le nouveau type du brin est « ${Brin.TYPES.get(newType).hname} »`)
+          my.ULlisting.insertBefore(my.selected.LI, nextNode.nextSibling)
+        }
+        else
+        {
+          if ( my.selected.hasChildren() )
+          {
+            my.ULlisting.insertBefore(my.selected.LI, nextNode.nextSibling)
+          }
+          else
+          {
+            const nextBrin = Brins.get(my.brin_LI_2_ID(nextNode))
+            my.selected.update({parent_id: nextBrin.id})
+            nextBrin.ULChildren.appendChild(my.selected.LI)
+          }
+        }
+      }
+    }
+    my._iselected = my.getIndexOfLI(my.selected.LI)
+  }
+
   // Sélectionne le brin précédent dans le panneau
   selectPrevious (evt) {
     const my      = this
-    if ( my.iselected == 0 ) { return false }
     evt || ( evt = {} ) // pour les tests, au moins
+    if ( evt.metaKey ) return my.currentBrinUp(evt) ;
+    if ( my.iselected == 0 ) { return false }
     const increm  = evt.shiftKey ? 10 : 1
     let newi = my.iselected - increm
     if ( newi < 0 ) { newi = 0 }
     my.iselected = newi // le sélectionne vraiment
     return true
+  }
+  /**
+  * Remonte le brin courant.
+  *
+  * N0004
+  * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0004
+  * N0005 (pour tout savoir sur les déplacements)
+  * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0005
+  **/
+  currentBrinUp (evt)
+  {
+    const my = this
+    const hasParent = !!my.selected.hasParent()
+
+    if ( hasParent )
+    {
+      my.ULlisting.insertBefore(my.selected.LI, my.selected.parent.LI)
+      my.selected.update({parent_id: null})
+      UILog(`Brin #${my.selected.id} sorti de son brin parent.`)
+    }
+    else
+    {
+      const previousNode = my.selected.LI.previousSibling
+
+      if ( previousNode )
+      {
+        if ( 'DIV' == previousNode.tagName )
+        {
+          my.ULlisting.insertBefore(my.selected.LI, previousNode)
+          // Trouver le nouveau type
+          let o = my.selected.LI
+          let newType = null
+          while( o = o.previousSibling) {
+            if ('DIV' == o.tagName){
+              newType = Number(o.getAttribute('data-type')) ; break
+            }
+          }
+          my.selected.update({type: newType})
+          UILog(`Type du brin #${my.selected.id} défini à « ${Brin.TYPES.get(newType).hname} ».`)
+        }
+        else
+        {
+          if ( my.selected.hasChildren() )
+          {
+            my.ULlisting.insertBefore(my.selected.LI, previousNode)
+          }
+          else
+          {
+            const previousBrin = Brins.get(my.brin_LI_2_ID(previousNode))
+            previousBrin.ULChildren.appendChild(my.selected.LI)
+            my.selected.update({parent_id: previousBrin.id})
+          }
+        }
+      }
+    }
+    my._iselected = my.getIndexOfLI(my.selected.LI)
   }
   // Choisit le brin courant dans le panneau
   // Mais attention : si le parag possède ce brin, il faut lui retirer,
@@ -640,7 +809,10 @@ class Brins {
     return this._ULlisting
   }
 
-
+  buildDivTitre (typeId)
+  {
+    return DOM.create('div', {class:'titre', 'data-type': String(typeId), inner: Brin.TYPES.get(typeId).hname})
+  }
   /**
   * Construction du panneau des brins
   **/
@@ -653,9 +825,16 @@ class Brins {
     h.appendChild(newo)
 
 
+    let typesTraited = []
+    // On conserve une liste des types qui vont être traités par
+    // les brins existants pour ajouter les types manquants à la
+    // suite afin de pouvoir faire entrer les brins dedans en les
+    // déplaçant.
+
     // On classe
     let bsg = new Map()
       , lt  = []
+
     Brins.items.forEach((v,k) => {
       if (undefined === bsg.get(v.type))
         { bsg.set(v.type,[]);lt.push(v.type) }
@@ -667,8 +846,8 @@ class Brins {
     listing = DOM.create('ul', {class:'brins', id: 'brins'})
     brins_grouped.forEach( grpBrins => {
       let typeId = grpBrins[0].type
-      let divTitre = DOM.create('div', {class:'titre', inner: Brin.TYPES.get(typeId).hname})
-      listing.appendChild(divTitre)
+      listing.appendChild(this.buildDivTitre(typeId))
+      typesTraited.push(typeId)
       grpBrins.forEach( brin => { listing.appendChild(brin.buildAsLI()) } )
     })
     h.appendChild(listing)
@@ -677,11 +856,27 @@ class Brins {
     // dans leur parent (en supposant bien entendu qu'ils appartiennent
     // au même groupe/type de brins)
     Brins.items.forEach( (b, bid) => {
-      if ( ! b.parent_id ) return ;
+      if ( ! b.hasParent() ) return ;
       b.parent.ULChildren.appendChild(b.LI)
     })
 
-    newo = DOM.create('div', {class:'explication', inner: "<b>Enter</b> ou <b>Escape</b> pour quitter le panneau."})
+    /*- Ajout des titres de type non traités (i.e. qui ne possèdent pas
+        encore de brins) -*/
+
+    Brin.TYPES.forEach( (dType, type) => {
+      if ( typesTraited.includes(type) ) return ;
+      listing.appendChild(this.buildDivTitre(type))
+    })
+
+    let explication = `
+<shortcut>↑</shortcut> <shortcut>i</shortcut> <shortcut>↓</shortcut> <shortcut>k</shortcut> = sélectionner brin.
+<shortcut>↑</shortcut> <shortcut>↓</shortcut> + <code>cmd</code> = déplacer le brin (voir l'explication de l'effet dans l'aide).
+<shortcut>←</shortcut> <shortcut>j</shortcut> <shortcut>→</shortcut> <shortcut>l</shortcut> = entrer/sortir le brin du parag (si parag édité).
+<br><shortcut>e</shortcut> = éditer le brin courant, <shortcut>@</shortcut> = aide.
+<shortcut>Enter</shortcut> ou <shortcut>Escape</shortcut> pour quitter le panneau.
+
+    `
+    newo = DOM.create('div', {class:'explication', inner: explication})
     h.appendChild(newo)
 
     this._panneau = h
@@ -906,7 +1101,13 @@ class Brins {
     })
 
 
-    let textExp = "<b>t</b> : choisir le type, <b>q</b>, <b>s</b>, <b>d</b>, <b>f</b> : éditer (ordre des champs).</b>. <b>B</b> : liste des brins. <b>Enter</b> : enregistrer les données du brin (ou le créer). <b>Escape</b> : renoncer."
+
+    let textExp = `
+<shortcut>t</shortcut> = choisir le type, <shortcut>q</shortcut> <shortcut>s</shortcut>
+<shortcut>d</shortcut> <shortcut>f</shortcut> = éditer (ordre des champs).
+<shortcut>B</shortcut> = liste des brins.
+<shortcut>Enter</shortcut> = enregistrer les données du brin (ou le créer).
+<shortcut>Escape</shortcut> = renoncer.`
     newo = DOM.create('div', {class:'explication', inner: textExp})
     h.appendChild(newo)
 

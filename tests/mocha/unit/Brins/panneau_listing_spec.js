@@ -567,4 +567,125 @@ describe('Panneau du listing des brins', function () {
     })
   });
 
+
+  describe('#getBrinLIAtIndex', function () {
+    before(function () {
+      resetBrins()
+      brins.showPanneau()
+      let alllis = brins.ULlisting.querySelectorAll('li.brin')
+      expect(alllis.length, 'La liste des brins devrait avoir au moins 2 éléments').to.be.at.least(2)
+    });
+    it("répond", function(){
+      expect(brins).to.respondsTo('getBrinLIAtIndex')
+    })
+    it("retourne l'élément LI du brin à l'index spécifié", function(){
+      let alllis = brins.ULlisting.querySelectorAll('li.brin')
+      res = brins.getBrinLIAtIndex(0)
+      expect(res).to.be.instanceOf(HTMLElement)
+      expect(res.id).to.equal(alllis[0].id)
+      expect(brins.getBrinLIAtIndex(1).id).to.equal(alllis[1].id)
+      expect(brins.getBrinLIAtIndex(2).id).to.equal(alllis[2].id)
+    })
+
+    it("retourne null si l'index est trop grand", function(){
+      expect(brins.getBrinLIAtIndex(1000)).to.be.null
+    })
+    it("retourne depuis le bout si l'index est négatif", function(){
+      let alllis = brins.ULlisting.querySelectorAll('li.brin')
+      const nb = alllis.length - 1
+      res = brins.getBrinLIAtIndex(-1)
+      expect(res).to.be.instanceOf(HTMLElement)
+      expect(res.id).to.equal(alllis[nb].id)
+      expect(brins.getBrinLIAtIndex(-2).id).to.equal(alllis[nb-1].id)
+    })
+  });
+  describe('#getBrinAtIndex', function () {
+    it("répond", function(){
+      expect(brins).to.respondsTo('getBrinAtIndex')
+    })
+    it("retourne le brin qui se trouve à l'index spécifié", function(){
+      let lis = brins.ULlisting.querySelectorAll('li.brin')
+      let index = 2
+      res = brins.getBrinAtIndex(index)
+      expect(res).to.be.instanceOf(Brin)
+      expect(res.id).to.equal(Number(lis[index].getAttribute('data-id')))
+      index = 0
+      res = brins.getBrinAtIndex(index)
+      expect(res).to.be.instanceOf(Brin)
+      expect(res.id).to.equal(Number(lis[index].getAttribute('data-id')))
+    })
+    it("retourne null si l'index est trop grand", function(){
+      expect(brins.getBrinAtIndex(10000)).to.be.null
+    })
+    it("retourne depuis le bout si l'index est inférieur à zéro", function(){
+      let lis = brins.ULlisting.querySelectorAll('li.brin')
+      let nb  = lis.length
+      res = brins.getBrinAtIndex(-1)
+      expect(res).to.be.instanceOf(Brin)
+      expect(res.id).to.equal(Number(lis[nb-1].getAttribute('data-id')))
+    })
+  });
+
+  describe('#getBrinIdAtIndex', function () {
+    it("répond", function(){
+      expect(brins).to.respondsTo('getBrinIdAtIndex')
+    })
+    it("retourne l'identifiant du brin à l'index spécifié", function(){
+      let alllis = brins.ULlisting.querySelectorAll('li.brin')
+      expect(brins.getBrinIdAtIndex(0)).to.equal(Number(alllis[0].getAttribute('data-id')))
+      expect(brins.getBrinIdAtIndex(1)).to.equal(Number(alllis[1].getAttribute('data-id')))
+      expect(brins.getBrinIdAtIndex(2)).to.equal(Number(alllis[2].getAttribute('data-id')))
+    })
+    it("retourne null si l'index est trop grand", function(){
+      expect(brins.getBrinIdAtIndex(1000)).to.be.null
+    })
+    it("retourne depuis le bout si l'index est inférieur à zéro", function(){
+      let alllis = brins.ULlisting.querySelectorAll('li.brin')
+      let lastid = alllis[alllis.length-1]
+      lastid = Number(lastid.getAttribute('data-id'))
+      expect(brins.getBrinIdAtIndex(-1)).to.equal(lastid)
+    })
+  });
+
+  describe.only('CMD + Flèche', function () {
+    it("permet de déplacer le brin sélectionné", function(){
+      resetBrins()
+      brins.showPanneau()
+      expect(brins.iselected).to.equal(0)
+
+      // On prend le brin qu'on va déplacer
+      const thebrin_id  = brins.selected.id
+      const thebrin_jid = `brin-${thebrin_id}`
+      const thebrin     = Brins.get(thebrin_id)
+      let thebrin_has_parent = 'number' === typeof thebrin.parent_id
+      let thesuivant = brins.getBrinAtIndex(1)
+
+
+      // ======== PRÉ-VÉRIFICATIONS ===========
+      let second = brins.getBrinAtIndex(1)
+      expect(second.id).not.to.equal(thebrin_id)
+
+      // ========> TEST <============
+      // Ça doit faire descendre le LI du brin
+      window.onkeyup({key:'ArrowDown', metaKey:true})
+
+      // ========= CONTROLE ============
+      // Dans tous les cas, le brin passe en seconde position
+      expect(brins.iselected, 'iselected de Brins devrait être égal à 1').to.equal(1)
+      second = brins.getBrinAtIndex(1)
+      expect(second.id, 'le premier brin devrait être passé en second').to.equal(thebrin_id)
+
+      if ( thebrin_has_parent ) {
+        // <= Le brin a un parent
+        // => Il faut le sortir de son parent
+        expect(thebrin.parent_id).to.be.null
+      } else {
+        // <= Le brin n'a pas de parent
+        // => Il faut le mettre dans les enfants du brin suivant
+        expect(thebrin.parent_id).to.equal(thesuivant.id)
+      }
+
+    })
+  });
+
 });

@@ -1,9 +1,4 @@
 
-* Création de brin = si un brin est sélectionné, et qu'il n'a pas de parent, on propose d'ajouter le nouveau brin dans celui-ci.
-* Pouvoir déplacer les brins dans le listing (pour pouvoir introduire un brin dans un autre, définir son parent)
-
-* Définition du type du brin (proposer un menu qui va renseigner la propriété 'type')
-
 * Tester l'enregistrement de 'brin_ids' en testant les méthodes :
   get brin_ids_32
   set brin_ids_32

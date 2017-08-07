@@ -1,7 +1,7 @@
 require('../../spec_helper.js')
 
 
-describe.only('Formulaire de brin', function () {
+describe('Formulaire de brin', function () {
   before(function () {
     resetBrins()
   });
@@ -105,7 +105,7 @@ describe.only('Formulaire de brin', function () {
     })
   });
 
-  describe.only('actualisation du parent_id du brin', function () {
+  describe('actualisation du parent_id du brin', function () {
     function setParentIdTo (id)
     {
       brins.form.querySelector('span#brin_parent_id').innerHTML = String(id)
@@ -129,7 +129,7 @@ describe.only('Formulaire de brin', function () {
         expect(brin.ULChildren).to.haveTag('li', {id:'brin-1'})
       })
     });
-    describe.only('ajout dans un parent quand avait un autre parent', function () {
+    describe('ajout dans un parent quand avait un autre parent', function () {
       before(function () {
         resetBrins()
 

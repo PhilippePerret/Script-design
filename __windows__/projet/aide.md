@@ -154,6 +154,9 @@ Les touches les plus importantes sont les flèches haut et bas (ou `k` et `i`) p
 | Aller au brin précédent       | Fl. haut ou i   | |
 | … de 10 en 10                 | + MAJ           | |
 | | | |
+| Déplacer le brin vers le bas  | CMD + Fl. Bas   | cf. ci-dessous |
+| Déplacer le brin vers le haut | CMD + Fl. Haut  | cf. ci-dessous |
+| <b>Avec un parag édité</b>    |                 | |
 | Choisir ou retirer le brin    | Fl. -> ou l     | |
 |                               | Fl. &lt;- ou j  | |
 | Créer un nouveau brin         | b               | |
@@ -168,6 +171,18 @@ Les touches les plus importantes sont les flèches haut et bas (ou `k` et `i`) p
 ### Création d'un nouveau brin {#creation_nouveau_brin}
 
 Que l'on se trouve dans la liste des brins ou sur le verso d'un parag, c'est la touche `b` qui permet de créer un nouveau brin. La fenêtre d'édition du brin s'ouvre et il suffit d'entrer les valeurs puis de confirmer par `Entrée`.
+
+### Déplacement des brins {#deplacement_brins_dans_panneau}
+
+Le déplacement des brins dans le panneau des brins permet de les faire entre/sortir de brins parent ou de modifier leur type.
+
+Pour entrer le brin dans un parent, le déplacer jusqu'à ce parent puis « passer sur ce parent » en continuant de déplacer le brin.
+
+Pour sortir le brin d'un parent, il suffit de le déplacer à nouveau.
+
+Pour choisir le type du brin (en fonction des titres), il suffit de déplacer le brin jusque sous ce titre. Noter que l'ordre importe peu puisqu'il sera toujours celui défini à la création (on ne peut pas trier les types pour le moment).
+
+> Noter qu'un brin possédant des enfants ne peut pas devenir l'enfant d'un autre brin (une seule profondeur est tolérée).
 
 ### Le formulaire de brin {#formulaire_brin}
 

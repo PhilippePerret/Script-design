@@ -140,13 +140,20 @@ class Brin
     return this._parags
   }
   get div () {
-    this._div || this.build()
+    if ( ! this._div ) {
+      this.build()
+      this._div = projet.brins.ULlisting.querySelector(`div#brin-${this.id}`)
+    }
     return this._div
   }
-  get ULChildren () {
-    this._ULChildren || ( this._ULChildren = this.div.querySelector(`ul#brin-${this.id}-children`))
-    return this._ULChildren
+
+  get LI () {
+    this._li || ( this._li = projet.brins.ULlisting.get(`li#brin-${this.id}`))
+    return this._li
   }
+
+  get ULChildren () { return this.LI.querySelector(`ul#brin-${this.id}-children`) }
+
   /**
    * Noter que les méthodes suivantes, jusqu'à besoin contraire, ne doivent être
    * appelées que pour la MODIFICATION des données. Elles entraineronts
@@ -190,6 +197,35 @@ class Brin
     this.modified = true
   }
 
+  hasParent ()
+  {
+    return 'number' === typeof this.parent_id
+  }
+  /**
+  * @return {Boolean} True si le brin possède des enfants.
+  *
+  * Il y a deux manières de le savoir : si le LI du brin est construit dans
+  * le listing, il suffit de compter son nombre d'enfants. Sinon, plus long,
+  * on passe en revue tous les brins pour savoir lequel a pour parent_id ce
+  * brin.
+  **/
+  hasChildren ()
+  {
+    const my = this
+    if ( currentProjet.brins._panneau )
+    {
+      return my.ULChildren.childNodes.length > 0
+    }
+    else
+    {
+      let n = 0
+      Brins.items.forEach( (brin, bid) => {
+        if ( my.id === brin.parent_id ) n ++ ;
+      })
+      return n
+    }
+  }
+
   /**
   * Définit le type du brin
   **/
@@ -216,7 +252,6 @@ class Brin
   update ( newData )
   {
     const my = this
-    console.log("Nouvelles données pour le brin :", newData)
     if ( newData )
     {
       my.reset()
@@ -326,10 +361,6 @@ class Brin
     return this._div
   }
 
-  get LI () {
-    this._li || ( this._li = DOM.get(`li#brin-${this.id}`))
-    return this._li
-  }
   /**
   * Fabrique l'élément LI du brin, pour affichage dans une liste UL
   *
