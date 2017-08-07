@@ -417,7 +417,7 @@ class Parag
       for(let i = 0 ; i < 16 ; i += 2){
         let bid = my.brin_ids_32.substr(i, 2).trim()
         if ( bid === '' ) continue ;
-        my._brin_ids.push(Number(bid))
+        my._brin_ids.push(String(bid).fromBase32())
       }
     }
   }

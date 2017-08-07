@@ -1,6 +1,13 @@
 * Voir les bugs sur le site…
 
+* Les relatives restent à remettre complètement (il y a notamment une méthode importante qui est entièrement commentée)
+
 * Tester le titre dans le panneau des brins ("Liste des brins" ou "Brins du parag #x" quand un parag est sélectionné — ouverture à partir du verso)
+
+* les brins sont encore à tester, mais il y a beaucoup de choses à comprendre je pense au niveau de l'initialisation…
+* tester qu'on ne puisse pas choisir plus de 8 brins pour le parag
+  Note : il faut créer 9 brins
+* Ranger un peu les classes `Brins` et `Brin`
 
 * Tester l'enregistrement de 'brin_ids' en testant les méthodes :
   get brin_ids_32
@@ -8,26 +15,8 @@
   updateBrinIds() - en modifiant _brin_ids
   defineBrinIds() - en modifiant _brin_ids_32
 
-* tester qu'on ne puisse pas choisir plus de 8 brins pour le parag
-  Note : il faut créer 9 brins
-
-
 * Ajouter "Brin « ... »" aux titres des sous-titres de brin ("Brin « non définis »", "Brin « Personnages »", etc.)
   OU mettre simplement 'Non définis' pour le premier au lieu de "Non défini" qui donne l'impression d'une erreur (ou définir explicitement le titre)
-
-
-* La création d'un nouveau brin doit entrainer la reconstruction du panneau des brins (qui peut être affiché quand on crée un nouveau brin)
-
-* Poursuivre l'implémentation des méthodes pour les brins
-  * Documenter la partie sur les brins
-  * Poursuivre les tests des brins en :
-  * Pouvoir choisir des brins pour le parag (peut-être faut-il implémenter ce que je décris plus bas à propos des champs éditables : on peut définir une méthode de traitement de la donnée modifiée, mais ne faut-il pas aussi pouvoir définir une méthode d'édition particulière. Comme ici, par exemple, lorsque l'on veut modifier la donnée `brin_ids`, on doit faire apparaitre le panneau des brins et en choisir.)
-  * Pour le choix des brins, penser qu'il y a un nombre limité de 8 par parag
-  * Pouvoir redéfinir les brins du parag
-  * Tester qu'à l'édition d'un Brin son type soit bien réglé
-
-* Ranger un peu les classes `Brins` et `Brin`
-
 
 * Implémenter le même traitement que editablecontent on blur, mais à l'édition : quand une certaine méthode existe, par exemple 'onedit_<propriété>', on pourrait utiliser une autre action que la simple édition du champ. Si cette méthode n'existe pas, on utilise la méthode normale
   Essayer ça avec les types, dont on doit proposer une liste

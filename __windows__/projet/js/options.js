@@ -123,6 +123,7 @@ class ProjetOptions
     this._data || ( this._data = {} )
     return this._data
   }
+  set data (v) { this._data = v }
 
   /**
   * Sauvegarde des options du projet
