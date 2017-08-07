@@ -1,5 +1,8 @@
 ## Aide pour la fenêtre Projet {#projet_aide_fenetre_projet}
 
+[panneau des brins]: #panneau_des_brins
+[tabulator]: #fonctionnement_tabulator
+
 ### Aide rapide {#projet_quick_aide}
 
 | Résultat voulu                | Raccourci | Notes |
@@ -172,7 +175,10 @@ Les touches les plus importantes sont les flèches haut et bas (ou `k` et `i`) p
 
 Que l'on se trouve dans la liste des brins ou sur le verso d'un parag, c'est la touche `b` qui permet de créer un nouveau brin. La fenêtre d'édition du brin s'ouvre et il suffit d'entrer les valeurs puis de confirmer par `Entrée`.
 
-### Déplacement des brins {#deplacement_brins_dans_panneau}
+### Panneau des brins {#panneau_des_brins}
+
+
+#### Déplacement des brins {#deplacement_brins_dans_panneau}
 
 Le déplacement des brins dans le panneau des brins permet de les faire entre/sortir de brins parent ou de modifier leur type.
 
@@ -188,7 +194,7 @@ Pour choisir le type du brin (en fonction des titres), il suffit de déplacer le
 
 Le formulaire de brin permet de créer un nouveau brin ou d'éditer un brin existant.
 
-On peut l'ouvrir soit à partir du [verso du parag], soit à partir du [panneau des brins].
+On peut l'ouvrir soit à partir du [verso du parag], soit à partir du [panneau des brins]. À l'aide de la touche <shortcut>b</shortcut> dans les deux cas.
 
 Ce formulaire est un [tabulator] donc il fonctionne avec les touches `q`, `s` etc. (ligne médiane du clavier, de gauche à droite). En l'occurrence :
 
@@ -196,17 +202,33 @@ Ce formulaire est un [tabulator] donc il fonctionne avec les touches `q`, `s` et
 
   q       Met en édition le champ Titre
   s       Met en édition le champ Description
-  d       Met en édition le champ Parent ID
-  f       Met en édition le champ Type de brin
 
   Tab     Pour valider la modification d'un champ (ou Enter, sauf sur le
           champ Description, qui accepte les retours chariot).
 
   Enter   Pour valider le champ si on est en édition.
-          Pour enregistrer le nouveau brin.
+          Pour enregistrer le nouveau brin si l'on est hors édition.
 
   Escape  Pour quitter l'édition sans rien faire.
 
 ```
 
 Comme pour toutes les fenêtres, la touche `@` permet d'obtenir de l'aide. En l'occurrence, cette aide vous amène ici.
+
+Noter que le brin parent ou le type du brin ne se règlent pas dans cette fenêtre. Ces deux propriétés se règlent dans le [panneau des brins] tout simplement en déplaçant les brins à l'aide de la touche méta (cmd sur Mac ou ctrl sur PC) et des flèches haut et bas.
+
+
+## Annexe
+
+### Fonctionnement avec les « Tabulators » {#fonctionnement_tabulator}
+
+Le fonctionnement en « tabulator » est un fonctionnement qui permet un usage très simple des raccourcis-clavier. Au lieu de s'attacher aux premières lettres des menus, des commandes, etc., qui oblige souvent à regarder le clavier, les « tabulators » utilisent toujours les mêmes lettres dans l'ordre pour activer les menus/commandes dans l'ordre.
+
+Ces lettres, on les trouve dans la rangée médiane du clavier : q, s, d, f, g etc.
+
+Si un menu comporte trois items, alors le premier pourra être activé par la touche `q`, le deuxième par la touche `s`, le troisième par la touche `d`, etc.
+
+Les tabulators présentent d'autres intérêts :
+
+* En cliquant deux fois la lettre, on active le menu ou la commande. Ainsi, il est inutile de taper la lettre puis la touche `Entrée`, il suffit de presser deux fois la touche pour activer le menu ou la commande.
+* Plus pratique encore, on peut choisir plusieurs commandes d'un seul coup grâce à la touche majuscule. Cela permet par exemple de pouvoir régler plusieurs options par les menus d'un seul coup.

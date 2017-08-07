@@ -63,17 +63,12 @@ class Brins {
   {
     // console.log("-> Brins#createNew")
     const my = this
-
     let dataBrin = my.getFormValues()
-
     // On met toujours le type du brin sélectionné
     dataBrin['type'] = my.selected ? my.selected.type : 0
-
     my.add( dataBrin )
     my.modified = true
-
     my.hideForm()
-    console.log("my.formParams est %s", my.formParams ? 'défini' : 'non défini')
     my.formParams && my.formParams.callback_oncreate && my.formParams.callback_oncreate.call()
 
   }
@@ -771,14 +766,9 @@ class Brins {
   onCreateNew ()
   {
     const my = this
-
     let newBrin = Brins.get(Brin._lastID)
-
     my.iselected = my.getIndexOfBrin(newBrin)
-    console.log("my.iselected = ", my.iselected)
-
     my.currentParag && my.chooseCurrent()
-
   }
 
   // Touche @ => Aide concernant les brins
@@ -1096,13 +1086,15 @@ class Brins {
     })
 
 
-
+    let explication = `
+<p class="small">Pour placer un brin dans un autre, ou pour choisir son <em>type</em>, déplacer le brin créé dans le listing à l'aide de CMD + <shortcut>↑</shortcut> et <shortcut>↓</shortcut></p>
+    `
     let textExp = `
 <shortcut>t</shortcut> = choisir le type, <shortcut>q</shortcut> <shortcut>s</shortcut>
 … = éditer (ordre des champs) <shortcut>B</shortcut> = Liste des brins.
 <shortcut>Enter</shortcut> = enregistrer les données du brin (ou le créer).
 <shortcut>Escape</shortcut> = renoncer.`
-    newo = DOM.create('div', {class:'explication', inner: textExp})
+    newo = DOM.create('div', {class:'explication', inner: explication + textExp})
     h.appendChild(newo)
 
     this._form = h
