@@ -762,27 +762,79 @@ class Parags
   **/
   static setSelectedsAsRelatives ()
   {
+    const my = this
+    const curProj = currentProjet
 
-    alert("Il faut actualiser cette méthode pour tenir compte du fait que les sélections se trouvent maintenant dans les deux panneaux.")
-    return true
-    // if ( Parag.selecteds.length < 2 )
-    // {
-    //   return alert("Accordez-moi une chose : pour associer deux paragraphes, avouez qu'il faut qu'il y en ait au moins deux…")
-    // }
-    // if ( ! confirm(`Voulez-vous vraiment associer les ${Parag.selecteds.length} parags sélectionnés ?`) )
-    // { return false }
-    //
-    // // OK, on procède à l'association
-    // // Si le référent est retourné (ce qui se produit en cas de réussite)
-    // // alors on met en exergue les relatives de ce référent
-    // let referent = this.projet.relatives.associate(Parag.selecteds)
-    // if ( referent ) {
-    //   this.parags.selection.setCurrent(referent)
-    //   referent.exergueRelatifs()
-    // }
-    //
+    // On relève les sélections de chaque tableau
+
+    // Ici, on emploie 'curp' pour 'current panneau' et altp pour 'alt_panneau'
+    const selections_curp  = curProj.current_panneau.parags.selection.dict
+    const selections_altp  = curProj.alt_panneau.parags.selection.dict
+    const nombre_selections_curp = selections_curp.size
+    const nombre_selections_altp = selections_altp.size
+
+    if ( nombre_selections_curp == 0 || nombre_selections_altp == 0 )
+    {
+      return alert("Accordez-moi une chose : pour associer deux paragraphes, avouez qu'il faut qu'il y en ait au moins un dans chaque panneau…")
+    }
+
+    /*- Demande de confirmation -*/
+
+    let opts = {maxLength: 74, delimiter: "\n", puce: '- '}
+    let parags_curp_str = my.listParagsAsDisplayable(selections_curp, opts)
+    let parags_altp_str = my.listParagsAsDisplayable(selections_altp, opts)
+    let textConf = `Voulez-vous vraiment procéder à cette association ?\n\nParags :\n\n${parags_altp_str}\n\n… associé(s) aux parags :\n\n${parags_curp_str}`
+
+    if ( ! confirm(textConf) ) return ;
+
+    /*- On fait l'array de tous les parags à associer -*/
+
+    let allParags = map(selections_curp, (p, v) => { return p })
+    allParags     = map(selections_altp, (p, v) => { return p }, allParags)
+
+
+    const referent = curProj.relatives.associate(allParags)
+
+    if ( referent ) { // i.e. que tout à bien fonctionné
+
+      UILog(`${allParags.length} parags associés.`)
+      // On affiche le référent et on met en exergue ses relatifs
+      referent.panneau.select(referent)
+      referent.exergueRelatifs()
+
+    }
   }
 
+  /**
+  * Prend la liste de parag +list+ et retourne une liste à afficher
+  * @param {Array|Map} list Soit la liste des parags, soit une map dont les
+  *                         valeurs sont des parags.
+  * @param {Object} options Définit les options
+  *   options.delimiter     Pour changer le délimiter, qui est "\n" par défaut
+  *   options.maxLength     {Number} Longueur maximal pour chaque brin. Si
+  *                         défini, tous les textes trop longs seront raccourcis
+  *
+  * @return {String} La liste prête à être affichée
+  **/
+  static listParagsAsDisplayable ( list, options )
+  {
+    options || ( options = {} )
+    options.delimiter || ( options.delimiter = "\n" )
+    options.maxLength || ( options.maxLength = false )
+    options.puce      || ( options.puce = '- ' )
+
+    let arr = [], c
+    forEach( list, (p, k) => {
+      c = `${p.contents}`
+      if ( options.maxLength && c.length > options.maxLength )
+      {
+        c = c.substr(0, options.maxLength - 4) + ' […]'
+      }
+      arr.push(`${options.puce} p#${p.id} : ${c}`)
+    })
+
+    return arr.join(options.delimiter)
+  }
   /** ---------------------------------------------------------------------
     *
     *   CLASSE PARAGS
@@ -888,6 +940,7 @@ class ParagsSelection
     }
   }
   get multiple () { return this._multiple }
+  set multiple (v){ this.setMultiple(v) }
 
   // ---------------------------------------------------------------------
 

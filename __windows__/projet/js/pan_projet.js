@@ -135,20 +135,29 @@ class PanProjet
   *
   * Elle fonctionne à base de promises
   *
+  * @param {Object|Undefined} options Les options
+  *     options.side    En mode double panneau, le côté à occuper
   **/
-  PRactivate ()
+  PRactivate ( options )
   {
     const my = this
+    options || ( options = {} )
+
+    console.log("-> PanProjet#PRactivate(%s) / panneau %s", JSON.stringify(options), my.id)
+
+    const side = options.side ? options.side : null
 
     return my.PRloadData()
       .then(  my.PRloadAllParags.bind(my)     )
       .then(  my.PRdisplayAllParags.bind(my)  )
       .then(  my.PRhideCurrent.bind(my)       )
-      .then(  my.PRshow.bind(my)              )
+      .then(  my.PRshow.bind(my, side)        )
       .catch( (err) => { throw err } )
   }
 
   PRdesactivate () {
+
+    console.log("-> PanProjet#PRdesactivate / panneau %s", this.id)
 
     this.parags.selection.reset()
     // Avant de désactiver le panneau, on déselectionne les sélections
@@ -259,6 +268,8 @@ class PanProjet
   {
     const my      = this
 
+    if ( my.projet.mode_double_panneaux ) return Promise.resolve() ;
+
     const curPan  = my.projet.current_panneau
     // C'est l'instance présence si le panneau est le panneau courant
 
@@ -276,15 +287,22 @@ class PanProjet
 
   /**
   * Méthode asynchrone affichant finalement le panneau (section)
+  *
+  * @param {String} side  En mode double panneau, détermine le côté où
+  *                       le panneau doit être placé, 'left' ou 'right'
   **/
-  PRshow ()
+  PRshow (side)
   {
     const my = this
     return new Promise(function(ok, pasok){
       my.section.className = 'panneau actif'
       my.actif      = true
       my.displayed  = true
-      my.projet.current_panneau = my
+      if ( my.projet.mode_double_panneaux ) {
+        my.setModeDouble(side)
+      } else {
+        my.projet.current_panneau = my
+      }
       ok(true)
     })
   }

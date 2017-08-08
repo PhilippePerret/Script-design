@@ -94,17 +94,19 @@ class Projet
   *
   * @param {Array} keys Liste des id-panneaux (un ou deux seulement) définissant
   *                     le ou les panneaux à ouvrir.
+  *
+  * @return {Promise} L'activation d'un panneau est une opération asynchrone
   **/
   static activatePanneauByTabulator ( keys )
   {
     const curProj = this.current
     if ( keys.length == 1 )
     {
-      activatePanneau(keys[0]) // handy méthode
+      return activatePanneau(keys[0]) // handy méthode
     }
     else
     {
-      curProj.activateDoublePanneaux(...keys)
+      return curProj.activateDoublePanneaux(...keys)
     }
   }
 
@@ -246,44 +248,38 @@ class Projet
   }
 
   /**
-  * Méthode fonctionnelle chargeant le plateau voulu
-  **/
-  activatePanneau (panneau_id, evt)
-  {
-    const my = this
-    // console.log(`-> Projet#loadPanneau(${panneau_id})`)
-
-    my.desactiveAllCurrents()
-    // Si on était en mode double panneau, il faut en sortir, même
-    // si on va y revenir tout de suite
-
-    my.current_panneau = my.panneau(panneau_id)
-    my.current_panneau.activate()
-    my.mode_double_panneaux = false
-
-    // console.log("<- #activatePanneau %s", panneau_id)
-  }
-
-
-
-  /**
   * Méthode fonction passant en mode double panneau
   **/
   activateDoublePanneaux (pan1_id, pan2_id)
   {
     const my = this
+
     // Désactiver les panneaux courants (if any)
-    my.desactiveAllCurrents()
+    return my.PRdesactiveAllCurrents()
+    .then( () => {
+      my._current_panneau     = my.panneau(pan2_id)
+      my.alt_panneau          = my.panneau(pan1_id)
 
-    my._current_panneau = curProj.panneau(pan2_id)
-    my.current_panneau.activate()
-    my.current_panneau.setModeDouble('right')
+      my.mode_double_panneaux = true
+      // Attention, cette propriété doit être réglée ici, APRÈS
+      // `desactiveAllCurrents` qui la met à false.
+    })
+    .then( my.PRactivateRightPanneau.bind(my) )
+    .then( my.PRactivateLeftPanneau.bind(my)  )
+    .catch( err => { throw err } )
+  }
 
-    my.alt_panneau = curProj.panneau(pan1_id)
-    my.alt_panneau.activate()
-    my.alt_panneau.setModeDouble('left')
-
-    my.mode_double_panneaux = true
+  PRactivateRightPanneau ()
+  {
+    const my = this
+    console.log("[PRactivateRightPanneau] my.current_panneau.id =", my.current_panneau.id )
+    return my.current_panneau.PRactivate.call(my.current_panneau, {side: 'right'})
+  }
+  PRactivateLeftPanneau ()
+  {
+    const my = this
+    console.log("[PRactivateLeftPanneau] my.alt_panneau.id =", my.alt_panneau.id )
+    return my.alt_panneau.PRactivate.call(my.alt_panneau, {side: 'left'})
   }
 
 
@@ -292,16 +288,25 @@ class Projet
   * mode normal (en mode double panneaux, ils sont rétrécis et placés à
   * gauche et à droite)
   **/
-  desactiveAllCurrents ()
+  PRdesactiveAllCurrents ()
   {
     const my = this
     if ( my.mode_double_panneaux )
     {
-      my.alt_panneau.desactivate()
+      my.mode_double_panneaux = false
+      // Il faut absolument régler ici la valeur de mode_double_panneaux pour
+      // que la désactivation prenne effectivement effet. Sinon, la méthode
+      // PanProjet#PRhideCurrent() est court-circuité
+
       my.alt_panneau.unsetModeDouble()
       my.current_panneau.unsetModeDouble()
+      return my.alt_panneau.PRdesactivate() // => {Promise}
+    } else if (my.current_panneau ){
+      // Note : normalement, il y a toujours un panneau courant
+      return my.current_panneau.PRdesactivate()
+    } else {
+      return Promise.resolve()
     }
-    my.current_panneau && my.current_panneau.desactivate()
   }
 
   //

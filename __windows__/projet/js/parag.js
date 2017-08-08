@@ -1330,7 +1330,6 @@ class Parag
   **/
   select ()
   {
-    // console.log(`-> Parag.select #${this.id}`)
     DOM.addClass(this.mainDiv,'selected')
     this.selected = true
     // console.log(`<- Parag.select #${this.id}`)
@@ -1338,7 +1337,6 @@ class Parag
   }
   deselect ()
   {
-    // console.log(`-> Parag.deselect #${this.id}`)
     if ( this.relatifsExergued ) { this.unexergueRelatifs() }
     DOM.removeClass(this.mainDiv, 'selected')
     this.selected = false
@@ -1455,12 +1453,19 @@ class Parag
       if ( this.projet.mode_double_panneaux )
       {
         // <= CMD Click mode double panneaux
+
+        this.panneau.parags.selection.multiple = true
+        // TODO Il faudrait peut-être ajouter et retirer ça à
+        // chaque mode double panneau activé/désactivé
+
         if ( this.selected ){
-          this.deselect()
+          // this.deselect()
+          this.panneau.deselect(this)
           this.unexergueRelatifs()
         }
         else {
-          this.select()
+          // this.select()
+          this.panneau.select(this)
           this.exergueRelatifs()
         }
       }

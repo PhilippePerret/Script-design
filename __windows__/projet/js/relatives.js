@@ -350,7 +350,7 @@ class Relatives
     // faire.
     if ( this.associate_Impossible(referent, hrelates) ) return false ;
 
-    // TODO On doit récupérer tous les « parags seuls » de cette association
+    // On doit récupérer tous les « parags seuls » de cette association
     // Note : le {Object} référent en fait partie
     let parags_seuls      = [referent]
     let parags_non_seuls  = []
@@ -359,12 +359,33 @@ class Relatives
       else parags_seuls.push({panneau_id: pan, id: value[0] })
     })
 
-    // TODO On doit associer tous les « parags seuls » aux autres parags
+    // On doit associer tous les « parags seuls » aux autres parags
     parags_seuls.forEach( hparag_seul => {
       let paragId_ref   = hparag_seul.id
         , panId_ref     = hparag_seul.panneau_id
         , panLetter_ref = PanProjet.oneLetterOf(panId_ref)
         , relatives_ref = this.data.relatives[String(paragId_ref)]
+
+      /*- Association des parags seuls entre eux -*/
+
+      parags_seuls.forEach( autre_hparag_seul => {
+        if ( autre_hparag_seul.id == paragId_ref ) return ; // celui traité
+        let paragId_aut   = autre_hparag_seul.id
+          , panId_aut     = autre_hparag_seul.panneau_id
+          , panLetter_aut = PanProjet.oneLetterOf(panId_aut)
+          , relatives_aut = this.data.relatives[String(paragId_aut)]
+
+        // Noter qu'ici on ne traite l'association que dans un sens,
+        // puisque l'autre sens sera traité lorsque ce sera le deuxième parag
+        // qui sera en référence.
+        // Si le référent n'a pas encore de relatifs de ce panneau, il
+        // faut initier sa donnée
+        relatives_ref['r'][panLetter_aut] || ( relatives_ref['r'][panLetter_aut] = [] )
+        relatives_ref['r'][panLetter_aut].push(paragId_aut)
+
+      })
+
+      /*- Association du parag seul avec les parags non seuls -*/
 
       // On répète pour chaque parag non seul
       parags_non_seuls.forEach( hpanneau_non_seul => {
@@ -374,9 +395,7 @@ class Relatives
 
         // Si le référent n'a pas encore de relatifs de ce panneau, il
         // faut initier sa donnée
-        if ( undefined === relatives_ref['r'][panLetter_pns]) {
-          relatives_ref['r'][panLetter_pns] = []
-        }
+        relatives_ref['r'][panLetter_pns] || ( relatives_ref['r'][panLetter_pns] = [] )
 
         // On boucle dans la liste de tous les parags de ce panneau
         hpanneau_non_seul.parag_ids.forEach( paragId_pns => {
@@ -388,9 +407,7 @@ class Relatives
 
           // Si le PNS n'a pas encore de relatifs dans le panneau du référent,
           // il faut initier sa donnée avant d'ajouter le référent
-          if ( undefined === relatives_pns['r'][panLetter_ref]) {
-            relatives_pns['r'][panLetter_ref] = []
-          }
+          relatives_pns['r'][panLetter_ref] || ( relatives_pns['r'][panLetter_ref] = [] )
           relatives_pns['r'][panLetter_ref].push(paragId_ref)
         })
       })
@@ -401,9 +418,9 @@ class Relatives
     my.resetAllParags(parags)
     my.modified = true
 
-    /*  On retourne le référent */
+    /*  On retourne le référent (pour sélection) */
 
-    return Parags.get(Number(referent.id)) // UTILES ?
+    return Parags.get(Number(referent.id))
   }
 
   /**

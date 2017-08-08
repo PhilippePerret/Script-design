@@ -42,8 +42,10 @@ const KBShortcuts = class {
         break
 
       case 's':
-        evt.metaKey && !curProj.mode_edition && curProj.saveAll()
-        return DOM.stopEvent(evt)
+        if ( evt.metaKey ) {
+          evt.metaKey && !curProj.mode_edition && curProj.saveAll()
+          return DOM.stopEvent(evt)
+        } else return true ; // pour marquer les 's' ou les capturer ailleurs
 
       case 'Q':
       case 'q':

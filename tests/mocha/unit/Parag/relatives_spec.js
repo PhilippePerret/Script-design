@@ -67,7 +67,7 @@ describe.only('Relatives/Synchronisation', function () {
     *   Les méthodes de Parag
     *
   *** --------------------------------------------------------------------- */
-  describe.only('Méthodes parag', function () {
+  describe('Méthodes parag', function () {
     describe('hasRelatif, hasRelative isRelativeOf', function () {
       before(function () {
         resetTests({nombre_parags: 3})
@@ -347,108 +347,180 @@ describe.only('Relatives/Synchronisation', function () {
     });
   });
 
+  describe('La méthode Relatives#associate', function () {
+    before(function () {
+      resetTests({nombre_parags:4})
+      panneauNotes.add(parag0)
+      panneauManuscrit.add([parag1, parag2, parag3])
+    });
+    it("répond", function(){
+      expect(projet.relatives).to.respondsTo('associate')
+    })
+    it("produit une erreur si aucun argument", function(){
+      expect(()=>{projet.relatives.associate()}).to.throw("Il faut fournir les parags à associer !")
+    })
+    it("produit une erreur si l'argument n'est pas une liste", function(){
+      expect(()=>{projet.relatives.associate(parag0)}).to.throw("Il faut fournir une liste des parags à associer !")
+    })
+    it("produit une erreur si l'argument est une liste avec les deux mêmes parags", function(){
+      expect(()=>{projet.relatives.associate([parag0,parag0])}).to.throw("Un parag ne peut être associé à lui-même.")
+    })
+    it("produit une erreur si l'argument est une liste contenant des mêmes parags", function(){
+      liste = [parag0, parag1, parag2, parag0]
+      expect(()=>{projet.relatives.associate(liste)}).to.throw("Un parag ne peut être associé à lui-même.")
+    })
+    it("ne produit pas d'erreur avec une liste valide", function(){
+      liste = [parag0, parag1, parag2]
+      expect(()=>{ projet.relatives.associate(liste)}).not.to.throw()
+    })
+    it("ne produit pas d'erreur avec une bonne liste et associe les parags spécifiés", function(){
+      resetTests({nombre_parags:4})
+      panneauNotes.add(parag0)
+      panneauScenier.add([parag1, parag3])
+      panneauTreatment.add(parag2)
+      expect(parag0.hasRelatif(parag1)).to.be.false
+      expect(parag0.hasRelatif(parag2)).to.be.false
+      expect(parag1.hasRelatif(parag0)).to.be.false
+      expect(parag1.hasRelatif(parag2)).to.be.false
+      expect(parag2.hasRelatif(parag0)).to.be.false
+      expect(parag2.hasRelatif(parag1)).to.be.false
+      expect(parag0.hasRelatif(parag3)).to.be.false
+      expect(parag1.hasRelatif(parag3)).to.be.false
+      expect(parag2.hasRelatif(parag3)).to.be.false
+      // ==========> TEST <==========
+      liste = [parag0, parag1, parag2]
+      expect(()=>{ projet.relatives.associate(liste)}).not.to.throw()
+      // =========== VÉRIFICATIONS ============
+      expect(parag0.hasRelatif(parag1)).to.be.true
+      expect(parag0.hasRelatif(parag2)).to.be.true
+      expect(parag1.hasRelatif(parag0)).to.be.true
+      expect(parag1.hasRelatif(parag2), "Le parag1 et le parag2 devraient être relatifs").to.be.true
+      expect(parag2.hasRelatif(parag0)).to.be.true
+      expect(parag2.hasRelatif(parag1)).to.be.true
+      // Et toujours pas en relation avec le parag3
+      expect(parag0.hasRelatif(parag3)).to.be.false
+      expect(parag1.hasRelatif(parag3)).to.be.false
+      expect(parag2.hasRelatif(parag3)).to.be.false
+    })
+  });
+  describe('Détail de l’association produite', function () {
+    /** ---------------------------------------------------------------------
+      *
+      *     TROIS TESTS DE SYNCHRO
+      *
+      *  Les trois tests de synchro suivant vont vérifier le bon fonctionnement
+      * de la synchro (donc de l'association), qui a un comportement
+      * particulier (et logique).
+      * Pour voir les principes de l'association :
+      * N0006
+      * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0006
+      *
+    *** --------------------------------------------------------------------- */
+    before(function () {
+      resetTests({nombre_parags: 10})
+      panneauNotes.add(parag0)
+      panneauSynopsis.add(parag4)
+      panneauScenier.add([parag1, parag2, parag3, parag7])
+      panneauManuscrit.add([parag5, parag6])
+      // Tous ces panneaux vont être donnés à l'association, dans le
+      // désordre, et on devrait obtenir :
+      //    - parag0 associé avec tous les parags
+      //    - parag4 associé avec tous les parags
+      //    - Tous les autres parags associés seulement avec parag0 et parag4
+
+
+      // ==========> TEST <==========
+      liste = [parag4, parag1, parag2, parag7, parag0, parag5, parag3, parag6]
+      projet.relatives.associate(liste)
+
+    });
+    it("n'associe pas entre eux les parags d'un même panneau", function(){
+      let arr = [1,2,3,7]
+      arr.forEach( refid => {
+        arr.forEach( relid => {
+          if ( refid == relid ) return ;
+          let ref = Parags.get(refid)
+          let pns = Parags.get(relid)
+          expect(ref.hasRelatif(pns)).to.be.false
+          expect(pns.hasRelatif(ref)).to.be.false
+        })
+      })
+    })
+    it("associe les parags seuls (dans panneau) avec tous les autres", function(){
+      let arr_seuls = [0,4]
+      let arr_autres = [1,2,3,5,6,7]
+      arr_seuls.forEach( refId => {
+        arr_autres.forEach( pnsId => {
+          let ref = Parags.get(refId)
+          let pns = Parags.get(pnsId)
+          expect(ref.hasRelatif(pns)).to.be.true
+          expect(pns.hasRelatif(ref)).to.be.true
+        })
+      })
+    })
+    it("associe les parags seuls entre eux", function(){
+      expect(parag4.hasRelatif(parag0)).to.be.true
+      expect(parag0.hasRelatif(parag4)).to.be.true
+
+    })
+    it("n'associe pas les parags d'un panneau avec les parags d'un autre panneau", function(){
+      // En d'autres termes, si les parags 1,2,3 du panneau Notes sont associés
+      // aux panneaux 4,5,6 du panneau Manuscrit, ils ne sont pas associés. Il faut
+      // forcément que ça passe par un autre.
+      let arr_pan1 = [1,2,3,7]
+      let arr_pan2 = [5,6]
+      arr_pan1.forEach( refId => {
+        arr_pan2.forEach( pnsId => {
+          let ref = Parags.get(refId)
+          let pns = Parags.get(pnsId)
+          expect(ref.hasRelatif(pns)).to.be.false
+          expect(pns.hasRelatif(ref)).to.be.false
+        })
+      })
+    })
+  });
+
   // TODO En mode double panneau, on peut voir les parags synchronisés
 
   describe.only('Synchronisation des parags en mode double panneau', function () {
-    describe('La méthode Relatives#associate', function () {
-      before(function () {
-        resetTests({nombre_parags:4})
-        panneauNotes.add(parag0)
-        panneauManuscrit.add([parag1, parag2, parag3])
-      });
-      it("répond", function(){
-        expect(projet.relatives).to.respondsTo('associate')
-      })
-      it("produit une erreur si aucun argument", function(){
-        expect(()=>{projet.relatives.associate()}).to.throw("Il faut fournir les parags à associer !")
-      })
-      it("produit une erreur si l'argument n'est pas une liste", function(){
-        expect(()=>{projet.relatives.associate(parag0)}).to.throw("Il faut fournir une liste des parags à associer !")
-      })
-      it("produit une erreur si l'argument est une liste avec les deux mêmes parags", function(){
-        expect(()=>{projet.relatives.associate([parag0,parag0])}).to.throw("Un parag ne peut être associé à lui-même.")
-      })
-      it("produit une erreur si l'argument est une liste contenant des mêmes parags", function(){
-        liste = [parag0, parag1, parag2, parag0]
-        expect(()=>{projet.relatives.associate(liste)}).to.throw("Un parag ne peut être associé à lui-même.")
-      })
-      it("ne produit pas d'erreur avec une liste valide", function(){
-        liste = [parag0, parag1, parag2]
-        expect(()=>{ projet.relatives.associate(liste)}).not.to.throw()
-      })
-      it("ne produit pas d'erreur avec une bonne liste et associe les parags spécifiés", function(){
-        resetTests({nombre_parags:3})
-        panneauNotes.add(parag0)
-        panneauScenier.add([parag1, parag3])
-        panneauTreatment.add(parag2)
-        expect(parag0.hasRelatif(parag1)).to.be.false
-        expect(parag0.hasRelatif(parag2)).to.be.false
-        expect(parag1.hasRelatif(parag0)).to.be.false
-        expect(parag1.hasRelatif(parag2)).to.be.false
-        expect(parag2.hasRelatif(parag0)).to.be.false
-        expect(parag2.hasRelatif(parag1)).to.be.false
-        expect(parag0.hasRelatif(parag3)).to.be.false
-        expect(parag1.hasRelatif(parag3)).to.be.false
-        expect(parag2.hasRelatif(parag3)).to.be.false
-        // ==========> TEST <==========
-        liste = [parag0, parag1, parag2]
-        expect(()=>{ projet.relatives.associate(liste)}).not.to.throw()
-        // =========== VÉRIFICATIONS ============
-        expect(parag0.hasRelatif(parag1)).to.be.true
-        expect(parag0.hasRelatif(parag2)).to.be.true
-        expect(parag1.hasRelatif(parag0)).to.be.true
-        expect(parag1.hasRelatif(parag2), "Le parag1 et le parag2 devraient être relatifs").to.be.true
-        expect(parag2.hasRelatif(parag0)).to.be.true
-        expect(parag2.hasRelatif(parag1)).to.be.true
-        // Et toujours pas en relation avec le parag3
-        expect(parag0.hasRelatif(parag3)).to.be.false
-        expect(parag1.hasRelatif(parag3)).to.be.false
-        expect(parag2.hasRelatif(parag3)).to.be.false
-      })
+    describe('Visualisation des parags synchronisés', function () {
+      describe('en sélectionnant un parag synchronisé', function () {
+        describe('avec un seul relatif dans l’autre panneau', function () {
+          before(function () {
+            // =========== PRÉPARATION ================
+            resetTests({nombre_parags: 10})
+            panneauNotes.add([parag0, parag1])
+            panneauScenier.add([parag2, parag3])
+            projet.relatives.associate([parag0, parag2])
 
-      /** ---------------------------------------------------------------------
-        *
-        *     TROIS TESTS DE SYNCHRO
-        *
-        *  Les trois tests de synchro suivant vont vérifier le bon fonctionnement
-        * de la synchro (donc de l'association), qui a un comportement
-        * particulier (et logique).
-        * Pour voir les principes de l'association :
-        * N0006
-        * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0006
-        *
-      *** --------------------------------------------------------------------- */
-      it("n'associe pas entre eux les parags d'un même panneau", function(){
-        this.skip()
-      })
-      it("associe les parags seuls (dans panneau) avec tous les autres", function(){
-        this.skip()
-      })
-      it("n'associe pas les parags d'un panneau avec les parags d'un autre panneau", function(){
-        // En d'autres termes, si les parags 1,2,3 du panneau Notes sont associés
-        // aux panneaux 4,5,6 du panneau Manuscrit, ils ne sont pas associés. Il faut
-        // forcément que ça passe par un autre.
-        this.skip()
-      })
+            // =========== PRÉ-VÉRIFICATION ============
+            expect(parag0.hasRelatif(parag2)).to.be.true
+
+            // =========> TEST <============
+            // On pass en mode double panneau
+            return Projet.activatePanneauByTabulator(['notes', 'scenier'])
+            .then( () => {
+              expect(projet.panneau('notes').actif).to.be.true
+              expect(projet.panneau('scenier').actif).to.be.true
+              expect(projet.mode_double_panneaux).to.be.true
+            })
+          });
+          it("si un seul relatif, on met le relatif en exergue", function(){
+            this.skip()
+          })
+        });
+        describe('avec plusieurs relatifs dans l’autre panneau', function () {
+          it("met tous les relatifs en exergue", function(){
+            this.skip()
+          })
+        });
+      });
     });
     describe('avec deux parags sélectionnés', function () {
       it("synchronise les deux parags", function(){
         this.skip()
       })
     });
-  });
-  describe('Visualisation des parags synchronisés', function () {
-    describe('en sélectionnant un parag synchronisé', function () {
-      describe('avec un seul relatif dans l’autre panneau', function () {
-        it("si un seul relatif, on met le relatif en exergue", function(){
-          this.skip()
-        })
-      });
-      describe('avec plusieurs relatifs dans l’autre panneau', function () {
-        it("met tous les relatifs en exergue", function(){
-          this.skip()
-        })
-      });
-    });
+
   });
 });

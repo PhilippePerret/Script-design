@@ -54,7 +54,7 @@ global.setOptionProjet    = function( option, value) {projet().option(option, va
 
 global.activatePanneau    = function (panid) {
   const pan = projet().panneau(panid)
-  return pan.PRactivate.bind(pan).call()
+  return pan.PRactivate.call(pan)
 }
 global.setCurrentPanneau  = function(pan){ projet().current_panneau = pan }
 
