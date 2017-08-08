@@ -298,30 +298,39 @@ class Relatives
   *                 Note : on renvoie le référent pour mettre tout de suite
   *                 ses relatifs en exergue dans le panneau, si possible.
   *
-  * Rappel:
+  * Pour le principe de l'association, cf. :
+  * N0006
+  * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0006
   *
-  * Pour que la donnée à enregistrer soit moins conséquente, on utilise des
-  * noms très réduit. À la base, une définition se présente ainsi :
-  *   "<PARAG ID>": {"t": "<PAN 1 LETTRE>", "r":{ ... définition relatifs ... }}
-  *
-  * Avec la définition relatifs :
-  *   "r":{"<PAN 1 LETTRE>":[liste ID], "<PAN 1 LETTRE>":[liste ID], etc.}
-  *
-  * Le PAN 1 LETTRE est défini dans PANNEAUX_DATA
-  *   Projet.PANNEAUX_DATA[panneau]     = 'la_lettre'
-  *   Projet.PANNEAUX_DATA['la_lettre'] = 'le_panneau'
+  * Concernant la forme de la donnée produite, cf. :
+  * N0007
+  * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0007
   *
   **/
   associate ( parags )
   {
     const my = this
 
+    /*- validité des arguments fournis -*/
+
+    if ( ! parags ) {
+      throw new Error("Il faut fournir les parags à associer !")
+    }
+    if ( ! Array.isArray( parags ) ) {
+      throw new Error("Il faut fournir une liste des parags à associer !")
+    }
+    let arr = new Map()
+    parags.forEach( parag => {
+      if ( arr.get(parag.id) ) throw new Error("Un parag ne peut être associé à lui-même.")
+      arr.set(parag.id, true)
+    })
+
     // console.log("\n==== RELATIVES avant l'association : ", JSON.stringify(this.data))
     // Avant de vérifier que les données sont valides,
     // On regroupe les paragraphes par panprojet (synopsis, scenier, etc.)
     // On doit obtenir un Hash qui ressemble à celui qui doit être enregistré :
     // {
-    //    "notes":    [c]         // <-- Ce sera le "référent"
+    //    "notes":    [c]       // <-- Le premier parag seul est le "référent"
     //    "scenier":  [x, y]
     //    "synopsis": [z, a, b]
     // }
@@ -329,70 +338,72 @@ class Relatives
     let hrelates = this.associate_groupByPanneau(parags) // => Map
     // console.log(`==== hrelates: ${JSON.stringify(hrelates)}`)
 
-    // On récupère le référent, c'est-à-dire le parag qu'on doit associer
-    // aux autres, entendu qu'on ne peut pas associer plusieurs parag à
-    // plusieurs autres. Un parag peut être associé à plusieurs parag,
-    // mais toujours un référent à la fois.
+    // On récupère le référent, qui doit obligatoirement exister, selon
+    // le principe de l'association.
     let referent = this.associate_getReferent( hrelates )
     // console.log(`referent = ${JSON.stringify(referent)}`)
+    if ( ! referent ) return false ;
 
-    if ( ! referent ) { return false }
     // console.log("==== hrelates après retrait du référent: ", JSON.stringify(hrelates))
 
     // On doit procéder à un contrôle pour voir si l'association peut se
     // faire.
-    if ( this.associate_Impossible(referent, hrelates) ){ return false }
+    if ( this.associate_Impossible(referent, hrelates) ) return false ;
 
-    // L'opération est possible, on peut procéder
-    // ------------------------------------------
-    const ref_id          = referent.id
-        // Attention, `referent` ci-dessus est un simple Objet contenant :id,
-        // :panneau_id et :panLetter, ça n'est PAS un Parag. Ça ne peut pas
-        // être un un Parag car en le prenant avec Parags.get, il peut ne pas
-        // être défini.
-      , ref_pan_letter  = referent.panLetter
-      , ref_relatives   = this.data.relatives[String(ref_id)]
-
-    let other_id
-      , other_relatives
-      , pan, panLetter
-
+    // TODO On doit récupérer tous les « parags seuls » de cette association
+    // Note : le {Object} référent en fait partie
+    let parags_seuls      = [referent]
+    let parags_non_seuls  = []
     hrelates.forEach( (value, pan) => {
-      panLetter = PanProjet.oneLetterOf(pan)
-      if (undefined === ref_relatives['r'][panLetter])
-      {
-        ref_relatives['r'][panLetter] = []
-      }
-      value.forEach(
-        (pid) => {
+      if ( value.length > 1 ) parags_non_seuls.push( {panneau_id: pan, parag_ids: value}) ;
+      else parags_seuls.push({panneau_id: pan, id: value[0] })
+    })
 
-         // Ajout du relatif dans le référent
-         ref_relatives['r'][panLetter].push(pid)
+    // TODO On doit associer tous les « parags seuls » aux autres parags
+    parags_seuls.forEach( hparag_seul => {
+      let paragId_ref   = hparag_seul.id
+        , panId_ref     = hparag_seul.panneau_id
+        , panLetter_ref = PanProjet.oneLetterOf(panId_ref)
+        , relatives_ref = this.data.relatives[String(paragId_ref)]
 
-         /* Ajout du référent dans le relatif */
+      // On répète pour chaque parag non seul
+      parags_non_seuls.forEach( hpanneau_non_seul => {
+        // 'pns' pour 'parag non seul'
+        let panId_pns     = hpanneau_non_seul.panneau_id
+          , panLetter_pns = PanProjet.oneLetterOf(panId_pns)
 
-         other_relatives = my.data.relatives[String(pid)]
-         if (undefined === other_relatives['r'][ref_pan_letter])
-         {
-           other_relatives['r'][ref_pan_letter] = []
-         }
-         other_relatives['r'][ref_pan_letter].push(ref_id)
-        //  my.data.relatives[String(pid)] = other_relatives
+        // Si le référent n'a pas encore de relatifs de ce panneau, il
+        // faut initier sa donnée
+        if ( undefined === relatives_ref['r'][panLetter_pns]) {
+          relatives_ref['r'][panLetter_pns] = []
+        }
 
-      }, value /* thisArg */)
-    }, hrelates /* thisArg */)
+        // On boucle dans la liste de tous les parags de ce panneau
+        hpanneau_non_seul.parag_ids.forEach( paragId_pns => {
+          // 'pns' pour 'parag non seul'
+          let relatives_pns = this.data.relatives[String(paragId_pns)]
 
-    // On remet dans les données les relatives du référent (utile ?)
-    // this.data.relatives[String(ref_id)] = ref_relatives
+          // Ajout du relatif dans le référent
+          relatives_ref['r'][panLetter_pns].push(paragId_pns)
+
+          // Si le PNS n'a pas encore de relatifs dans le panneau du référent,
+          // il faut initier sa donnée avant d'ajouter le référent
+          if ( undefined === relatives_pns['r'][panLetter_ref]) {
+            relatives_pns['r'][panLetter_ref] = []
+          }
+          relatives_pns['r'][panLetter_ref].push(paragId_ref)
+        })
+      })
+    })
 
     // console.log("\n==== RELATIVES APRÈS l'association : ", JSON.stringify(this.data))
 
     my.resetAllParags(parags)
     my.modified = true
 
-    /*  On retourne le référent (utile ?) */
+    /*  On retourne le référent */
 
-    return Parags.get(Number(ref_id))
+    return Parags.get(Number(referent.id)) // UTILES ?
   }
 
   /**

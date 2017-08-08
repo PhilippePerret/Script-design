@@ -163,9 +163,8 @@ class Parag
 
     this.id     = data.id // (1)
     this.projet = Projet.current
-    for(let p in data){if(data.hasOwnProperty(p)){this[p] = data[p]}}
+    forEach(data, (v, p) => { this[`_${p}`] = v })
     Parags.add(this) // (2)
-
   }
 
   /* - public - */
@@ -1166,7 +1165,6 @@ class Parag
   **/
   PRsyncInPanneau ( pan_id )
   {
-    // console.log("-> PRsyncInPanneau(%s)", pan_id)
     const my = this
     // console.log("[Parag#syncInPanneau] Début de synchronisation du parag#%d dans le panneau '%s'", this.id, pan_id)
     let newParagSync
@@ -1255,6 +1253,10 @@ class Parag
   * À la création du paragraphe, c'est cette méthode qui crée
   * les paragraphes synchronisés si le paragraphe a réellement
   * été créé (this.sync_after_save est alors à true).
+  *
+  * WARNING Si cette méthode est appelée pour les tests directement, il ne
+  *         faut pas oublier de définir `this.newContents` qui sera la
+  *         nouvelle valeur de `this.contents` après la méthode.
   **/
   onChangeContents ()
   {
@@ -1268,7 +1270,7 @@ class Parag
 
     /*- Synchronisation automatique -*/
 
-    my.sync_after_save && my.PRsync.bind(my).call()
+    if ( my.sync_after_save ) return my.PRsync.call(my) ;
 
   }
 
@@ -1748,10 +1750,11 @@ class Parag
   **/
   isRelativeOf ( pid )
   {
-    if ( 'Parag' == pid.constructor.name ) { pid = pid.id }
+    'Parag' == pid.constructor.name && ( pid = pid.id )
     return undefined !== this.relatives.get(pid)
   }
   hasRelative ( pid ) { return this.isRelativeOf(pid) }
+  hasRelatif  ( pid ) { return this.isRelativeOf(pid) }
 
   get relatives ()
   {

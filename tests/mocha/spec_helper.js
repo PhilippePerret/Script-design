@@ -441,7 +441,10 @@ global.resetAllPanneaux = function( params)
 
 
 function resetAllParags (params) {
-  let pth
+  let pth ;
+
+  Parags.reset()
+
   // On détruit le fichier des parags s'il existe
   pth = projet.parags_file_path
   if ( fs.existsSync(pth) ) { fs.unlinkSync(pth) }

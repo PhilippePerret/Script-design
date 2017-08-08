@@ -65,16 +65,14 @@ class Parags
   *
   * C'est la méthode qui est appelée par la touche `n` hors mode d'édition
   * depuis n'importe quel pano.
+  *
+  * @param {Object|Undefined} params Notamment pour les tests, on peut
+  *                                 stipuler les données du parag.
   **/
   createAndEdit ()
   {
     const my    = this
-    const newP  = my.createNewParag()
-
-    // Si les options le demandent, on doit synchroniser les autres panneaux
-    // Noter qu'on ne le fait pas dans la méthode createNewParag, car cette
-    // méthode servira justement aussi à créer les parags synchronisés.
-    my.projet.option('autosync') && ( newP.sync_after_save = true )
+    const newP  = my.createNewParag(undefined, { synchronize: my.projet.option('autosync')})
 
     // On met aussitôt le paragraphe en édition pour le modifier
     my.select(newP)
@@ -94,6 +92,8 @@ class Parags
   * @param {Object} options Les options pour la méthode `add`. C'est là qu'on
   *                         peut définir par exemple le `before` pour dire avant
   *                         quel parag on doit ajouter le nouveau.
+  *   options.before        Parag avant lequel il faut insérer le nouveau
+  *   options.synchronize   Si true, on doit synchroniser ce parag.
   **/
   createNewParag ( params, options )
   {
@@ -105,9 +105,11 @@ class Parags
     // c'est-à-dire après la sélection si elle existe ou à la
     // fin dans le cas contraire.
     options || ( options = {} )
-    // if (options.before){
-    //   console.log("[createNewParag] options.before avant : ", options.before.id)
-    // }
+
+    options.synchronize && ( newP.sync_after_save = true )
+    // Si les options le demandent, on doit synchroniser ce parag dans
+    // les autres panneaux.
+
     !options.before && my.hasCurrent() && ( options.before = my.selection.current.next )
     // console.log("[createNewParag] my.hasCurrent() = ", my.hasCurrent())
     // if ( my.hasCurrent() )
@@ -143,12 +145,14 @@ class Parags
     const newP = new Parag({
         id          : new_id
       , contents    : String(params.contents || '')
+      , duration    : params.duration
+      , type        : params.type
+      , brin_ids_32 : params.brin_ids_32
       , created_at  : params.created_at || now
       , updated_at  : params.updated_at || now
       , panneau_id  : params.panneau_id || my.panneau.id
-      , _modified   : true // pour qu'il soit enregistré
     })
-    newP.panneau.modified = true
+    newP.modified = true
     return newP
   }
 
@@ -786,6 +790,15 @@ class Parags
   *** --------------------------------------------------------------------- */
 
   /**
+  * reset de la donnée de classe (utile surtout pour les tests, pour
+  * le moment)
+  **/
+  static reset ()
+  {
+    this._items = undefined
+  }
+
+  /**
   * Pour ajouter le paragraphe, quel que soit son panneau, à la liste de
   * paragraphes courants, pour pouvoir toujours le récupérer par Parags.get
   *
@@ -794,10 +807,12 @@ class Parags
   **/
   static add (iparag)
   {
+    // console.log("-> Parags#add, ajout du parag #%d (il y en a %d)", iparag.id, this.count())
     this._items || ( this._items = new Map() )
     this._items.set(iparag.id, iparag)
   }
 
+  static count () { return this._items ? this._items.size : 0 }
   /**
   * @return {Map} La map de tous les parags
   **/
