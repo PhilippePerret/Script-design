@@ -218,7 +218,16 @@ class Projet
     this._current_panneau || ( this._current_panneau = this.panneaux['data'] )
     return this._current_panneau
   }
-  set current_panneau (v) { this._current_panneau = v }
+  /**
+  * Définit le panneau courant
+  * On change le z-index pour que ses éléments (par exemple le formulaire
+  * de création des brins)
+  **/
+  set current_panneau (v) {
+    this.current_panneau && (this.current_panneau.section.style.zIndex = 1)
+    this._current_panneau = v
+    this._current_panneau && (this._current_panneau.section.style.zIndex = 10)
+  }
 
   panneau (pan_id) {
     return this.panneaux[pan_id]

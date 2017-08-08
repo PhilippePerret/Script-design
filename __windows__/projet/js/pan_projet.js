@@ -143,7 +143,7 @@ class PanProjet
     const my = this
     options || ( options = {} )
 
-    console.log("-> PanProjet#PRactivate(%s) / panneau %s", JSON.stringify(options), my.id)
+    // console.log("-> PanProjet#PRactivate(%s) / panneau %s", JSON.stringify(options), my.id)
 
     const side = options.side ? options.side : null
 
@@ -157,7 +157,7 @@ class PanProjet
 
   PRdesactivate () {
 
-    console.log("-> PanProjet#PRdesactivate / panneau %s", this.id)
+    // console.log("-> PanProjet#PRdesactivate / panneau %s", this.id)
 
     this.parags.selection.reset()
     // Avant de désactiver le panneau, on déselectionne les sélections

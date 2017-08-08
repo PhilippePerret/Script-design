@@ -1,7 +1,8 @@
 * Voir les bugs sur le site
 
 * Poursuivre le test des relatives
-
+  * Pour définir les parags au clavier, il faudrait fonctionner un peu comme les brins : utiliser les flèches H/B pour se déplacer et les flèches D/G pour retirer ou ajouter. Avec un signe sur le côté qui déterminer le choix.
+  Il faut également pouvoir passer d'un panneau à l'autre.
 
 * les brins sont encore à tester, mais il y a beaucoup de choses à comprendre je pense au niveau de l'initialisation…
 * tester qu'on ne puisse pas choisir plus de 8 brins pour le parag
