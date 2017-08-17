@@ -46,10 +46,13 @@ class Projet
 
   /**
   *
-  *
+  * Données absolues des panneaux.
   * Pour obtenir ces données absolues, il suffit de faire :
   *
   *   projet.panneau(panneau_id).absData
+  *
+  * Voir le rappel N0008 sur ce qu'est un « panneau »
+  * https://github.com/PhilippePerret/Script-design/wiki/NoI#n0008
   **/
   static get PANNEAUX_DATA ()
   {
@@ -74,28 +77,14 @@ class Projet
     return this._panneauData
   }
 
-  // /**
-  // *   Chargement du projet data.projet_id
-  // *
-  // * La méthode regarde aussi s'il y a d'autres choses à faire, comme mettre
-  // * en route la boucle de sauvegarde en fonction des options.
-  // * TODO Plus tard, on pourra aussi avoir des notes à rappeler à l'ouverture,
-  // * par exemple.
-  // **/
-  // static load (data)
-  // {
-  //   // this.current = new Projet(data.projet_id)
-  //   // this.current.prepare()
-  // }
-
   /**
-  * Méthode appelée par le tabulator des panneaux pour ouvrir un ou plusieurs
-  * panneaux
+  * Appelée par le `tabulator des panneaux` pour ouvrir un ou plusieurs
+  * panneaux.
   *
-  * @param {Array} keys Liste des id-panneaux (un ou deux seulement) définissant
+  * @param {Array} keys Liste des id-panneaux (< 2) définissant
   *                     le ou les panneaux à ouvrir.
-  *
   * @return {Promise} L'activation d'un panneau est une opération asynchrone
+  *
   **/
   static activatePanneauByTabulator ( keys )
   {
@@ -110,9 +99,14 @@ class Projet
     }
   }
 
+  /**
+  * @return {Number} un nouvel IDentifiant pour un projet
+  * Utile seulement pour les tests, pour savoir si l'on parle bien
+  * du même projet.
+  **/
   static newID ()
   {
-    this._lastid || ( this._lastid = 0 )
+    this._lastid = this._lastid || 0
     this._lastid ++
     return this._lastid
   }
@@ -131,9 +125,12 @@ class Projet
   }
 
   /**
-  * Chargement du projet
-  * --------------------
+  * Charge le projet
+  * ----------------
   * La méthode est appelée au chargement de la fenêtre
+  * « Charger le projet » consiste à charger ses informations générales
+  * (data) et à les afficher dans le panneau `data`.
+  * Aucun `parag` n'est chargé à ce niveau du chargement du projet.
   **/
   PRload ()
   {
@@ -154,14 +151,17 @@ class Projet
     *
   *** --------------------------------------------------------------------- */
 
-  // Détermine si on se trouve en mode édition, c'est-à-dire dans un contenu
-  // éditable. Ce mode détermine surtout l'action des raccourcis-clavier
-  // uno-touche.
+  /** Détermine si on se trouve en mode édition, c'est-à-dire dans un contenu
+    * éditable. Ce mode détermine surtout l'action des raccourcis-clavier
+    * à touche unique. Par exemple, `n` hors mode édition provoquera la
+    * création d'un nouveau `parag` tandis qu'en mode édition il écrira
+    * simplement la lettre 'n'.
+  ***/
   get mode_edition () { return !!this._mode_edition }
   set mode_edition (v){ this._mode_edition = !!v }
 
   /**
-  * La méthode d'annulation courante du projet.
+  * @return {Function|Null} La méthode d'annulation courante (ou null)
   *
   * C'est la méthode qui sera interrogée par la combinaison CMD+Z pour
   * savoir si une cancellisation doit être exécutée.
@@ -172,6 +172,10 @@ class Projet
   set cancelableMethod (v){ this._cancelableMethod = v    }
 
 
+  /**
+  * @return {Boolean} true si le projet est modifié, false otherwise.
+  * Le setter définit la variable et règle l'indicateur lumineux.
+  **/
   get modified () { return this._modified || false }
   set modified (v)
   {
@@ -179,6 +183,10 @@ class Projet
     if (v) { this.ui.setProjetModifed()     }
     else   { this.ui.setProjetUnmodified()  }
   }
+  /**
+  * @return {Boolean} true si le projet est en train de sauvegarder ses
+  * informations.
+  **/
   set saving (v) {
     this._saving = v
     if (v) { this.ui.setProjetSaving() }
@@ -186,21 +194,26 @@ class Projet
 
   /* --- publiques --- */
 
+  /**
+  * Demande l'affichage des statistiques du projet.
+  * Ouvre le panneau spécial des statistiques et les calcule ou les actualise.
+  * TODO Doit être implémenté.
+  **/
   afficherStatistiques ()
   {
     alert("Pour le moment, je ne sais pas encore afficher les statistiques du projet.")
   }
 
   /**
-  * Chargement du projet
+  * Première étape du chargement du projet
   * Note : ce sont les données qui s'affichent toujours en premier, pour
   * le moment.
+  * @return {Promise} Une promesse, le chargement étant asynchrone.
   **/
   prepare ()
   {
-    const my = this
-    my.current_panneau.PRactivate()
-    my.ui.observeEditablesIn(document)
+    this.current_panneau.PRactivate()
+    this.ui.observeEditablesIn(document)
     return Promise.resolve()
   }
 
@@ -229,9 +242,7 @@ class Projet
     this._current_panneau && (this._current_panneau.section.style.zIndex = 10)
   }
 
-  panneau (pan_id) {
-    return this.panneaux[pan_id]
-  }
+  panneau (pan_id) { return this.panneaux[pan_id] }
   get panneaux () {
     this._panneaux || this.definePanneauxAsInstances()
     return this._panneaux

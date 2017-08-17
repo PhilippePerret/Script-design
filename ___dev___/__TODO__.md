@@ -1,5 +1,11 @@
 * Voir les bugs sur le site
 
+* Faire les choix au niveau du mode double panneau pour savoir comment agissent les touches :
+  Est-ce qu'on utilise la tabulation pour passer d'un panneau à l'autre ?
+  Est-ce qu'on utilise Escape pour sortir du mode double panneau. NON : pour sortir du 
+  Donc : ça voudrait dire qu'on fait du mode double panneau un mode bien à part
+  Mais : il faut pouvoir quand même faire les trucs normaux dans les panneaux, comme par exemple créer un nouveau parag ou régler ses données.
+
 * Poursuivre le test des relatives
   * Pour définir les parags au clavier, il faudrait fonctionner un peu comme les brins : utiliser les flèches H/B pour se déplacer et les flèches D/G pour retirer ou ajouter. Avec un signe sur le côté qui déterminer le choix.
   Il faut également pouvoir passer d'un panneau à l'autre.
