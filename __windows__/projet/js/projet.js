@@ -248,22 +248,18 @@ class Projet
     return this._panneaux
   }
 
-  // Crée les instances panneaux pour le projet courant
+  /**
+  * Crée toutes les instances panneaux pour le projet courant
+  *
+  **/
   definePanneauxAsInstances ()
   {
     let my = this
-    // my._panneaux = {}
-    // Pour la transition de Projet.panneaux à projet.panneaux
     my._panneaux = {}
     Projet.PANNEAU_LIST.forEach( (panid) => {
-      if ( panid === 'data')
-      {
-        my._panneaux[panid] = new PanData(my)
-      }
-      else
-      {
-        my._panneaux[panid] = new PanProjet(panid, my)
-      }
+      my._panneaux[panid] = panid == 'data'
+        ? new PanData(my)
+        : new PanProjet(panid, my)
     })
   }
 
